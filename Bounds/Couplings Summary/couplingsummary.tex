@@ -1,0 +1,853 @@
+\documentclass[12pt]{article}
+
+\usepackage[shortlabels]{enumitem} 
+\usepackage{amsmath,amsfonts,amssymb,amsthm,bm,mathrsfs}
+\usepackage{fancyhdr}
+\usepackage[margin=1in]{geometry}
+\usepackage{parskip}
+\usepackage{tikz}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{mdframed}
+\usepackage{hyperref}
+\usepackage{xcolor, soul}
+\sethlcolor{cyan}
+
+
+\newcommand{\NN}{\mathbb{N}}
+\newcommand{\ZZ}{\mathbb{Z}}
+\newcommand{\QQ}{\mathbb{Q}}
+\newcommand{\RR}{\mathbb{R}}
+\newcommand{\CC}{\mathbb{C}}
+\newcommand{\PP}{\mathbb{P}}
+\newcommand{\EE}{\mathbb{E}}
+\newcommand{\notimplies}{\;\not\!\!\!\implies}
+\newcommand{\gguard}[1][x]{\texttt{insample}\geq \texttt{#1}}
+\newcommand{\lguard}[1][x]{\texttt{insample} < \texttt{#1}}
+\newcommand{\gaguard}{n<N \text{ AND } \texttt{insample} \geq \texttt{x}}
+\newcommand{\laguard}{n<N\text{ AND }\texttt{insample} < \texttt{x}}
+\newcommand{\itgguard}{\texttt{input}\neq\tau \text{ AND } \texttt{insample} \geq \texttt{x}}
+\newcommand{\itlguard}{\texttt{input}\neq\tau \text{ AND }\texttt{insample} < \texttt{x}}
+\newcommand{\range}{\texttt{range}}
+\newcommand{\brangle}[1]{\langle #1 \rangle}
+\newcommand{\guard}{\texttt{guard}}
+\newcommand{\trans}{\texttt{trans}}
+\newcommand{\Lap}{\texttt{Lap}}
+\newcommand{\gcycle}{\texttt{G}-cycle }
+\newcommand{\lcycle}{\texttt{L}-cycle }
+
+
+\DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator*{\argmin}{arg\,min}
+
+\providecommand{\floor}[1]{ \lfloor #1 \rfloor }
+\newmdtheoremenv{thm}{Theorem}[section]
+\newmdtheoremenv{lemma}[thm]{Lemma}
+\newmdtheoremenv{prop}[thm]{Proposition}
+\newmdtheoremenv{cor}[thm]{Corollary}
+\theoremstyle{definition}
+\newmdtheoremenv{defn}[thm]{Definition}
+\newmdtheoremenv{const}[thm]{Construction}
+\newmdtheoremenv{examp}[thm]{Example}
+\newmdtheoremenv{conj}[thm]{Conjecture}
+\newmdtheoremenv{rmk}[thm]{Remark}
+\newmdtheoremenv{clm}[thm]{Claim}
+
+\newcommand{\isto}{\stackrel{\sim}{\smash{\longrightarrow}\rule{0pt}{0.4ex}}} 
+\graphicspath{ {./} }
+\bibliographystyle{plain} 
+
+
+
+
+\begin{document}
+
+\section{Generating Couplings from DiPA}
+
+Consider a well-formed DiPA $\mathcal{A} = (Q, \Sigma, \Gamma, q_{init}, \{\texttt{insample},\texttt{insample}', \texttt{x}\}, P, \delta)$. For all adjacent inputs $X \sim X'$ and each output $\sigma \in \range(\mathcal{A})$, we want to create a coupling $\mathcal{A}(X)\{(a, b): a = \sigma \implies b = \sigma\}^{\#(\varepsilon_\sigma, 0)}\mathcal{A}(X')$. 
+If such a coupling exists for each $\sigma$ and $X\sim X'$, then we have proved that the program corresponding to $\mathcal{A}$ is $(\max_{\sigma \in \range(\mathcal{A})}\varepsilon_\sigma, 0)$-differentially private.
+
+\subsection{An algorithmic process for generating coupling proofs}\label{couplingStrategies}
+
+\subsubsection{Overview}
+In order to show that $\mathcal{A}$ is differentially private, we must compare, for every pair of neighbouring datasets $X\sim X'$ and for each possible output $\sigma$ of $\mathcal{A}$, the probability that $\mathcal{A}(X) = \sigma$ and that $\mathcal{A}(X') = \sigma$. 
+As previously mentioned, in order to show that $\mathcal{A}$ is $\varepsilon$-DP, it is sufficient to show for each $\sigma$ that the lifting $\mathcal{A}(X)\{(a, b): a = \sigma \implies b = \sigma\}^{\#(\varepsilon_\sigma, 0)}\mathcal{A}(X')$ exists such that $\varepsilon = \max_{\sigma}\{\varepsilon_\sigma\}$.
+
+We assume that every state of $\mathcal{A}$ reads in input for convenience
+\footnote{Note that a state that doesn't read in input can be simulated by supplying an input of 0 at that state and that states that don't read in input cannot impact the control flow of the automaton because of the \hl{non-input transition} condition}.
+
+Because of \hl{output distinction} and \hl{determinism}, each output $\sigma$ uniquely determines a path $\rho_\sigma$ in $\mathcal{A}$. After fixing some $X\sim X'$ and $\sigma \in \range(\mathcal{A})$, our high level procedure thus proceeds as follows: split $\rho_\sigma$ at each assignment transition so that we get a bounded number of segments of $\rho_\sigma$. 
+For each segment, the first transition in the segment is an assignment transition and the remaining transitions are non-assignment transitions. We can then choose between three ``coupling strategies'' for the segment - in essence, we choose to assign zero cost to either $\lguard$ or $\gguard$ transitions, or neither (to accomodate certain output patterns).
+Because of the \hl{initialization} condition, we know that the first transition of any path will be an assignment transition, so these segments truly partition the path.
+
+After creating coupling proofs for each segment in isolation, we can recombine segments together in sequence. However, at each assignment transition, because we must couple the Laplace noise added to both satisfy the guard of the assignment transition (dependent on the \textit{previous} value of $x$) and also couple the same noise to influence the \textit{new} value of $x$, 
+there are certain constraints on which coupling strategy can be chosen for a segment that depend on the strategy selected for the previous segment and the guard of the assignment transition (see section~\ref{subsectionfirstguardnottrue} for details). 
+
+We claim that, if a DiPA $\mathcal{A}$ is well-formed, then there exists some upper cost bound $\varepsilon$ such that for $X\sim X'$ and for \textit{all} outputs $\sigma\in\range(\mathcal{A})$, we can construct the lifting $\mathcal{A}(X)\{(a, b): a=\sigma \implies b=\sigma\}^{(\varepsilon, 0)}A(X')$. 
+
+In particular, if a DiPA does not have a leaking cycle, then there exists a bound on the number of segments for any path through $\mathcal{A}$, and if a DiPA does not have a leaking pair, a disclosing cycle, or a privacy violating path, then we can claim that there exists a global bound on the cost of a minimal coupling strategy for any path through $\mathcal{A}$. 
+
+Because there can be a very large or even potentially unbounded number of paths through $\mathcal{A}$, note that it is not actually practical to individually minimize each path. 
+
+\subsubsection{Details}
+
+As mentioned, we suppose that all states in $\mathcal{A}$ are input states. 
+
+\textbf{Preliminaries}
+
+Fix $X\sim X'$. We will analyze the relative behaviour of the two runs $\mathcal{A}(X)$ and $\mathcal{A}(X')$. In particular, for each $\sigma\in\range(\mathcal{A})$, we want to construct the lifting \[\mathcal{A}(X)\{(a, b): a=\sigma \implies b=\sigma\}^{(\varepsilon, 0)}\mathcal{A}(X')\]
+
+Because each transition in $\mathcal{A}$ must output, this is equivalent to, for each $\sigma \in \range(\mathcal{A})$, constructing a series of liftings \[\mathcal{A}(X)_i\{(a, b): a=\sigma_i \implies b=\sigma_i\}^{(\varepsilon_i, 0)}\mathcal{A}(X')_i\]
+for all $i \in [|\sigma|]$, where $\mathcal{A}(X)_i, \mathcal{A}(X')_i$, and $\sigma_i$ are the $i$th characters of $\mathcal{A}(X), \mathcal{A}(X')$, and $\sigma$, respectively. Additionally, $\sum\varepsilon_i \leq \varepsilon$.
+
+Fix an output $\tau \in \range(\mathcal{A})$. By \hl{output distinction} and \hl{determinism}, $\tau$ corresponds to exactly one path $\varrho=q_0\to q_1\to \cdots \to q_n$ in $\mathcal{A}$. 
+Recall that $\texttt{trans}(q_i)$ is the transition from $q_i\to q_{i+1}$ and $\texttt{guard}(q_i) = c_i$ is the guard of $\texttt{trans}(q_i)$ for $0\leq i \leq n-1$.
+
+Let $AT = \{i: \texttt{trans}(q_i)$ is an assignment transition$\}$. Note that by the \hl{initialization condition}, $0\in AT$. Let $m = |AT|$ and let $AT(k)$ be the ordering of $AT$ for $1\leq k \leq m$ such that $AT(k) < AT(k+1)$ for all $k$. Additionally, let $AT(m+1) = n$.
+
+We want to split up $\varrho$ into a series of subpaths separated by assignment transitions. 
+
+\textbf{Splitting $\varrho$ into segments}
+
+Recall that for a path $\varrho=q_0\to q_1\to \cdots \to q_n$, $\varrho[i:j]$ is the subpath $q_i\to \cdots \to q_j$. For $1\leq k\leq m$, let $\rho_k$ be the subpath $\varrho[AT(k):AT(k+1)]$. Note that for each $\rho_k = a_0\to\cdots\to a_p$, $\trans(a_0)$ is an assignment transition and none of the other transitions in $\rho_k$ are assignment transitions. 
+
+For a subpath $\rho = \varrho[i:j]$, let $\mathcal{A}(X)[\rho]$ be the substring $\tau[i:j]$.
+
+For each $k$, there are two sets of couplings we can create for $\rho_k$, each with their own associated privacy cost.
+
+\textbf{Coupling strategies for each segment}
+
+Consider a subpath $\rho_k = a_0\to \cdots \to a_p = \varrho[AT(k):AT(k+1)]$. 
+
+Let $\sigma_k = \tau[AT(k):AT(k+1)]$ be the substring of the output $\tau$ contributed by $\rho_k$. 
+
+We will construct the lifting $\mathcal{A}(X)[\rho_k]\{(a, b): a = \sigma_k \implies b = \sigma_k\}^{\#(\varepsilon, 0)}\mathcal{A}(X')[\rho_k]$, or equivalently, construct the liftings $\mathcal{A}(X)[\rho_k]_i\{(a, b): a = (\sigma_k)_i \implies b = (\sigma_k)_i\}^{\#(\varepsilon_i, 0)}\mathcal{A}(X')[\rho_k]_i$ for all $i\in \{0, \ldots, p-1\}$ such that $\sum\varepsilon_i \leq \varepsilon$.
+
+Let $z_0, \ldots, z_p$ be the Laplace noise added to the input read at each state in $\rho_k$. Without loss of generality\footnote{If the mean of the noise added at a state \textit{isn't} zero originally, we can shift the input query at that state}, suppose that the mean of each $z_i$ is 0 and that the spread parameter of each $z_i$ is $\frac{1}{\varepsilon_i}$\footnote{So the pdf of each $z_i$ is $f(x) = \frac{\varepsilon_i}{2}\exp(-\varepsilon_i|x|)$}. 
+Let $z'_0, \ldots, z'_p$ be the Laplace noise added to the input at each state in $\rho_k$ to produce $\texttt{insample}'$. Suppose that $\mu_i$ and $\frac{1}{\varepsilon_i'}$ are the mean and spread parameter, respectively, of each $z_i'$. 
+
+Similarly, let $\texttt{in}_i$ for $i \in \{0,\ldots, p\}$ represent the input value read at each state $a_i$ and let $x$ be the value of the stored variable of $\mathcal{A}$. For any of these variables $v$, let $v\brangle{1}$ represent its value in a run of $\mathcal{A}(X)$, and let $v\brangle{2}$ represent its value in a run of $\mathcal{A}(X')$. 
+
+Recall that because $X\sim X'$ and we assume that $\Delta q_i = 1$ for all $q_i$, $|\texttt{in}_i\brangle{1} - \texttt{in}_i\brangle{2}|\leq 1$ for all $i$. Additionally, $\texttt{insample}_i = \texttt{in}_i + x_i$ by definition.
+
+Note that we are only (for now) considering a single stored value in $x$.
+
+\textbf{The first coupling strategy (call this $S^L$)\footnote{Because it allows all ``less than'' guards to be traversed with zero cost} proceeds as follows:}
+
+Suppose that $\trans(a_0)$ does not output $\texttt{insample}$. If it does, then we cannot use $S^L$.
+
+
+Create the lifting $z_0\brangle{1} (=)^{\#(2\varepsilon_0, 0)} z_0\brangle{2} + \texttt{in}_0\brangle{2}- \texttt{in}_0\brangle{1} - 1$. 
+Note that since $\trans(a_0)$ is an assignment transition and $\texttt{insample}_0 = \texttt{in}_0 + z_0$, this is equivalent to constructing the lifting $x\brangle{1} + 1 (=)^{\#(2\varepsilon_0, 0)}x\brangle{2}$. 
+
+Fix some $i\in\{1, \ldots, p-1\}$. 
+
+If $\trans(a_i)$ outputs $\texttt{insample}$, then construct the lifting $z_i\brangle{1} (=)^{\#(\varepsilon_i, 0)}z_i\brangle{2} + \texttt{in}_i\brangle{2}-\texttt{in}_0\brangle{1}$. This is equivalent to constructing the lifting $\texttt{insample}\brangle{1} (=)^{\#(\varepsilon_i, 0)}\texttt{insample}\brangle{2}$.
+
+
+Otherwise if $\guard(a_i) = \lguard$, construct the lifting $z_i\brangle{1} (=)^{\#(0, 0)}z_i\brangle{2}$. If $\trans(a_i)$ doesn't output $\texttt{insample}$ and $\guard(a_i) = \gguard$, construct the lifting $z_i\brangle{1} + 2 (=)^{\#(2\epsilon_i, 0)}z_i\brangle{2}$. 
+
+If $\trans(a_i)$ outputs $\texttt{insample'}$, then construct the lifting $\texttt{insample}'\brangle{1} (=)^{\#(\varepsilon'_i, 0)} \texttt{insample}'\brangle{2}$.
+
+
+As before, we claim that if $(\sigma_k)_i \in \Gamma$ and $\guard(a_i) \in \{\lguard, \texttt{true}\}$, we can construct the lifting $\mathcal{A}(X)[\rho_k]_i\{(a, b): a = (\sigma_k)_i \implies b = (\sigma_k)_i\}^{\#(0, 0)}\mathcal{A}(X')[\rho_k]_i$. 
+
+If $(\sigma_k)_i \in \Gamma$ and $\guard(a_i) = \gguard$, then we can construct the lifting $\mathcal{A}(X)[\rho_k]_i\{(a, b): a = (\sigma_k)_i \implies b = (\sigma_k)_i\}^{\#(2\varepsilon_i, 0)}\mathcal{A}(X')[\rho_k]_i$.
+
+If $(\sigma_k)_i = \texttt{insample}$ and $\guard(a_i) \in \{\lguard, \texttt{true}\}$, we can construct the lifting $\mathcal{A}(X)[\rho_k]_i\{(a, b): a = (\sigma_k)_i \implies b = (\sigma_k)_i\}^{\#(\varepsilon_i, 0)}\mathcal{A}(X')[\rho_k]_i$.
+
+If $(\sigma_k)_i = \texttt{insample}$ and $\guard(a_i) = \gguard$, the only lifting we can construct is $\mathcal{A}(X)[\rho_k]_i\{(a, b): a = (\sigma_k)_i \implies b = (\sigma_k)_i\}^{\#(\infty, 0)}\mathcal{A}(X')[\rho_k]_i$. If this is the case, we say $a_i$ is \textit{faulty} (in the context of $S^L$).
+
+If $(\sigma_k)_i =\texttt{insample'}$ and $\guard(a_i) \in \{\lguard, \texttt{true}\}$, we can construct the lifting $\mathcal{A}(X)[\rho_k]_i\{(a, b): a = (\sigma_k)_i \implies b = (\sigma_k)_i\}^{\#(\varepsilon'_i, 0)}\mathcal{A}(X')[\rho_k]_i$.
+
+If $(\sigma_k)_i =\texttt{insample'}$ and $\guard(a_i) = \gguard$, then we can construct the lifting $\mathcal{A}(X)[\rho_k]_i\{(a, b): a = (\sigma_k)_i \implies b = (\sigma_k)_i\}^{\#(2\varepsilon_i+\varepsilon'_i, 0)}\mathcal{A}(X')[\rho_k]_i$.
+
+Thus by sequential composition of liftings, we have $\mathcal{A}(X)[\rho]\{(a, b): a = \sigma_k \implies b = \sigma_k\}^{\#(\varepsilon_L, 0)}\mathcal{A}(X')[\rho]$, where the total privacy cost $\varepsilon_L$ of $S^L$ is \[
+	\varepsilon_L= 
+	\begin{cases}
+		\infty & \exists i: a_i\text{ is faulty}\\
+		2\varepsilon_0 + \sum_{i>0: \guard(a_i) = \gguard} 2\varepsilon_i  + \sum_{i: (\sigma_k)_i = \texttt{insample'}}\varepsilon_i'& \text{ otherwise}
+	\end{cases}
+\]
+
+
+\textbf{The second coupling strategy ($S^G$) proceeds as follows:} 
+
+Suppose that $\trans(a_0)$ does not output $\texttt{insample}$. If it does, then we cannot use $S^G$.
+
+Similar to before, create the lifting $z_0\brangle{1} (=)^{\#(2\varepsilon_0, 0)} z_0\brangle{2} + \texttt{in}_0\brangle{2}- \texttt{in}_0\brangle{1} + 1$, which is equivalent to constructing the lifting $x\brangle{1} (=)^{\#(2\varepsilon_0, 0)}x\brangle{2}+1$. 
+
+Fix some $i\in\{1, \ldots, p-1\}$. 
+
+If $\trans(a_i)$ outputs $\texttt{insample}$, then construct the lifting $z_i\brangle{1} (=)^{\#(\varepsilon_i, 0)}z_i\brangle{2} + \texttt{in}_i\brangle{2}-\texttt{in}_0\brangle{1}$. This is equivalent to constructing the lifting $\texttt{insample}\brangle{1} (=)^{\#(\varepsilon_i, 0)}\texttt{insample}\brangle{2}$.
+
+Otherwise if $\guard(a_i) = \gguard$, construct the lifting $z_i\brangle{1} (=)^{\#(0, 0)}z_i\brangle{2}$. If $\trans(a_i)$ doesn't output $\texttt{insample}$ and $\guard(a_i) = \lguard$, construct the lifting $z_i\brangle{1} (=)^{\#(2\epsilon_i, 0)}z_i\brangle{2}$+2. 
+
+If $\trans(a_i)$ outputs $\texttt{insample'}$, then construct the lifting $\texttt{insample}'\brangle{1} (=)^{\#(\varepsilon'_i, 0)} \texttt{insample}'\brangle{2}$.
+
+As before, we claim that if $(\sigma_k)_i \in \Gamma$ and $\guard(a_i) \in \{\gguard, \texttt{true}\}$, we can construct the lifting $\mathcal{A}(X)[\rho_k]_i\{(a, b): a = (\sigma_k)_i \implies b = (\sigma_k)_i\}^{\#(0, 0)}\mathcal{A}(X')[\rho_k]_i$. (Again, see section \ref{subsectionliftingdetails} for details.)
+
+If $(\sigma_k)_i \in \Gamma$ and $\guard(a_i) = \lguard$, then we can construct the lifting $\mathcal{A}(X)[\rho_k]_i\{(a, b): a = (\sigma_k)_i \implies b = (\sigma_k)_i\}^{\#(2\varepsilon_i, 0)}\mathcal{A}(X')[\rho_k]_i$.
+
+If $(\sigma_k)_i = \texttt{insample}$ and $\guard(a_i) \in \{\gguard, \texttt{true}\}$, we can construct the lifting $\mathcal{A}(X)[\rho_k]_i\{(a, b): a = (\sigma_k)_i \implies b = (\sigma_k)_i\}^{\#(\varepsilon_i, 0)}\mathcal{A}(X')[\rho_k]_i$.
+
+If $(\sigma_k)_i = \texttt{insample}$ and $\guard(a_i) = \lguard$, the only lifting we can construct is $\mathcal{A}(X)[\rho_k]_i\{(a, b): a = (\sigma_k)_i \implies b = (\sigma_k)_i\}^{\#(\infty, 0)}\mathcal{A}(X')[\rho_k]_i$. If this is the case, we say $a_i$ is \textit{faulty} (in the context of $S^G$).
+
+If $(\sigma_k)_i =\texttt{insample'}$ and $\guard(a_i) \in \{\gguard, \texttt{true}\}$, we can construct the lifting $\mathcal{A}(X)[\rho_k]_i\{(a, b): a = (\sigma_k)_i \implies b = (\sigma_k)_i\}^{\#(\varepsilon'_i, 0)}\mathcal{A}(X')[\rho_k]_i$.
+
+If $(\sigma_k)_i =\texttt{insample'}$ and $\guard(a_i) = \lguard$, then we can construct the lifting $\mathcal{A}(X)[\rho_k]_i\{(a, b): a = (\sigma_k)_i \implies b = (\sigma_k)_i\}^{\#(2\varepsilon_i+\varepsilon'_i, 0)}\mathcal{A}(X')[\rho_k]_i$.
+
+Thus by sequential composition of liftings, we have $\mathcal{A}(X)[\rho]\{(a, b): a = \sigma_k \implies b = \sigma_k\}^{\#(\varepsilon_G, 0)}\mathcal{A}(X')[\rho]$, where the total privacy cost $\varepsilon_G$ of $S^G$ is \[
+	\varepsilon_G= 
+	\begin{cases}
+		\infty & \exists i: a_i\text{ is faulty}\\
+		2\varepsilon_0 + \sum_{i>0: \guard(a_i) = \lguard} 2\varepsilon_i  + \sum_{i: (\sigma_k)_i = \texttt{insample'}}\varepsilon_i'& \text{ otherwise}
+	\end{cases}
+\]
+
+\textbf{The third coupling strategy $(S^N)$ proceeds as follows:}
+
+
+Create the lifting $z_0\brangle{1} (=)^{\#(2\varepsilon_0, 0)} z_0\brangle{2} + \texttt{in}_0\brangle{2}- \texttt{in}_0\brangle{1}$. This is equivalent to constructing the lifting $x\brangle{1} (=)^{\#(2\varepsilon_0, 0)}x\brangle{2}$. 
+
+Fix some $i\in\{0, \ldots, p-1\}$. 
+
+For all states $a_i$, construct the lifting $z_i\brangle{1} (=)^{\#(\varepsilon_i, 0)}z_i\brangle{2}$.
+
+If $(\sigma_k)_i=\texttt{insample}'$, also construct the lifting $\texttt{insample}'\brangle{1} (=)^{\#(\varepsilon'_i, 0)} \texttt{insample}'\brangle{2}$.
+
+We claim that if $(\sigma_k)_i \in \Gamma\cup\{\texttt{insample}\}$, we can construct the lifting $\mathcal{A}(X)[\rho_k]_i\{(a, b): a = (\sigma_k)_i \implies b = (\sigma_k)_i\}^{\#(\varepsilon_i, 0)}\mathcal{A}(X')[\rho_k]_i$.
+
+Otherwise, if $(\sigma_k)_i =\texttt{insample'}$, we can construct the lifting $\mathcal{A}(X)[\rho_k]_i\{(a, b): a = (\sigma_k)_i \implies b = (\sigma_k)_i\}^{\#(\varepsilon_i+\varepsilon'_i, 0)}\mathcal{A}(X')[\rho_k]_i$.
+
+Thus by sequential composition of liftings, we have $\mathcal{A}(X)[\rho]\{(a, b): a = \sigma_k \implies b = \sigma_k\}^{\#(\varepsilon_L, 0)}\mathcal{A}(X')[\rho]$, where the total privacy cost $\varepsilon_N$ of $S^N$ is \[
+	\varepsilon_N= \sum_{i} \varepsilon_i  + \sum_{i: (\sigma_k)_i = \texttt{insample}'}\varepsilon_i'.
+\]
+
+\textbf{Combining segments together}
+
+Note that we have not actually explicitly guaranteed that $\mathcal{A}(X)[\rho_k]_0 = (\sigma_k)_0 \implies \mathcal{A}(X')[\rho_k]_0 = (\sigma_k)_0$. This situation is not immediately generalizable from the previous analysis because the transition that $\mathcal{A}(X)$ (or $\mathcal{A}(X')$) takes from state $a_0$ is dependent on the \textit{previous} value of $x$. 
+
+Luckily, for most cases, coupling the new $x$ values together will also allow us to satisfy the transition guard. 
+
+However, there are some cases where this is impossible. Combined with the fact that if the assignment transition outputs $\texttt{insample}$, we must choose the coupling strategy $S^N$, this leads to the following constraints on segments $\rho_k, \rho_{k+1}$: 
+
+\begin{itemize}
+	\item If the assignment transition of $\rho_k$ outputs $\texttt{insample}$, then we can only use $S^N$ for $\rho_k$. 
+	\item If $S^G$ was used for $\rho_k$ and the assignment guard of $\rho_{k+1}$ is $\lguard$, then $S^G$ must be used for $\rho_{k+1}$.
+	\item If $S^L$ was used for $\rho_k$ and the assignment guard of $\rho_{k+1}$ is $\gguard$, then $S^L$ must be used for $\rho_{k+1}$.
+	\item If $S^N$ was used for $\rho_k$ and the assignment guard of $\rho_{k+1}$ is $\gguard$, then either $S^N$ or $S^L$ must be used for $\rho_{k+1}$.
+	\item If $S^N$ was used for $\rho_k$ and the assignment guard of $\rho_{k+1}$ is $\lguard$, then either $S^N$ or $S^G$ must be used for $\rho_{k+1}$.
+\end{itemize}
+
+For a detailed case analysis, see section\ \ref{subsectionfirstguardnottrue}.
+
+Assuming that these two constraints are satisfied, combining segments together is relatively straightforward. From each segment $\rho_k$, we have used either $S^G$, $S^L$, or $S^N$ to construct the lifting $\mathcal{A}(X)[\rho_k]\{(a, b): a = \sigma_k \implies b = \sigma_k\}^{\#(\varepsilon^{(k)}, 0)}\mathcal{A}(X')[\rho_k]$ for some $\varepsilon^{(k)}$.
+Then because $\tau = \sigma_1\cdot\sigma_1\cdot\ldots\cdot\sigma_m$, by sequential composition, we can construct the overall lifting $\mathcal{A}(X)\{(a, b): a = \tau \implies b = \tau\}^{\#(\varepsilon_\tau, 0)}\mathcal{A}(X')$, where $\varepsilon_\tau = \sum\varepsilon_k$. 
+
+If $\max_{\tau\in \range(\mathcal{A})}\{\varepsilon_\tau\}$ is finite, this is a proof that $\mathcal{A}$ is $\max\{\varepsilon_\tau\}$-differentially private, as desired.
+
+\subsection{Privacy}
+
+We begin with some preliminary definitions to help us construct \textit{segment families}, which will allow us to group the potentially infinite number of paths through $\mathcal{A}$ into a finite number of families that we can analyze individually.
+
+
+\begin{defn}
+	A \textbf{terminal state} of a DiPA $\mathcal{A}= (Q, \Sigma, \Gamma, q_0, X, P, \delta)$ is a state $q\in Q$ such that $\delta(q, c)$ is not defined for any guard condition $c$\footnote{This definition assumes that for all states $q$, if $\delta(q, \lguard)$ is defined, then $\delta(q, \gguard)$ is as well. Technically this is not required, but adding this requirement doesn't change the expressive power of DiPAs.}. 
+	Let $\texttt{term}(\mathcal{A})$ denote the set of terminal states of $\mathcal{A}$. 
+\end{defn}
+
+
+\begin{defn}
+	A \textbf{complete path} of a DiPA $\mathcal{A}= (Q, \Sigma, \Gamma, q_0, X, P, \delta)$ is a path in $\mathcal{A}$ that begins at $q_0$ and ends at a terminal state in $\mathcal{A}$. Complete paths represent a single execution of the program corresponding to $\mathcal{A}$. 
+\end{defn}
+
+\begin{defn}
+	Consider a DiPA $\mathcal{A} = (Q, \Sigma, \Gamma, q_0, X, P, \delta)$. Let $q_i, q_j\in Q$ be such that there exists a assignment transition from $q_i$ and either $q_j$ is a terminal state or there exists an assignment transition from $q_j$. 
+	Then we define $seg(q_i, q_j)$ as the set of all paths $\rho = a_1\to \ldots\to a_m$ in $\mathcal{A}$ that begin at $q_i$ and end at $q_j$ such that the only assignment transition in $\rho$ is $\trans(q_i)$ and the path $a_1\to\ldots \to a_{m-1}$ is acyclic. Note that $q_i$ can equal $q_j$. 
+
+	For a segment $s\in seg(q_i, q_j)$, let $\trans(s)$ refer to the (only) assignment transition in $s$ and let $\guard(s)$ be the guard of the (only) assignment transition in $s$.
+\end{defn}
+
+Note that we allow for $q_i = q_j$ in the definition, but there can be no cycles \textit{internal} to a path in $seg(q_i, q_j)$. 
+
+\begin{defn}
+	For a DiPA $\mathcal{A}= (Q, \Sigma, \Gamma, q_0, X, P, \delta)$, let $\texttt{assn}(\mathcal{A})$ be the set of states $q\in Q$ such that there exists an assignment transition from $q$. Overloading notation, define \[seg(\mathcal{A}) = \bigcup_{q_i\in \texttt{assn}(\mathcal{A})}\bigcup_{q_j\in \texttt{assn}(\mathcal{A})\cup\texttt{term}(\mathcal{A})}seg(q_i, q_j)\]
+\end{defn}
+
+\begin{prop}
+	For all $q_i\in \texttt{assn}(\mathcal{A}), q_j \in \texttt{assn}(\mathcal{A})\cup\texttt{term}(\mathcal{A})$, $|seq(q_i, q_j)|$ is finite. 
+\end{prop}
+
+\begin{cor}
+	For all DiPAs $\mathcal{A}$, $|seg(\mathcal{A})|$ is finite. 
+\end{cor}
+
+
+\begin{defn}
+	For a path $\rho = a_1\to\ldots \to a_n$, let $acyclic(\rho)$ be $\rho$ with all cycles (except potentially a cycle where $a_1 = a_n$) removed. That is, $acyclic(\rho)$ is the path constructed iteratively by the following process:
+	\begin{enumerate}
+		\item If $\exists i\neq j\in [n]$ where $a_i = a_j$ and $\{a_i, a_j\}\neq \{a_1, a_n\}$, remove the cycle found between $a_i$ and $a_j$; i.e. let $\rho = a_1\to\ldots\to a_i\to a_{j+1}\to\ldots\to a_n$.
+		\item Repeat until no such $i, j$ exist in $\rho$\footnote{\color{red} Do I need to justify that $acyclic(\rho)$ is a function?}.
+	\end{enumerate}
+	
+\end{defn}
+
+
+\begin{defn}
+	Suppose $\trans(q_i)$ and $\trans(q_j)$, $q_i, q_j \in Q$ are two assignment transitions in a DiPA $\mathcal{A} = (Q, \Sigma, \Gamma, q_0, X, P, \delta)$ such that $seg(q_i, q_j)\neq \emptyset$ and let $s \in seg(q_i, q_j)$. Then define the \textbf{segment family} of $s$, notated $segF(s)$, as the set of all paths $\rho$ from $q_i$ to $q_j$ such that the only assignment transition in $\rho$ is $\trans(q_i)$ and $acyclic(\rho) = s$.
+\end{defn}
+
+\begin{defn}
+	Let $G = (V, E)$ be the underlying (directed) graph of a DiPA $\mathcal{A}$. For all paths $\rho$ of $\mathcal{A}$, let $G_\rho = (V_\rho, E_\rho)$ be the subgraph of $G$ corresponding to $\rho$. 
+	For all $s\in seg(\mathcal{A})$, define the \textbf{subgraph corresponding to $s$}, notated $G_s = (V_s, E_s)$, as a subgraph of $G$ with $V_s= \bigcup_{\rho\in segF(s)}V_\rho$ and $E_s= \bigcup_{\rho\in segF(s)}E_\rho$\footnote{\color{red} Does ``the subgraph of $G$ corresponding to $\rho$'' need to be separately defined?}.
+\end{defn}
+
+\begin{prop}
+	For all $s, s'\in seg(\mathcal{A})$ where $s\neq s'$, $G_s$ and $G_{s'}$ are edge-disjoint. Further, if $G = (V, E)$ is the underlying graph of $\mathcal{A}$, $V = \bigcup_{s\in \mathcal{A}}V_s$ and $E = \bigcup_{s\in \mathcal{A}}E_s$, where $G_s = (V_s, E_s)$ for all $s$.
+\end{prop}
+
+\begin{defn}
+	For a segment $s\in seg(\mathcal{A})$, the \textbf{G-cost} of $s$ is \[
+		cost_G(s) = \sup\{\varepsilon^{(\rho)}_G: \rho\in segF(s)\}
+	\]
+	and the \textbf{L-cost} of $s$ is \[
+		cost_L(s) = \sup\{\varepsilon^{(\rho)}_L: \rho\in segF(s)\},
+	\]
+	where $\varepsilon^{(\rho)}_G$ (resp. $\varepsilon^{(\rho)}_L$) is the privacy cost of using the coupling strategy $S^G$ (resp. $S^L$) for the path $\rho$ (see section~\ref{couplingStrategies}).
+
+	If either set is unbounded, take the supremum to be $\infty$. 
+\end{defn}
+\begin{prop}\label{infinitecostcycleonlyprop}
+	For a segment $s\in seg(\mathcal{A})$, $cost_G(s)= \infty$ iff $G_s$ has a cycle with a transition with guard $\lguard$ and $cost_L(s)= \infty$ iff $G_s$ has a cycle with a transition with guard $\gguard$.
+\end{prop}
+
+\begin{prop}\label{partitionPathProp}
+	Every complete path $\rho$ in a DiPA $\mathcal{A}$ can be partitioned into a sequence of subpaths $\rho_i$ such that $\rho_i \in segF(s)$ for some $s\in seg(\mathcal{A})$.
+\end{prop}
+
+\begin{proof}
+	Fix a complete path $\rho = q_0\to\ldots\to q_n$ in $\mathcal{A}$. Let $AT=\{i: \trans(q_i)$ is an assignment transition or $q_i$ is a terminal state$\} = (a_1, \ldots, a_m)$ be the ordered set of the indices of all $m-1$ assignment transitions in $\rho$ as well as the terminal state of $\rho$. Note that because $\rho$ is complete, $a_1 = 0$ (i.e. $\trans(q_0)$ is an assignment transition) and $a_m = n$, since $q_n$ is a terminal state in $\mathcal{A}$.
+
+	Recall that $\rho[i:j]$ is the subpath $q_i\to\ldots \to q_j$ of $\rho$. 
+
+	Then partition $\rho$ into $m-1$ subpaths $\rho_i$, where for all $1\leq i < m$, $\rho_i = \rho[a_i:a_{i+1}]$. Since $a_1 = 0$ and $a_m = n$ and all $a_i$ are ordered, $\rho_i$ is a partition of $\rho$. 
+
+	Now consider some $\rho_i = \rho[a_i:a_{i+1}]$. Then $acyclic(\rho_i)\in seg(q_{a_i}, a_{i+1})$, since the only assignment transition in $\rho_i$ is $\trans(q_{a_i})$ by construction. Thus by definition, $\rho_i \in segF(s)$ for some $s\in seg(\mathcal{A})$, specifically when $s = acyclic(\rho_i)$. 
+\end{proof}
+
+\begin{prop}\label{terminateLeakingCycleAssnTrans}
+	If a DiPA $\mathcal{A}$ terminates and has no leaking cycles, then no assignment transition in $\mathcal{A}$ lies on a cycle in $\mathcal{A}$. 
+\end{prop}
+\begin{proof}
+	Because we suppose $\mathcal{A}$ terminates, there can be no cycle in $\mathcal{A}$ whose transitions all have guard $\texttt{true}$. In other words, every cycle in $\mathcal{A}$ must contain a transition whose guard is either $\lguard$ or $\gguard$. 
+	
+	Then note that no transitions on a cycle can be an assignment transition. To see this, suppose that there exists a cycle $C$ with a assignment transition $\trans(q)$. Because $\mathcal{A}$ terminates, there must exist some $\trans(q')$ in $C$ such that $\guard(q') \in \{\lguard, \gguard\}$. But then $C$ is a leaking cycle, which is a contradiction. 
+\end{proof}
+
+
+\begin{lemma}\label{wellformedFinitesegmentsLemma}
+	If a terminating DiPA $\mathcal{A}$ has no leaking cycles, then there exists a global bound $N\in \NN$ such that every complete path $\rho$ in $\mathcal{A}$ can be partitioned into a sequence of at most $N$ subpaths $\rho_i$ such that for all $i$, $\rho_i \in segF(s_i)$ for some $s_i\in seg(\mathcal{A})$.
+\end{lemma}
+
+\begin{proof}
+	Because $\mathcal{A}$ is a finite automaton, there are a finite number of assignment transitions in $\mathcal{A}$. Let $T$ be the set of assignment transitions in $\mathcal{A}$ and let $N = |T|$, so we can index $T$ as $t_1, \ldots, t_N$.
+	
+	We claim that for every complete path $\rho$ in $\mathcal{A}$, each assignment transition $t_i$ can appear in $\rho$ at most one time. 
+
+	Suppose for the sake of contradiction that there exists some complete path $\rho = q_0\to\ldots\to q_n$ such that the assignment transition $t$ appears in $\rho$ (at least) twice. 
+	Let $\trans(q_i)=\trans(q_j)=t, i\neq j$ be the transitions in $\rho$ where $t$ appears. This  implies that $q_i = q_j$ for $i\neq j$, meaning that $\trans(q_i)$ lies on a cycle. However, because $\mathcal{A}$ has no leaking cycles and terminates, by proposition~\ref{terminateLeakingCycleAssnTrans}, no assignment transition in $\mathcal{A}$ can lie on a cycle. Thus, each assignment transition $t_i$ can appear in any complete path at most one time. 
+
+	Then for any complete path $\rho$ in $\mathcal{A}$, we can partition $\rho$ into subpaths $\rho_i$ such that $\rho_i \in segF(s_i)$ for some $s_i\in seg(\mathcal{A})$ as in proposition~\ref{partitionPathProp}. Because each assignment transition $t_i$ can appear in any complete path at most one time and, in the construction in proposition~\ref{partitionPathProp}, each $\rho_i$ has exactly one assignment transition, there can be at most $N$ subpaths $\rho_i$. 
+\end{proof}
+
+\begin{defn}
+	For a DiPA $\mathcal{A} = (Q, \Sigma, \Gamma, q_0, X, P, \delta)$ and for any two segments $s\neq s'\in seg(\mathcal{A})$, $s'$ \textbf{follows} $s$ if the last state of $s$ is the first start of $s'$. More formally, define the relation $\hookrightarrow$ such that $s \hookrightarrow s'$ if $s \in seg(q, q')$ and $s'\in seg(q', q^*)$ for $q, q', q^* \in Q$. 
+\end{defn}
+
+
+We can formulate this as a constraint satisfication problem.
+
+For each segment $s_i$, we want to assign a strategy $S_i$ from $\{S^N, S^L, S^G\}$ such that the following constraints hold:
+\begin{enumerate}
+	\item Constraints for valid couplings\begin{enumerate}
+		\item For all $s_i$, if $\trans(s_i)$ outputs $\texttt{insample}$, then $S_i = S^N$.
+		\item For all $s_i, s_j$ such that $s_i\hookrightarrow s_j$, \begin{enumerate}
+			\item If $\guard(s_j)=\lguard$ and $S_i = S^G$, then $S_j = S^G$. 
+			\item If $\guard(s_j) = \gguard$ and $S_i = S^L$, then $S_j = S^L$.
+			\item If $\guard(s_j) = \lguard$ and $S_i = S^N$, then $S_j\neq S^L$.
+			\item If $\guard(s_j) = \gguard$ and $S_i = S^N$, then $S_j\neq S^G$.
+		\end{enumerate}
+		\item For all segments $s_i$, there is no transition $\trans(a_k)$ in $s_i$ that is \textit{faulty}, i.e.:\begin{enumerate}
+			\item If $s_i$ contains a $\lguard$ transition that outputs $\texttt{insample}$, then $S_i \neq S^G$.
+			\item If $s_i$ contains a $\gguard$ transition that outputs $\texttt{insample}$, then $S_i \neq S^L$.
+			\item If $s_i$ contains a $\gguard$ and $\lguard$ transition that both output $\texttt{insample}$, then $S_i = S^N$\footnote{This follows directly from (i) and (ii)}.
+		\end{enumerate}
+	\end{enumerate}
+	\item Constraints for finite cost\begin{enumerate}
+		\item For all segments $s_i$, no cycle in $s_i$ has a transition that outputs $\texttt{insample}$ or $\texttt{insample}'$. 
+		\item If $s_i$ has an $\texttt{L}$-cycle, then $S_i = S^L$.
+		\item If $s_i$ has a $\texttt{G}$-cycle, then $S_i = S^G$. 
+	\end{enumerate}
+\end{enumerate}
+
+If such an assignment over all $s_i$ exists, then we claim that we have created a coupling proof that (a) is valid and (b) demonstrates that $\mathcal{A}$ is $\varepsilon$-DP for some finite $\varepsilon$. Validity follows from sections \ref{subsectionliftingdetails} and \ref{subsectionfirstguardnottrue}. Finiteness follows from prop \ref{infinitecostcycleonlyprop}\footnote{This is outdated and doesn't include discussion of when $\texttt{insample}$ is output, but the general claim still holds}.
+
+\begin{thm}
+	If $\mathcal{A}$ is well-formed, there exists such an assignment over $s_i$.
+\end{thm}
+
+{\color{red} This proof is incomplete because I gave up on doing like a 20 case analysis, but the general idea is that if a contradiction between two constraints is forced, then there must exist some ``bad'' graph structure. In general, take a glance at section 1.4 which has some notes on what each contradiction would correspond to. 
+(For example, if $S_i$ is forced to be $S^G$ because it has a $\texttt{G}$-cycle, but $S_{i+1}$ is forced to take $S^L$ because it has a $\texttt{L}$-cycle AND this violates constraint (1bi) then a leaking pair is formed - the path between the two cycles must be a $\texttt{AL}$-path to violate constraint (1bi))
+
+In general, the constraints that include $S^N$ are related to privacy violating paths and the constraints between $S^L$ and $S^G$ relate to leaking pairs. Constraint (2a) is directly related to disclosing cycles, and the lack of leaking cycles is assumed implicitly because we consider a bounded number of segments for each path.}
+
+\begin{proof}
+	Since $\mathcal{A}$ has no leaking cycles, it is meaningful to consider a finite number of segments $s_i$. 
+
+	Since $\mathcal{A}$ has no disclosing cycles, constraint (2a) is always satisfied.
+
+	Suppose that there is no satisfying assignment. 
+
+	Fix some candidate assignment of all $S_i$. Then there must be a constraint of $S_i$ that is violated. We claim that we can ``fix'' any candidate assignment by iteratively decreasing the number of constraints that are violated. 
+	
+	\textbf{Constraint (1a) is violated}
+
+	Suppose that condition (1a) is violated for some segment $s_j$, so $\trans(s_j)$ outputs $\texttt{insample}$ but $S_j \neq S^N$. Naively, to fix this constraint, we must change $S_j$ to $S^N$. This may, however, lead to further constraints being violated. 
+
+	Consider some segment $s_i\hookrightarrow s_j$. If $S_i = S^G$ and $\guard(s_j) = \lguard$, then constraint (1bi) is now violated, since $S_j \neq S^G$. Changing $S_i = S^N$ or $S_i = S^L$ means that (1bi) is no longer violated, but again brings up new possible issues. First, if $s_i$ has a $\texttt{G}$-cycle, then constraint (2c) is violated. 
+	However, if $s_i$ has a $\texttt{G}$-cycle, then there is an $\texttt{AL}-$path from the cycle to $\trans(s_j)$, which has guard $\lguard$ and outputs $\texttt{insample}$, which creates a privacy violating path (by the third condition). Thus, changing $S_i$ cannot violate constraint (2c).
+
+	If $\guard(s_i) = \lguard$ and there exists $s_h\hookrightarrow s_i$ where $S_h = S^G$, we must also change the assigned strategy for $S_h$. As before, if this is impossible by constraint (2c), then there must exist a privacy violating path in $\mathcal{A}$. This process can be repeated inductively until changing the assigned strategy for a given segment no longer violates any further constraints, or we demonstrate the existence of a privacy violating path. 
+	The same reasoning holds symmetrically for if $\guard(s_j) = \gguard$ and $S_i = S^L$; wherein changing $S_i = S^N$ would create a violation of constraint (1bii).
+
+	Now consider some segment $s_j \hookrightarrow s_k$. If $\guard(s_k) = \lguard$ and $S_k = S^L$, then changing $S_j = S^N$ would violate constraint (1ciii). By a similar process as before, we can change $s_k$ and all subsequent relevant segments (otherwise, a privacy violating path would be created).
+
+	Thus, if a candidate assignment has a segment assignment that violates constraint (1a), then we can find a similar candidate assignment such that that segment's assignment does not violate constraint (1a) and, in particular, the total number of segments with violated constraints decreases. 
+
+
+	{\color{red} Note: these are done out of order because the earlier ones are easier to reason about in isolation}
+
+	\textbf{Constraint (1ci) is violated}
+
+	Suppose that constraint (1a) is not violated, since otherwise we can fix (1a) first. 
+
+	Suppose that condition (1ci) is violated for some $s_j$; i.e. $s_j$ contains an $\lguard$ transition that outputs $\texttt{insample}$ but $S_j = S^G$. Note that $s_j$ cannot contain a \gcycle, since a privacy violating path would be created. Since (1a) is not violated, $\trans(s_j)$ does not output $\texttt{insample}$. 
+	Note that $s_j$ cannot contain both a $\gguard$ transition that outputs $\texttt{insample}$ and an \lcycle, since a privacy violating path would be created for similar reasons.
+	
+	If $s_j$ contains a $\gguard$ transition that outputs $\texttt{insample}$, then choose $S_j = S^N$. This could possibly lead to violations of constraints (1biii) or (1biv). If constraint (1biii) is violated for some segment $s_j \hookrightarrow s_k$, then, if $s_k$ does not have either an \lcycle or a \gcycle, we can set $S_k = S^N$. 
+	Otherwise, if $s_k$ has a \gcycle, then set $S_k = S^G$. 
+	Note that $s_k$ cannot have an \lcycle, since otherwise a privacy violating path would be created (similarly, $s_k$ cannot have both a $\lguard$ transition that outputs $\texttt{insample}$ and a \gcycle). Then we can ``propagate'' this constraint onwards. The same reasoning holds for constraint (1biv). 
+
+	Otherwise, if $s_j$ ...
+
+
+	\textbf{Constraint (1cii) is violated}
+
+	This can be fixed symmetrically to (1ci)
+
+	\textbf{Constraint (2b) is violated}
+
+	\textbf{Constraint (2c) is violated}
+	
+	This can be fixed symmetrically to (2c)
+
+	\textbf{Constraint (1bi) is violated}
+	
+	Suppose that condition (1a) is violated for some segment $s_j$, so there exists some $s_i\hookrightarrow s_j$ such that $\guard(s_j) = \lguard$, $S_i = S^G$, and $S_j \neq S^G$. 
+	 
+	- either we can change $S_i$ and ``propagate'' all changes back (and then we are done), or there is an $\texttt{AG}$-path from a $\texttt{G}$-cycle to $s_j$. 
+	 
+	 - if there is such a path, then we must change $S_j = S^G$. This can possibly lead to (1a) being violated. However, this means that a privacy violating path exists from the $\texttt{G}$-cycle to the assignment transition of $s_j$. This can also lead to constraint (1ci) being violated; this would mean, however, that a similar privacy violating path exists from the $\texttt{G}$-cycle to the $\lguard$ transition in $s_j$ that outputs $\texttt{insample}$.
+	 Additionally, this can lead to constraint (2b) being violated; this would mean that there is a leaking pair from the $\texttt{G}$-cycle to the \lcycle in $s_j$. 
+	 
+	 Finally, this can also lead to (1bi) being violated for $s_j \hookrightarrow s_k$. To fix this, have $S_k = S^G$. Then by the same reasoning as before, either no more constraints can be violated, or we can ``propagate'' constraint (1bi) until there are no more violations.
+
+	\textbf{Constraint (1bii) is violated}
+
+	This can be fixed symmetrically to constraint (1bi)
+
+	\textbf{Constraint (1biii) is violated}
+
+	We assume that none of the previously analyzed constraints are violated (before we start changing assignments).
+
+	Suppose that constraint (1biii) is violated for some segment $s_j$, so there exists some $s_i\hookrightarrow s_j$ such that $\guard(s_j) = \lguard$, $S_i = S^N$, and $S_j = S^L$. Note that $s_j$ cannot contain both an \lcycle and a \gcycle. If $s_j$ has an \lcycle, then we change $S_i \neq S^N$. This may violate constraint (1ciii). However, if it does, then there is a privacy violating path from the $\gguard$ transition in $s_i$ that outputs $\texttt{insample}$ to the \lcycle in $s_j$. 
+	
+	Note that $s_i$ cannot have a \gcycle, since otherwise a leaking pair would be created from the \gcycle to the \lcycle in $s_j$. Thus, changing $S_i$ to $S^L$ will not violate constraint (2c). It could, however, violate constraints (1a), (1bi), (1biii), or (1cii). 
+	If it violates constraint (1a), then a privacy violating path is created; if constraint (1bi) is violated, then, as before, either we can change the previous segment assignment or a leaking pair is created; if constraint (1biii) is violated, then, similarly, a privacy violating path is created; and finally, if (1bii) is violated, then a privacy violating path is created. 
+	In all of these cases, we are actually ``propagating'' changes until no more constraints are violated, which must happen or otherwise $\mathcal{A}$ is not well-formed.
+
+	Otherwise, if $s_j$ does not have an \lcycle, we can still consider changing $s_i$ to either $S^L$ or $S^G$. 
+	
+	Finally, we can change $S_j$ to either $S^G$ or $S^N$. If $s_i$ contains a $\lguard$ transition that outputs $\texttt{insample}$, then choose $S_i$ to be $S^N$. Note that $s_i$ cannot contain a \gcycle, since otherwise a privacy violating path would be created between that \gcycle and the $\lguard$ output transition. Then possibly constraints (1biii) and (1biv) are violated. 
+	
+	
+	First, consider the case where we change $S_i$ to $S^G$. Then possibly constraints (1bi) or (1ci) are violated. If (1ci) is violated, then 
+	
+	Otherwise, if we change $S_i$ to $S^N$, possibly constraints (1biii), (1biv), or (2c) are violated. 
+	
+
+	\textbf{Constraint (1biv) is violated}
+
+	This can be fixed symmetrically to (1biii)
+
+	A similar argument can be made for all other constraints [details tbd].
+\end{proof}
+
+\subsection{Lifting construction details}\label{subsectionliftingdetails}
+
+Because of \hl{output distinction} and \hl{determinism}, $\mathcal{A}(X)$ takes the transition $\trans(a_i)$ if and only if $\mathcal{A}(X)_i = (\sigma_k)_i$ and similarly, $\mathcal{A}(X')$ takes the transition $\trans(a_i)$ if and only if $\mathcal{A}(X')_i = (\sigma_k)_i$.
+
+{\color{red} This section is also not complete, but you should get the idea pretty quickly}
+
+\subsubsection{$S^L$}
+
+
+\textbf{Case: $\trans(a_i)$ outputs $\sigma \in \Gamma$}
+
+Now if $\guard(a_i) = \texttt{true}$, then the outputs of $\mathcal{A}(X)$ and $\mathcal{A}(X')$ must be equal, so $\mathcal{A}(X)[\rho_k]_i = (\sigma_k)_i \implies \mathcal{A}(X')[\rho_k]_i = (\sigma_k)_i$ trivially, so we can construct the lifting $\mathcal{A}(X)[\rho_k]_i\{(a, b): a = (\sigma_k)_i \implies b = (\sigma_k)_i\}^{\#(0, 0)}\mathcal{A}(X')[\rho_k]_i$
+
+If $i > 0$ and $\guard(a_i) = \lguard$, then \begin{align*}
+	\mathcal{A}(X)[\rho_k]_i = (\sigma_k)_i&\implies \mathcal{A}(X)\text{ takes }\trans(a_i)\\
+	&\implies \texttt{in}_i\langle 1 \rangle + z_i\langle 1 \rangle < x\langle 1 \rangle\\
+	&\implies \texttt{in}_i\langle 1\rangle + z_i\langle 2 \rangle < x\langle 2 \rangle-1\\
+	&\implies\texttt{in}_i\langle 1 \rangle +1 + z_i\langle 2 \rangle < x\langle 2 \rangle\\
+	&\implies\texttt{in}_i\langle 2 \rangle + z_i\langle 2 \rangle < x\langle 2 \rangle\\
+	&\implies \mathcal{A}(X')\text{ takes }\trans(a_i)\\
+	&\implies \mathcal{A}(X')[\rho_k]_i = (\sigma_k)_i
+\end{align*}
+so we can construct the lifting $\mathcal{A}(X)[\rho_k]_i\{(a, b): a = (\sigma_k)_i \implies b = (\sigma_k)_i\}^{\#(0, 0)}\mathcal{A}(X')[\rho_k]_i$.
+
+Similarly, if $i>0$ and $\guard(a_i) = \gguard$, then \begin{align*}
+	\mathcal{A}(X)[\rho_k]_i = (\sigma_k)_i&\implies \texttt{in}_i\langle 1 \rangle + z_i\langle 1 \rangle \geq x\langle 1 \rangle\\
+	&\implies \texttt{in}_i\langle 1\rangle + z_i\langle 2 \rangle -2 \geq x\langle 2 \rangle-1\\
+	&\implies\texttt{in}_i\langle 1 \rangle -1 + z_i\langle 2 \rangle \geq x\langle 2 \rangle\\
+	&\implies\texttt{in}_i\langle 2 \rangle + z_i\langle 2 \rangle \geq x\langle 2 \rangle\\
+	&\implies \mathcal{A}(X')[\rho_k]_i = (\sigma_k)_i
+\end{align*}
+so we can construct the lifting $\mathcal{A}(X)[\rho_k]_i\{(a, b): a = (\sigma_k)_i \implies b = (\sigma_k)_i\}^{\#(2\varepsilon_i, 0)}\mathcal{A}(X')[\rho_k]_i$.
+
+
+\textbf{Case: $\trans(a_i)$ outputs $\texttt{insample}$}
+
+If $\guard(a_i) = \texttt{true}$, the outputs of $\mathcal{A}(X)$ and $\mathcal{A}(X')$ are equal by the lifting of $\texttt{insample}\brangle{1}$ and $\texttt{insample}\brangle{2}$. Thus, we can construct the lifting  $\mathcal{A}(X)[\rho_k]_i\{(a, b): a = (\sigma_k)_i \implies b = (\sigma_k)_i\}^{\#(\varepsilon_i, 0)}\mathcal{A}(X')[\rho_k]_i$.
+
+If $i > 0$ and $\guard(a_i) = \lguard$, then \begin{align*}
+	\mathcal{A}(X)[\rho_k]_i = (\sigma_k)_i&\implies \texttt{insample}\brangle{1} < x\brangle{1}\\
+	&\implies \texttt{insample}\brangle{2} < x\brangle{2}-1\\
+	&\implies \texttt{insample}\brangle{2} < x\brangle{2}\\
+	&\implies \mathcal{A}(X')[\rho_k]_i = (\sigma_k)_i
+\end{align*}
+so we can construct the lifting $\mathcal{A}(X)[\rho_k]_i\{(a, b): a = (\sigma_k)_i \implies b = (\sigma_k)_i\}^{\#(\varepsilon_i, 0)}\mathcal{A}(X')[\rho_k]_i$.
+
+Similarly, if $i>0$ and $\guard(a_i) = \gguard$, then \begin{align*}
+	\mathcal{A}(X)[\rho_k]_i = (\sigma_k)_i&\implies \texttt{in}_i\brangle{1} + z_i\brangle{1} \geq x\brangle{1}\\
+	&\implies \texttt{in}_i\langle 1\rangle + z_i\langle 2 \rangle  \geq x\langle 2 \rangle-1\\
+	&\implies \texttt{in}_i\langle 1\rangle + 1 + z_i\langle 2 \rangle  \geq x\langle 2 \rangle
+\end{align*}
+We cannot derive the desired implication in this case, so we can only construct the lifting $\mathcal{A}(X)[\rho_k]_i\{(a, b): a = (\sigma_k)_i \implies b = (\sigma_k)_i\}^{\#(\infty, 0)}\mathcal{A}(X')[\rho_k]_i$. We say $a_i$ is \textit{faulty} (in the context of $S^L$).
+
+
+\textbf{Case: $\trans(a_i)$ outputs $\texttt{insample}'$}
+
+If $\guard(a_i) = \texttt{true}$, the outputs of $\mathcal{A}(X)$ and $\mathcal{A}(X')$ are equal by the lifting of $\texttt{insample}'\brangle{1}$ and $\texttt{insample}'\brangle{2}$. Thus, we can construct the lifting  $\mathcal{A}(X)[\rho_k]_i\{(a, b): a = (\sigma_k)_i \implies b = (\sigma_k)_i\}^{\#(\varepsilon_i', 0)}\mathcal{A}(X')[\rho_k]_i$.
+
+If $i > 0$ and $\guard(a_i) = \lguard$, then \begin{align*}
+	\mathcal{A}(X)[\rho_k]_i = (\sigma_k)_i&\implies \texttt{insample}\brangle{1} < x\brangle{1}\\
+	&\implies \texttt{insample}\brangle{2} < x\brangle{2}-1\\
+	&\implies \texttt{insample}\brangle{2} < x\brangle{2}\\
+	&\implies \mathcal{A}(X')[\rho_k]_i = (\sigma_k)_i
+\end{align*}
+
+Further, since we have the lifting $\texttt{insample}'\brangle{1} (=)^{\#(\varepsilon'_i, 0)} \texttt{insample}'\brangle{2}$, we can construct the lifting $\mathcal{A}(X)[\rho_k]_i\{(a, b): a = (\sigma_k)_i \implies b = (\sigma_k)_i\}^{\#(\varepsilon_i', 0)}\mathcal{A}(X')[\rho_k]_i$.
+
+Similarly, if $i>0$ and $\guard(a_i) = \gguard$, then \begin{align*}
+	\mathcal{A}(X)[\rho_k]_i = (\sigma_k)_i&\implies \texttt{in}_i\langle 1 \rangle + z_i\langle 1 \rangle \geq x\langle 1 \rangle\\
+	&\implies \texttt{in}_i\langle 1\rangle + z_i\langle 2 \rangle -2 \geq x\langle 2 \rangle-1\\
+	&\implies\texttt{in}_i\langle 1 \rangle -1 + z_i\langle 2 \rangle \geq x\langle 2 \rangle\\
+	&\implies\texttt{in}_i\langle 2 \rangle + z_i\langle 2 \rangle \geq x\langle 2 \rangle\\
+	&\implies \mathcal{A}(X')[\rho_k]_i = (\sigma_k)_i
+\end{align*}
+so we can similarly construct the lifting $\mathcal{A}(X)[\rho_k]_i\{(a, b): a = (\sigma_k)_i \implies b = (\sigma_k)_i\}^{\#(2\varepsilon_i+\varepsilon'_i, 0)}\mathcal{A}(X')[\rho_k]_i$.
+
+\subsubsection{$S^G$}
+
+\textbf{Case: $\trans(a_i)$ outputs $\sigma \in \Gamma$}
+
+If $\guard(a_i) = \texttt{true}$, then the outputs of $\mathcal{A}(X)$ and $\mathcal{A}(X')$ must be equal, so $\mathcal{A}(X)[\rho_k]_i = (\sigma_k)_i \implies \mathcal{A}(X')[\rho_k]_i = (\sigma_k)_i$ trivially, so we can construct the lifting $\mathcal{A}(X)[\rho_k]_i\{(a, b): a = (\sigma_k)_i \implies b = (\sigma_k)_i\}^{\#(0, 0)}\mathcal{A}(X')[\rho_k]_i$
+
+If $\guard(a_i) = \gguard$, then \begin{align*}
+	\mathcal{A}(X)[\rho_k] = (\sigma_k)_i&\implies \texttt{in}_i\langle 1 \rangle + z_i\langle 1 \rangle \geq x\langle 1 \rangle\\
+	&\implies \texttt{in}_i\langle 1\rangle + z_i\langle 2 \rangle \geq x\langle 2 \rangle+1\\
+	&\implies\texttt{in}_i\langle 1 \rangle -1 + z_i\langle 2 \rangle \geq x\langle 2 \rangle\\
+	&\implies\texttt{in}_i\langle 2 \rangle + z_i\langle 2 \rangle \geq x\langle 2 \rangle\\
+	&\implies \mathcal{A}(X')[\rho_k] = (\sigma_k)_i
+\end{align*}
+so we can construct the lifting $\mathcal{A}(X)[\rho_k]_i\{(a, b): a = (\sigma_k)_i \implies b = (\sigma_k)_i\}^{\#(0, 0)}\mathcal{A}(X')[\rho_k]_i$.
+
+Similarly, if $i>0$ and $\guard(a_i) = \lguard$, then \begin{align*}
+	\mathcal{A}(X)[\rho_k] = (\sigma_k)_i&\implies \texttt{in}_i\langle 1 \rangle + z_i\langle 1 \rangle < x\langle 1 \rangle\\
+	&\implies \texttt{in}_i\langle 1\rangle + z_i\langle 2 \rangle +2 < x\langle 2 \rangle+1\\
+	&\implies\texttt{in}_i\langle 1 \rangle +1 + z_i\langle 2 \rangle < x\langle 2 \rangle\\
+	&\implies\texttt{in}_i\langle 2 \rangle + z_i\langle 2 \rangle < x\langle 2 \rangle\\
+	&\implies \mathcal{A}(X')[\rho_k] = (\sigma_k)_i
+\end{align*}
+so we can construct the lifting $\mathcal{A}(X)[\rho_k]_i\{(a, b): a = (\sigma_k)_i \implies b = (\sigma_k)_i\}^{\#(2\varepsilon_i, 0)}\mathcal{A}(X')[\rho_k]_i$.
+
+\textbf{Case: $\trans(a_i)$ outputs $\texttt{insample}$}
+
+If $\guard(a_i) = \texttt{true}$, the outputs of $\mathcal{A}(X)$ and $\mathcal{A}(X')$ are equal by the lifting of $\texttt{insample}\brangle{1}$ and $\texttt{insample}\brangle{2}$. Thus, we can construct the lifting  $\mathcal{A}(X)[\rho_k]_i\{(a, b): a = (\sigma_k)_i \implies b = (\sigma_k)_i\}^{\#(\varepsilon_i, 0)}\mathcal{A}(X')[\rho_k]_i$.
+
+If $i > 0$ and $\guard(a_i) = \gguard$, then \begin{align*}
+	\mathcal{A}(X)[\rho_k]_i = (\sigma_k)_i&\implies \texttt{insample}\brangle{1} \geq x\brangle{1}\\
+	&\implies \texttt{insample}\brangle{2} \geq x\brangle{2}+1\\
+	&\implies \texttt{insample}\brangle{2} \geq x\brangle{2} +1\\
+	&\implies \mathcal{A}(X')[\rho_k]_i = (\sigma_k)_i
+\end{align*}
+so we can construct the lifting $\mathcal{A}(X)[\rho_k]_i\{(a, b): a = (\sigma_k)_i \implies b = (\sigma_k)_i\}^{\#(\varepsilon_i, 0)}\mathcal{A}(X')[\rho_k]_i$.
+
+Similarly, if $i>0$ and $\guard(a_i) = \lguard$, then \begin{align*}
+	\mathcal{A}(X)[\rho_k]_i = (\sigma_k)_i&\implies \texttt{in}_i\brangle{1} + z_i\brangle{1} < x\brangle{1}\\
+	&\implies \texttt{in}_i\brangle{1} + z_i\brangle{2}  < x\brangle{2}+1\\
+	&\implies \texttt{in}_i\brangle{1} - 1 + z_i\brangle{2}  < x\brangle{2}
+\end{align*}
+We cannot derive the desired implication in this case, so we can only construct the lifting $\mathcal{A}(X)[\rho_k]_i\{(a, b): a = (\sigma_k)_i \implies b = (\sigma_k)_i\}^{\#(\infty, 0)}\mathcal{A}(X')[\rho_k]_i$. We say $a_i$ is \textit{faulty} (in the context of $S^L$).
+
+
+\textbf{Case: $\trans(a_i)$ outputs $\texttt{insample}'$}
+
+If $\guard(a_i) = \texttt{true}$, the outputs of $\mathcal{A}(X)$ and $\mathcal{A}(X')$ are equal by the lifting of $\texttt{insample}'\brangle{1}$ and $\texttt{insample}'\brangle{2}$. Thus, we can construct the lifting  $\mathcal{A}(X)[\rho_k]_i\{(a, b): a = (\sigma_k)_i \implies b = (\sigma_k)_i\}^{\#(\varepsilon_i', 0)}\mathcal{A}(X')[\rho_k]_i$.
+
+If $i > 0$ and $\guard(a_i) = \gguard$, then \begin{align*}
+	\mathcal{A}(X)[\rho_k]_i = (\sigma_k)_i&\implies \texttt{insample}\brangle{1} \geq x\brangle{1}\\
+	&\implies \texttt{insample}\brangle{2} \geq x\brangle{2}+1\\
+	&\implies \texttt{insample}\brangle{2} \geq x\brangle{2}\\
+	&\implies \mathcal{A}(X')[\rho_k]_i = (\sigma_k)_i
+\end{align*}
+
+Further, since we have the lifting $\texttt{insample}'\brangle{1} (=)^{\#(\varepsilon'_i, 0)} \texttt{insample}'\brangle{2}$, we can construct the lifting $\mathcal{A}(X)[\rho_k]_i\{(a, b): a = (\sigma_k)_i \implies b = (\sigma_k)_i\}^{\#(\varepsilon_i', 0)}\mathcal{A}(X')[\rho_k]_i$.
+
+Similarly, if $i>0$ and $\guard(a_i) = \lguard$, then \begin{align*}
+	\mathcal{A}(X)[\rho_k]_i = (\sigma_k)_i&\implies \texttt{in}_i\brangle{1} + z_i\brangle{1} < x\brangle{1}\\
+	&\implies \texttt{in}_i\brangle{1} + z_i\langle 2 \rangle +2 < x\langle 2 \rangle+1\\
+	&\implies\texttt{in}_i\brangle{1} +1 + z_i\langle 2 \rangle < x\langle 2 \rangle\\
+	&\implies\texttt{in}_i\langle 2 \rangle + z_i\langle 2 \rangle < x\langle 2 \rangle\\
+	&\implies \mathcal{A}(X')[\rho_k]_i = (\sigma_k)_i
+\end{align*}
+so we can similarly construct the lifting $\mathcal{A}(X)[\rho_k]_i\{(a, b): a = (\sigma_k)_i \implies b = (\sigma_k)_i\}^{\#(2\varepsilon_i+\varepsilon'_i, 0)}\mathcal{A}(X')[\rho_k]_i$.
+
+\subsubsection{$S^N$}
+
+
+\textbf{Case: $\trans(a_i)$ outputs $\sigma \in \Gamma$}
+
+\textbf{Case: $\trans(a_i)$ outputs $\texttt{insample}$}
+
+\textbf{Case: $\trans(a_i)$ outputs $\texttt{insample}'$}
+
+\subsection{Dealing with when the first/assignment guard is not \texorpdfstring{$\texttt{true}$}{true} }\label{subsectionfirstguardnottrue}
+
+We are given a coupling from the previous assignment transition between $x \brangle{1}$ and $x \brangle{2}$ and we would like to have the freedom to couple $x'\brangle{1}$ and $x'\brangle{2}$ (the value of $x$ after the current assignment transition) using either coupling scheme. However, the guard of the assignment transition itself must be satisfied. 
+We show that in 6 out of the 8 cases, it is possible to couple $x'\brangle{1}$ and $x'\brangle{2}$ how we'd like while still satisfying the assignment transition guard. In cases 3 and 6, such a coupling is not possible.
+
+3 possible choices to analyze (18 cases total):
+\begin{itemize}
+	\item Either the assignment guard is $\lguard$ or $\gguard$
+	\item The previous coupling either had $x\brangle{1} + 1 = x \brangle{2}$ ($S^L$), $x\brangle{1} = x \brangle{2}+1$ ($S^G$), or $x\brangle{1} = x\brangle{2}$ ($S^N$).
+	\item The new coupling we want to construct either has $x'\brangle{1} + 1 = x' \brangle{2}$, $x'\brangle{1} = x' \brangle{2}+1$, or $x'\brangle{1} = x'\brangle{2}$.
+\end{itemize}
+
+Recall that $\texttt{insample} = \texttt{in} + z$ for some Laplace noise $z$ and that $x' = \texttt{insample}$.
+
+\textbf{Case 1: $\lguard$, $x\langle 1 \rangle + 1 = x \langle 2\rangle$, $x'\langle 1 \rangle + 1 = x' \langle 2\rangle$ ($S^L\to S^L$)}
+
+We want that $x\langle 1 \rangle > \texttt{in}\brangle{1} + z\brangle{1}\implies x \brangle{2} > \texttt{in}\brangle{2} + z\brangle{2}$
+
+We must couple $z\brangle{1} =\texttt{in}\brangle{2}-\texttt{in}\brangle{1} +z\brangle{2}-1$.
+Then \begin{align*}
+	x\langle 1 \rangle > \texttt{in}\brangle{1} + z\brangle{1}&\implies x\brangle{2}-1 > \texttt{in}\brangle{1} + \texttt{in}\brangle{2}-\texttt{in}\brangle{1} +z\brangle{2}-1\\
+	&\implies x\brangle{2} > \texttt{in}\brangle{2} + z\brangle{2}
+\end{align*}
+
+\textbf{Case 2: $\lguard$, $x\langle 1 \rangle + 1 = x \langle 2\rangle$, $x'\langle 1 \rangle = x' \langle 2\rangle+1$($S^L\to S^G$)}
+
+We want that $x\langle 1 \rangle > \texttt{in}\langle 1\rangle + z\brangle{1}\implies x \brangle{2} > \texttt{in}\brangle{2} + z\brangle{2}$
+
+We must couple $z\brangle{1} =\texttt{in}\brangle{2}-\texttt{in}\brangle{1} +z\brangle{2}+1$.
+Then \begin{align*}
+	x\langle 1 \rangle > \texttt{in}\langle 1\rangle + z\brangle{1}&\implies x\brangle{2}-1 > \texttt{in}\brangle{1} + \texttt{in}\brangle{2}-\texttt{in}\brangle{1} +z\brangle{2}+1\\
+	&\implies x\brangle{2} > \texttt{in}\brangle{2} + z\brangle{2}
+\end{align*}
+
+\textbf{Case 3: $\lguard$, $x\langle 1 \rangle + 1 = x \langle 2\rangle$, $x'\langle 1 \rangle = x' \langle 2\rangle$ ($S^L\to S^N$)}
+
+We want that $x\langle 1 \rangle > \texttt{in}\langle 1\rangle + z\brangle{1}\implies x \brangle{2} > \texttt{in}\brangle{2} + z\brangle{2}$
+
+We must couple $z\brangle{1} =\texttt{in}\brangle{2}-\texttt{in}\brangle{1} +z\brangle{2}$.
+Then \begin{align*}
+	x\langle 1 \rangle > \texttt{in}\langle 1\rangle + z\brangle{1}&\implies x\brangle{2} > \texttt{in}\brangle{1} + \texttt{in}\brangle{2}-\texttt{in}\brangle{1} +z\brangle{2}+1\\
+	&\implies x\brangle{2} > \texttt{in}\brangle{2} + z\brangle{2}
+\end{align*}
+
+\textbf{Case 4: $\lguard$, $x\brangle{1}  = x \brangle{2}+1$, $x'\langle 1 \rangle +1 = x' \langle 2\rangle$ ($S^G\to S^L$)}
+
+We want that $x\langle 1 \rangle > \texttt{in}\langle 1\rangle + z\brangle{1}\implies x \brangle{2} > \texttt{in}\brangle{2} + z\brangle{2}$
+
+We must couple $z\brangle{1} =\texttt{in}\brangle{2}-\texttt{in}\brangle{1} +z\brangle{2}-1$.
+Then \begin{align*}
+	x\langle 1 \rangle > \texttt{in}\langle 1\rangle + z\brangle{1}&\implies x\brangle{2}+1 > \texttt{in}\brangle{1} + \texttt{in}\brangle{2}-\texttt{in}\brangle{1} +z\brangle{2}-1\\
+	&\implies x\brangle{2} > \texttt{in}\brangle{2} + z\brangle{2}-2
+\end{align*}
+which is bad -- the scenario where both are ``forced'' is a leaking pair.
+
+
+\textbf{Case 5: $\lguard$, $x\brangle{1}  = x \brangle{2}+1$, $x'\langle 1 \rangle  = x' \langle 2\rangle+1$ ($S^G\to S^G$)}
+
+We want that $x\langle 1 \rangle > \texttt{in}\langle 1\rangle + z\brangle{1}\implies x \brangle{2} > \texttt{in}\brangle{2} + z\brangle{2}$
+
+We must couple $z\brangle{1} =\texttt{in}\brangle{2}-\texttt{in}\brangle{1} +z\brangle{2}+1$.
+Then \begin{align*}
+	x\langle 1 \rangle > \texttt{in}\langle 1\rangle + z\brangle{1}&\implies x\brangle{2}+1 > \texttt{in}\brangle{1} + \texttt{in}\brangle{2}-\texttt{in}\brangle{1} +z\brangle{2}+1\\
+	&\implies x\brangle{2} > \texttt{in}\brangle{2} + z\brangle{2}
+\end{align*}
+
+\textbf{Case 6: $\lguard$, $x\brangle{1}  = x \brangle{2}+1$, $x'\langle 1 \rangle  = x' \langle 2\rangle$ ($S^G\to S^N$)}
+
+We want that $x\langle 1 \rangle > \texttt{in}\langle 1\rangle + z\brangle{1}\implies x \brangle{2} > \texttt{in}\brangle{2} + z\brangle{2}$
+
+We must couple $z\brangle{1} =\texttt{in}\brangle{2}-\texttt{in}\brangle{1} +z\brangle{2}$.
+Then \begin{align*}
+	x\langle 1 \rangle > \texttt{in}\langle 1\rangle + z\brangle{1}&\implies x\brangle{2}+1 > \texttt{in}\brangle{1} + \texttt{in}\brangle{2}-\texttt{in}\brangle{1} +z\brangle{2}\\
+	&\implies x\brangle{2} +1 > \texttt{in}\brangle{2} + z\brangle{2}
+\end{align*}
+which is bad - this corresponds to a privacy violating path.
+
+
+\textbf{Case 7: $\lguard$, $x\brangle{1}  = x \brangle{2}$, $x'\langle 1 \rangle +1 = x' \langle 2\rangle$ ($S^N\to S^L$)}
+
+We want that $x\langle 1 \rangle > \texttt{in}\langle 1\rangle + z\brangle{1}\implies x \brangle{2} > \texttt{in}\brangle{2} + z\brangle{2}$
+
+We must couple $z\brangle{1} =\texttt{in}\brangle{2}-\texttt{in}\brangle{1} +z\brangle{2}-1$.
+Then \begin{align*}
+	x\langle 1 \rangle > \texttt{in}\langle 1\rangle + z\brangle{1}&\implies x\brangle{2} > \texttt{in}\brangle{1} + \texttt{in}\brangle{2}-\texttt{in}\brangle{1} +z\brangle{2}-1\\
+	&\implies x\brangle{2} > \texttt{in}\brangle{2} + z\brangle{2}-1
+\end{align*}
+which is bad - this again corresponds to a privacy violating path.
+
+
+\textbf{Case 8: $\lguard$, $x\brangle{1}  = x \brangle{2}$, $x'\langle 1 \rangle  = x' \langle 2\rangle+1$ ($S^N\to S^G$)}
+
+We want that $x\langle 1 \rangle > \texttt{in}\langle 1\rangle + z\brangle{1}\implies x \brangle{2} > \texttt{in}\brangle{2} + z\brangle{2}$
+
+We must couple $z\brangle{1} =\texttt{in}\brangle{2}-\texttt{in}\brangle{1} +z\brangle{2}+1$.
+Then \begin{align*}
+	x\langle 1 \rangle > \texttt{in}\langle 1\rangle + z\brangle{1}&\implies x\brangle{2} > \texttt{in}\brangle{1} + \texttt{in}\brangle{2}-\texttt{in}\brangle{1} +z\brangle{2}+1\\
+	&\implies x\brangle{2} > \texttt{in}\brangle{2} + z\brangle{2}
+\end{align*}
+
+\textbf{Case 9: $\lguard$, $x\brangle{1}  = x \brangle{2}$, $x'\langle 1 \rangle  = x' \langle 2\rangle$ ($S^N\to S^N$)}
+
+We want that $x\langle 1 \rangle > \texttt{in}\langle 1\rangle + z\brangle{1}\implies x \brangle{2} > \texttt{in}\brangle{2} + z\brangle{2}$
+
+We must couple $z\brangle{1} =\texttt{in}\brangle{2}-\texttt{in}\brangle{1} +z\brangle{2}$.
+Then \begin{align*}
+	x\langle 1 \rangle > \texttt{in}\langle 1\rangle + z\brangle{1}&\implies x\brangle{2} > \texttt{in}\brangle{1} + \texttt{in}\brangle{2}-\texttt{in}\brangle{1} +z\brangle{2}\\
+	&\implies x\brangle{2}  > \texttt{in}\brangle{2} + z\brangle{2}
+\end{align*}
+
+\textbf{Case 10: $\gguard$, $x\brangle{1}  +1= x \brangle{2}$, $x'\brangle{1} +1 = x' \brangle{2}$ ($S^L\to S^L$)}
+
+We want that $x\langle 1 \rangle \leq \texttt{in}\langle 1\rangle + z\brangle{1}\implies x \brangle{2} \leq \texttt{in}\brangle{2} + z\brangle{2}$
+
+We must couple $z\brangle{1} =\texttt{in}\brangle{2}-\texttt{in}\brangle{1} +z\brangle{2}-1$.
+Then \begin{align*}
+	x\langle 1 \rangle \leq \texttt{in}\langle 1\rangle + z\brangle{1}&\implies x\brangle{2}-1 \leq \texttt{in}\brangle{1} + \texttt{in}\brangle{2}-\texttt{in}\brangle{1} +z\brangle{2}-1\\
+	&\implies x\brangle{2} \leq \texttt{in}\brangle{2} + z\brangle{2}
+\end{align*}
+
+\textbf{Case 11: $\gguard$, $x\brangle{1}  + 1= x \brangle{2}$, $x'\brangle{1} = x' \brangle{2}+1$ ($S^L\to S^G$)}
+
+We want that $x\langle 1 \rangle \leq \texttt{in}\langle 1\rangle + z\brangle{1}\implies x \brangle{2} \leq \texttt{in}\brangle{2} + z\brangle{2}$
+
+We must couple $z\brangle{1} =\texttt{in}\brangle{2}-\texttt{in}\brangle{1} +z\brangle{2}+1$.
+Then \begin{align*}
+	x\langle 1 \rangle \leq \texttt{in}\langle 1\rangle + z\brangle{1}&\implies x\brangle{2}-1 \leq \texttt{in}\brangle{1} + \texttt{in}\brangle{2}-\texttt{in}\brangle{1} +z\brangle{2}+1\\
+	&\implies x\brangle{2} \leq \texttt{in}\brangle{2} + z\brangle{2}+2
+\end{align*}
+which is bad - like case 4, this corresponds to a leaking pair.
+
+\textbf{Case 12: $\gguard$, $x\brangle{1}  + 1= x \brangle{2}$, $x'\brangle{1} = x' \brangle{2}$ ($S^L\to S^N$)}
+
+We want that $x\langle 1 \rangle \leq \texttt{in}\langle 1\rangle + z\brangle{1}\implies x \brangle{2} \leq \texttt{in}\brangle{2} + z\brangle{2}$
+
+We must couple $z\brangle{1} =\texttt{in}\brangle{2}-\texttt{in}\brangle{1} +z\brangle{2}$.
+Then \begin{align*}
+	x\langle 1 \rangle \leq \texttt{in}\langle 1\rangle + z\brangle{1}&\implies x\brangle{2}-1 \leq \texttt{in}\brangle{1} + \texttt{in}\brangle{2}-\texttt{in}\brangle{1} +z\brangle{2}\\
+	&\implies x\brangle{2} \leq \texttt{in}\brangle{2} + z\brangle{2}+1
+\end{align*}
+which is bad - this again corresponds to a privacy violating path. 
+
+\textbf{Case 13: $\gguard$, $x\brangle{1}  = x \brangle{2}+1$, $x'\brangle{1}+1 = x' \brangle{2}$ ($S^G\to S^L$)}
+
+We want that $x\langle 1 \rangle \leq \texttt{in}\langle 1\rangle + z\brangle{1}\implies x \brangle{2} \leq \texttt{in}\brangle{2} + z\brangle{2}$
+
+We must couple $z\brangle{1} =\texttt{in}\brangle{2}-\texttt{in}\brangle{1} +z\brangle{2}-1$.
+Then \begin{align*}
+	x\langle 1 \rangle \leq \texttt{in}\langle 1\rangle + z\brangle{1}&\implies x\brangle{2}+1 \leq \texttt{in}\brangle{1} + \texttt{in}\brangle{2}-\texttt{in}\brangle{1} +z\brangle{2}-1\\
+	&\implies x\brangle{2} \leq \texttt{in}\brangle{2} + z\brangle{2}
+\end{align*}
+
+\textbf{Case 14: $\gguard$, $x\brangle{1}  = x \brangle{2}+1$, $x'\brangle{1} = x' \brangle{2}+1$ ($S^G\to S^G$)}
+
+We want that $x\langle 1 \rangle \leq \texttt{in}\langle 1\rangle + z\brangle{1}\implies x \brangle{2} \leq \texttt{in}\brangle{2} + z\brangle{2}$
+
+We must couple $z\brangle{1} =\texttt{in}\brangle{2}-\texttt{in}\brangle{1} +z\brangle{2}+1$.
+Then \begin{align*}
+	x\langle 1 \rangle \leq \texttt{in}\langle 1\rangle + z\brangle{1}&\implies x\brangle{2}+1 \leq \texttt{in}\brangle{1} + \texttt{in}\brangle{2}-\texttt{in}\brangle{1} +z\brangle{2}+1\\
+	&\implies x\brangle{2} \leq \texttt{in}\brangle{2} + z\brangle{2}
+\end{align*}
+
+\textbf{Case 15: $\gguard$, $x\brangle{1}  = x \brangle{2}+1$, $x'\brangle{1} = x' \brangle{2}$ ($S^G\to S^N$)}
+
+We want that $x\langle 1 \rangle \leq \texttt{in}\langle 1\rangle + z\brangle{1}\implies x \brangle{2} \leq \texttt{in}\brangle{2} + z\brangle{2}$
+
+We must couple $z\brangle{1} =\texttt{in}\brangle{2}-\texttt{in}\brangle{1} +z\brangle{2}$.
+Then \begin{align*}
+	x\langle 1 \rangle \leq \texttt{in}\langle 1\rangle + z\brangle{1}&\implies x\brangle{2}+1 \leq \texttt{in}\brangle{1} + \texttt{in}\brangle{2}-\texttt{in}\brangle{1} +z\brangle{2}\\
+	&\implies x\brangle{2} \leq \texttt{in}\brangle{2} + z\brangle{2}
+\end{align*}
+
+\textbf{Case 16: $\gguard$, $x\brangle{1}  = x \brangle{2}$, $x'\brangle{1}+1 = x' \brangle{2}$ ($S^N\to S^L$)}
+
+We want that $x\langle 1 \rangle \leq \texttt{in}\langle 1\rangle + z\brangle{1}\implies x \brangle{2} \leq \texttt{in}\brangle{2} + z\brangle{2}$
+
+We must couple $z\brangle{1} =\texttt{in}\brangle{2}-\texttt{in}\brangle{1} +z\brangle{2}-1$.
+Then \begin{align*}
+	x\langle 1 \rangle \leq \texttt{in}\langle 1\rangle + z\brangle{1}&\implies x\brangle{2} \leq \texttt{in}\brangle{1} + \texttt{in}\brangle{2}-\texttt{in}\brangle{1} +z\brangle{2}-1\\
+	&\implies x\brangle{2} \leq \texttt{in}\brangle{2} + z\brangle{2}
+\end{align*}
+
+\textbf{Case 17: $\gguard$, $x\brangle{1}  = x \brangle{2}$, $x'\brangle{1} = x' \brangle{2}+1$ ($S^N\to S^G$)}
+
+We want that $x\langle 1 \rangle \leq \texttt{in}\langle 1\rangle + z\brangle{1}\implies x \brangle{2} \leq \texttt{in}\brangle{2} + z\brangle{2}$
+
+We must couple $z\brangle{1} =\texttt{in}\brangle{2}-\texttt{in}\brangle{1} +z\brangle{2}+1$.
+Then \begin{align*}
+	x\langle 1 \rangle \leq \texttt{in}\langle 1\rangle + z\brangle{1}&\implies x\brangle{2} \leq \texttt{in}\brangle{1} + \texttt{in}\brangle{2}-\texttt{in}\brangle{1} +z\brangle{2}+1\\
+	&\implies x\brangle{2} \leq \texttt{in}\brangle{2} + z\brangle{2}+1
+\end{align*}
+which is bad - this corresponds to a privacy violating path.
+
+\textbf{Case 18: $\gguard$, $x\brangle{1}  = x \brangle{2}$, $x'\brangle{1} = x' \brangle{2}$ ($S^N\to S^N$)}
+
+We want that $x\langle 1 \rangle \leq \texttt{in}\langle 1\rangle + z\brangle{1}\implies x \brangle{2} \leq \texttt{in}\brangle{2} + z\brangle{2}$
+
+We must couple $z\brangle{1} =\texttt{in}\brangle{2}-\texttt{in}\brangle{1} +z\brangle{2}$.
+Then \begin{align*}
+	x\langle 1 \rangle \leq \texttt{in}\langle 1\rangle + z\brangle{1}&\implies x\brangle{2} \leq \texttt{in}\brangle{1} + \texttt{in}\brangle{2}-\texttt{in}\brangle{1} +z\brangle{2}\\
+	&\implies x\brangle{2} \leq \texttt{in}\brangle{2} + z\brangle{2}
+\end{align*}
+
+
+
+\end{document} 
