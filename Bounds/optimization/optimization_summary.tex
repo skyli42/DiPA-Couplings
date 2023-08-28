@@ -108,45 +108,43 @@
 
 \section{Definitions}
 
-\subsection{DiPA}
+% \subsection{DiPA}
 
-Insert definition for DiPA here. 
+% Insert definition for DiPA here. 
 
-\subsection{Probability}
+% \subsection{Probability}
 
-\begin{definition}
-    The probability $\Pr(\rho | X)$ of a path $\rho = q_0 \to q_1 \to \dots \to q_m$ given an input $X = \langle a_1 , \dots, a_m \rangle$ is defined recursively as the probability that all transitions in $\rho$ are traversed in sequence given the input $X$ starting at state $q_0$.
-\end{definition}
+% \begin{definition}
+%     The probability $\Pr(\rho | X)$ of a path $\rho = q_0 \to q_1 \to \dots \to q_m$ given an input $X = \langle a_1 , \dots, a_m \rangle$ is defined recursively as the probability that all transitions in $\rho$ are traversed in sequence given the input $X$ starting at state $q_0$.
+% \end{definition}
 
-\begin{definition}
-    Let $\mathcal{A}$ be a DiPA, and $s \in seg(\mathcal{A})$ be a segment. The \textbf{privacy loss} $\loss(s)$ of a segment $s \in seg(\mathcal{A})$ is defined as 
+% \begin{definition}
+%     Let $\mathcal{A}$ be a DiPA, and $s \in seg(\mathcal{A})$ be a segment. The \textbf{privacy loss} $\loss(s)$ of a segment $s \in seg(\mathcal{A})$ is defined as 
 
-    \[\loss(s) = \sup_{\rho \in segF(s)}\sup_{X' \sim X} \left(\frac{Pr(\rho | X)}{P(\rho | X')} \right) \]
+%     \[\loss(s) = \sup_{\rho \in segF(s)}\sup_{X' \sim X} \left(\frac{Pr(\rho | X)}{P(\rho | X')} \right) \]
 
-    where $X$ and $X'$ vary over all pairs of neighbouring datasets. 
-\end{definition}
+%     where $X$ and $X'$ vary over all pairs of neighbouring datasets. 
+% \end{definition}
 
-\begin{definition}
-    Let $f_\epsilon(x)$ be the probability density function of a random variable $X$ with $X \sim Lap(0, 1/\epsilon)$. 
+% \begin{definition}
+%     Let $f_\epsilon(x)$ be the probability density function of a random variable $X$ with $X \sim Lap(0, 1/\epsilon)$. 
 
-    \[f_\epsilon(x) = \frac{\epsilon}{2} \exp(-\epsilon |x|)\]
-\end{definition}
+%     \[f_\epsilon(x) = \frac{\epsilon}{2} \exp(-\epsilon |x|)\]
+% \end{definition}
 
-\begin{definition}
-    Let $F_\epsilon(x)$ be the cumulative distribution function of a random variable $X$ with $X \sim Lap(0, 1/\epsilon)$.
+% \begin{definition}
+%     Let $F_\epsilon(x)$ be the cumulative distribution function of a random variable $X$ with $X \sim Lap(0, 1/\epsilon)$.
 
-    \[F_\epsilon(x) = P(X \leq x) = \begin{cases}
-        \frac{1}{2} \exp(\epsilon x) & x < 0 \\
-        1 - \frac{1}{2} \exp(-\epsilon x) & x \geq 0
-    \end{cases}\]
-\end{definition}
+%     \[F_\epsilon(x) = P(X \leq x) = \begin{cases}
+%         \frac{1}{2} \exp(\epsilon x) & x < 0 \\
+%         1 - \frac{1}{2} \exp(-\epsilon x) & x \geq 0
+%     \end{cases}\]
+% \end{definition}
 
-\newpage
 \section{Coupling proofs of privacy}
 
 A coupling proof of privacy 
 
-\newpage
 \section{Shift-coupling proofs of privacy}
 
 Consider a path $\rho = q_0 \to q_1 \to \dots \to q_m$. Consider inputs $X \langle 1 \rangle = \langle a_1 \langle 1 \rangle, \dots, a_m \langle 1 \rangle \rangle$ and $X \langle 2 \rangle = \langle a_1 \langle 2 \rangle, \dots, a_m \langle 2 \rangle \rangle$ such that $X \langle 1 \rangle \sim X \langle 2 \rangle$. We wish to show that there exists $\epsilon \in (0, \infty)$ such that
@@ -271,22 +269,27 @@ Note that such an index must exist due to the initialization condition on DiPA.
     Thus, the given constraints on $\gamma$ hold if and only if it is valid for $\rho$.
 \end{proof}
 
-\begin{theorem}
-    A choice of valid $\{\gamma_i\}$ for each path $\rho$ and pairs of inputs $X \1 \sim X\2$ which satisfies 
-    \begin{align*}
-        \gamma_i = 0 \qquad &\text{if } t_i \text{ outputs \texttt{insample} or \texttt{insample'}} 
-    \end{align*} 
-    shows that $\mathcal{A}$ is $(\epsilon, 0)$-differentially private, where $\epsilon = \sup_{X \1 \sim X \2} \sup_{\rho} cost(\{\gamma_i\})$. TODO: Define cost. Maybe prove a proposition before this about (path equivalence and output constraints) $\iff$ output equivalence.
-\end{theorem}
+\begin{definition}
+    Define $\mathcal{P}$ to be the set of all paths in $\mathcal{A}$.
+\end{definition}
 
-\begin{proof}
-    By definition, almost. 
-\end{proof}
+\begin{definition}
+    Given a DiPA $\mathcal{A}$, a \textbf{shift-coupling proof of privacy} for $\mathcal{A}$ is a map 
+
+    \begin{align*}
+        \Gamma: \mathcal{P} &\to ([-1, 1]^{\rho} \to [-1, 1]^{|\rho|})\\
+        \rho &\mapsto (\Delta \mapsto \{\gamma_i\})
+    \end{align*}
+
+    such that for all $\rho \in \mathcal{P}$ and all $\Delta \in [-1, 1]^{\rho}$, we have that $\{\gamma_i\}$ is valid for $\rho$ and $\Delta$, and satisfies the output constraints.
+\end{definition}
+
+Note: we show that this is actually a proof after the next section. 
 
 \subsection{The cost of a shift-coupling}
 
 \begin{proposition}
-    Consider a transition $t_i = q_{i} \to q_{i + 1}$ which is traversed independently by $A$ on input $a_i \1$ and $a_i \2$. Let $\Delta_i = a_i \2 - a_i \1$. Let $q_i$ draw from the distribution $Lap(0, \epsilon_i)$ to noise \texttt{insample}. The $\epsilon$-cost of the shift-coupling 
+    Consider a transition $t_i = q_{i} \to q_{i + 1}$ which is traversed independently by $A$ on input $a_i \1$ and $a_i \2$. Let $\Delta_i = a_i \2 - a_i \1$. Let $q_i$ draw from the distribution $Lap(0, \epsilon_i)$ to noise \texttt{insample}. The $\epsilon$-cost of the coupling 
 
     \[\tilde{a_i} \1 + \gamma_i (=)^{(c_i, 0)} \tilde{a_i} \2\]
 
@@ -294,108 +297,91 @@ Note that such an index must exist due to the initialization condition on DiPA.
 \end{proposition} 
 
 \begin{proof}
-    TODO
+    TODO, but easy to see from coupling construction rules.
 \end{proof}
 
-\subsection{A tight proof must regard input differences}
+\begin{definition}
+    Given a path $\rho$ and input differences $\Delta$, we define the $\rho$-$\Delta$-\textbf{cost} of the shifts $\{\gamma_i\}$ to be
+
+    \[cost_{\rho, \Delta} (\{\gamma_i\}) = \sum_{i = 0}^{|\rho| - 1} |\Delta_i - \gamma_i| \epsilon_i\]
+\end{definition}
+
+\begin{definition}
+    Given a shift-coupling proof of privacy $\Gamma$, we define the privacy cost of $\Gamma$ to be
+
+    \[cost(\Gamma) = \sup_{\rho \in \mathcal{P}} \sup_{\Delta \in [-1, 1]^{\rho}} cost_{\rho, \Delta}(\Gamma(\rho, \Delta))\]
+\end{definition}
+
+\subsection{Privacy}
+
+\begin{theorem}
+    Let $\mathcal{A}$ be a DiPA, and $\Gamma$ be a shift-coupling proof of privacy for $\mathcal{A}$. Then, $\mathcal{A}$ is $(\epsilon, 0)$-differentially private, where $\epsilon = cost(\Gamma)$.
+\end{theorem}
+
+\begin{proof}
+    This is a direct consequence of path validity + output constraints.
+\end{proof}
+
+\subsection{Why the above had to be the way it is.}
 
 Since the total validity constraints on $\{\gamma_i\}$ does not depend on $X \1$ and $X \2$, one might be tempted to produce a proof of privacy by choosing $\gamma_i$ to be the same for all $X \1$ and $X \2$, given a path $\rho$. Although this is possible, this does not in general produce a tight proof of privacy.
+
+\begin{proposition}
+    \textbf{(A tight proof must regard input differences)} There exists a family of DiPA $\mathcal{F}$ and for $\mathcal{A} \in \mathcal{F}$, a shift-coupling proof $\Gamma^*: \mathcal{P} \to ([-1, 1]^{\rho} \to [-1, 1]^{|\rho|})$ such that for all assignments $\Pi: \mathcal{P} \to [-1, 1]^{\rho}$ of paths to shifts, we have 
+
+    \[cost(\Gamma^*) < cost(\Pi)\]
+\end{proposition}
+
+\begin{proof}
+    The construction is a DiPA with a one-segment path with same number of $<$ and $\geq$ transitions.
+\end{proof}
+
+When constructing a shift-coupling proof of privacy, we are actually choosing a shift for each transition. Is it reasonable to ignore paths, and just choose a shift for each transition? The answer is no, as the following proposition shows.
+
+\begin{proposition}
+    \textbf{(A tight proof must regard paths)} There exists a family of DiPA $\mathcal{F}$ and for $\mathcal{A} \in \mathcal{F}$, a shift-coupling proof $\Gamma^*: \mathcal{P} \to ([-1, 1]^{\rho} \to [-1, 1]^{|\rho|})$ such that for all assignments $\Pi: E \to ([-1, 1]^{\rho} \to [-1, 1]^{\rho})$ of transitions and differences to shifts, we have
+
+    \[cost(\Gamma^*) < cost(\Pi)\]
+\end{proposition}
+
+\begin{proof}
+    
+\end{proof}
+
+\section{The search for a tight proof as an optimization problem}
+
+\subsection{Stating the problem abstractly}
+
+Now that we have a characterization of shift-coupling proofs of privacy, the problem of finding a tight proof of privacy can be formulated as finding, given $\rho$ and $\Delta$,
+
+\begin{align*}
+    \inf_{\Gamma} cost(\Gamma) &= \inf_{\Gamma} \sup_{\rho} \sup_{\Delta} cost_{\rho, \Delta}(\Gamma(\rho, \Delta)) \\
+\end{align*}
+
+which is characterized by $\Gamma^*$ such that for any shift-coupling proof $\Gamma$, we have
+
+\[\sup_{\rho} \sup_{\Delta} cost(\Gamma^*(\rho, \Delta)) \leq \sup_{\rho} \sup_{\Delta} cost(\Gamma(\rho, \Delta))\]
+
+\[\min_{\gamma \in [-1, 1]^{|\rho|}} cost_{\rho, \Delta} (\gamma)\]
+
+One such $\Gamma^*$ is the shift-coupling proof that chooses \[\Gamma^*(\rho, \Delta) = \inf_{\gamma \in [-1, 1]^{|\rho|}} cost_{\rho, \Delta} (\gamma)\]
+
+which is the shift-coupling proof that chooses the optimal shift for each input difference and path independently. We will now direct our focus to computing $\Gamma^*$ given an automaton $\mathcal{A}$.
+
+\subsection{Simplifying the problem and introducing segments }
+
+\subsection{The problem as a whole}
+
+\section{Finite Bounds and Decidability}
 
 \begin{proposition}
     
 \end{proposition}
 
-\subsection{A tight proof must regard paths}
-
-\section{The search for a tight proof as an optimization problem}
-
-\subsection{Leading upto the abstract formulation}
-
-\subsection{The problem as a whole}
-
-
-\subsection{Specifying the inner minimization problem}
-
-Here, we specify how $A_{s, \boldsymbol{\Delta}}$ and $c_{s, \boldsymbol{\Delta}}$ are defined. Let $s = s_1 \hookrightarrow \dots \hookrightarrow s_n$ be a sequence of segments with total number of transitions $m$. Let $\boldsymbol{\Delta} \in \{-1, 0, 1\}^m$ be a vector of input perturbations.
-
-We define some notation as follows: 
-
-\begin{itemize}
-    \item Let $t^i_j$ denote the $j$th transition in segment $i$, and $\epsilon^i_j$ denote the noise added to the input before that transition.
-    \item Let $\Delta^i_j$ denote the entry of $\boldsymbol{\Delta}$ that corresponds to the input perturbation for the $j$th transition in segment $i$.
-    \item Let $\gamma^i_j$ denote the entry of $\boldsymbol{\gamma} \in [-1, 1]^m$ that corresponds to the coupling shift for the $j$th transition in segment $i$ -- this is to be determined by the inner minimization problem.
-\end{itemize}
-
-Then, the minimization problem over $\boldsymbol{\gamma}$ is as follows:
-
-\begin{align*}
-\min_{\boldsymbol{\gamma} \in [-1, 1]^m} \quad & \sum_{i = 1}^n \sum_{j = 1}^{|s_i|} |\gamma^i_j - \Delta^i_j| \epsilon_i \\[2em]
-\text{subject to } \quad 
-& \gamma^i_k \leq \gamma^i_0 &\text{if $t^i_k$ has guard $<$} \\
-& \gamma^i_k \geq \gamma^i_0 &\text{if $t^i_k$ has guard $\geq$} 
-\\[1em]
-& \gamma^i_0 \leq \gamma_0^k &\text{if $s_k \hookrightarrow s_i$ and guard($s_i$) is $<$} \\
-& \gamma^i_0 \geq \gamma_0^k &\text{if $s_k \hookrightarrow s_i$ and guard($s_i$) is $\geq$} 
-\\[1em]
-& \gamma^i_k = 0 &\text{if $t^i_k$ outputs \texttt{insample}} \\
-& \gamma^i_k = \Delta^i_k &\text{if $t^i_k$ belongs to a cycle} 
-\end{align*}
-
-This can be rewritten as a linear program using standard techniques, producing a constraint matrix $A_{s, \boldsymbol{\Delta}}$ and a cost vector $c_{s, \boldsymbol{\Delta}}$.
-
-\subsection{A simplification}
-
-Let $\mathcal{F}$ be a finite family of segment sequences. The global optimization problem is to find 
-
-\begin{align*}
-\max_{s \in \mathcal{F}} \max_{\boldsymbol{\Delta} \in {\{-1, 0, 1\}}^{|s|}} \left(
-\begin{aligned}
-& \underset{\boldsymbol{\gamma} \in [-1, 1]^{|s|}}{\min} & &  c_{s , \boldsymbol{\Delta}}^T \cdot \boldsymbol{\gamma}  \
-& \text{subject to } & & A_{s, \boldsymbol{\Delta}} \cdot \boldsymbol{\gamma} \geq 0 \
-\end{aligned}
-\right)
-\end{align*}
-
-\section{Searching for a tight proof}
-
-\newpage
-\section{Global Optimization}
-
-\subsection{An abstract description of the global optimization problem}
-
-
-\newpage
-
-\subsection{Constraints for all coupling strategies on a segment}
-
-In this section, we will try to understand the constraints that all valid coupling strategies on a segment must satisfy. For the purpose of this section, we will assume that our DiPA consists of a single segment. This assumption will be relaxed in later sections. 
-
-Here are some assumptions that are made throughout this document.
-
-\begin{enumerate}
-    \item The noise added to inputs on each state $q_i$ is the same ($\epsilon$).
-    \item  Since we know tight coupling strategies for segments with cycles, we are restricting our attention to segments with no cycles.
-    \item We will only consider one segment at a time.
-\end{enumerate}
-
-Some notation:
-
-\begin{enumerate}
-    \item Let $N$ be the number of transitions in the segment.
-    \item The raw input received on the $i$th transition is denoted by $a_i$.
-
-    \item If we are considering two datasets $X\langle 1 \rangle$ and $X \langle 2 \rangle$, we will use $a_i \langle 1 \rangle$ to denote the value of $a_i$ in the first dataset, and vice versa for $a_i \langle 2 \rangle$.
-    
-    \item Similarly, we use $x_i \langle 1 \rangle$ to denote the random variable representing the value of \texttt{insample} before the $i$th transition when $A$ receives the input $X\langle 1 \rangle$, and vice versa for $x_i \langle 2 \rangle$.
-\end{enumerate}
-
-A coupling strategy is a choice of values $\gamma_0, \dots, \gamma_N$ such that $\gamma_i \in \Gamma$ for all $i$. 
-
-\section{Are there tighter bounds than the tightest shift-coupling bound?}
-
+\section{Do shift-coupling proofs of privacy have matching lower bounds?}
 \textbf{Last Updated: Wednesday, June 28th, 2023}
 
-The relevant definitions and lemmata for proofs in this section are in the appendix. It is also assumed, for now, that all transition outputs are in $\Gamma$. 
+The relevant definitions and lemmata for proofs in this section are in the appendix. It is also assumed, for now, that all transition outputs are in the output alphabet. 
 
 \subsection{$S^L$ is tight when there is an $L$-cycle}
 
