@@ -1,5 +1,7 @@
 \documentclass{article}
 \usepackage[utf8]{inputenc}
+
+% Standard packages that I use for math documents.
 \usepackage[margin=0.75in]{geometry}
 \usepackage{enumerate}
 \usepackage{amsmath}
@@ -11,20 +13,21 @@
 \usepackage{array}
 \usepackage{makecell}
 \usepackage{commath}
-
-% for block matrices
-\usepackage{easybmat}
-
+\usepackage{easybmat} % for block matrices
 \usepackage{parskip}
+% Document-specific packages
+\usepackage{xcolor, soul} % for highlights
+\sethlcolor{yellow}
+
+% Standard settings I use for nice formatting.
 \setlength\parindent{0pt}
-
 \DeclarePairedDelimiter{\ceil}{\lceil}{\rceil}
-
 \renewcommand\theadalign{bc}
 \renewcommand\theadfont{\bfseries}
 \renewcommand\theadgape{\Gape[4pt]}
 \renewcommand\cellgape{\Gape[4pt]}
 
+% Standard definitions of macros I use regularly.
 \newcommand{\N}{\mathbb{N}}
 \newcommand{\Z}{\mathbb{Z}}
 \newcommand{\Q}{\mathbb{Q}}
@@ -32,6 +35,7 @@
 \newcommand{\R}{\mathbb{R}}
 \newcommand{\F}{\mathbb{F}}
 \newtheorem{theorem}{Theorem}
+\newtheorem{proposition}{Proposition}[section]
 \newtheorem{hypothesis}{Hypothesis}[section]
 \newtheorem{corollary}{Corollary}[theorem]
 \newtheorem{definition}{Definition}[section]
@@ -43,14 +47,11 @@
 \newcommand{\Null}{\text{Null}}
 \newcommand{\Range}{\text{Range}}
 \newcommand{\D}{\frac{d}{\dif x}}
-
 \renewcommand{\epsilon}{\varepsilon}
-
 \newcommand{\Or}{\mbox{ OR }}
 \renewcommand{\And}{\mbox{ AND }}
 \newcommand{\Not}{\mbox{NOT }}
 \newcommand{\Iff}{\mbox{ IFF }}
-
 \newcommand{\Width}{\textup{width}}
 \newcommand{\Mesh}{\textup{mesh}}
 \newcommand{\Int}{\textup{Int}}
@@ -58,23 +59,58 @@
 \newcommand{\Bd}{\textup{Bd}}
 \newcommand{\Supp}{\textup{Support}}
 \newcommand{\sgn}{\textup{sgn}}
-
 \newcommand{\loss}{\textup{loss}}
 \newcommand{\insamplegeqx}{\textup{\texttt{insample$\geq$x}}}
 \newcommand{\insampleltx}{\textup{\texttt{insample$<$x}}}
 \newcommand{\insample}{\textup{\texttt{insample}}}
-
-
 \newcommand\widebar[1]{\mathop{\overline{#1}}}
 \newcommand*\closure[1]{\widebar{#1}}
-
 \newcommand\Ball[2]{U(#1; #2)}
+
+\newcommand{\1}{\langle 1 \rangle}
+\newcommand{\2}{\langle 2 \rangle}
+
+% End of preamble.  
 
 \begin{document}
 
 \tableofcontents
 
+\section{Some notes from which to expand this document}
+
+\begin{enumerate}
+    \item An overview of coupling proofs of privacy
+    \item A tight shift-coupling proof of privacy (segment free)
+    \begin{enumerate}
+        \item What are the connecting constraints, and why are they there?
+        \item Proofs have to depend on $\Delta$!
+        \item Proofs have to depend on sequences of segments! 
+    \end{enumerate}
+    \item Simplifying the problem above in various ways: 
+    \begin{enumerate}
+        \item Separability and the introduction of segments
+        \item Only inter-segment transitions matter! 
+        \begin{itemize}
+            \item Given $\Delta$, the $\gamma$ values on inter-segment transitions are easily determined. 
+            \item The $\Delta$ values on the inter-segment transitions can be determined. 
+        \end{itemize}
+    \end{enumerate}
+    \item Solving the problem.
+    \begin{enumerate}
+        \item Hardness (incomplete)!!!
+        \item Solving the easier version, where proofs don't depend on $\Delta$.
+        \item Showing that they are bounded within $n$ of each other. 
+        \begin{align*}
+            \exists \text{ finite DP bound } &\iff \text{ hard system admits a feasible solution }
+        \end{align*}
+    \end{enumerate}
+\end{enumerate}
+
 \section{Definitions}
+
+\subsection{DiPA}
+
+Insert definition for DiPA here. 
 
 \subsection{Probability}
 
@@ -106,22 +142,177 @@
 \end{definition}
 
 \newpage
-\section{Global Optimization}
+\section{Coupling proofs of privacy}
 
-\subsection{An abstract description of the global optimization problem}
+A coupling proof of privacy 
 
-Let $\mathcal{F}$ be a finite family of segment sequences. The global optimization problem is to find 
+\newpage
+\section{Shift-coupling proofs of privacy}
+
+Consider a path $\rho = q_0 \to q_1 \to \dots \to q_m$. Consider inputs $X \langle 1 \rangle = \langle a_1 \langle 1 \rangle, \dots, a_m \langle 1 \rangle \rangle$ and $X \langle 2 \rangle = \langle a_1 \langle 2 \rangle, \dots, a_m \langle 2 \rangle \rangle$ such that $X \langle 1 \rangle \sim X \langle 2 \rangle$. We wish to show that there exists $\epsilon \in (0, \infty)$ such that
 
 \begin{align*}
-\max_{s \in \mathcal{F}} \max_{\boldsymbol{\Delta} \in {\{-1, 0, 1\}}^{|s|}} \left(
-\begin{aligned}
-& \underset{\boldsymbol{\gamma} \in [-1, 1]^{|s|}}{\min} & &  c_{s , \boldsymbol{\Delta}}^T \cdot \boldsymbol{\gamma}  \
-& \text{subject to } & & A_{s, \boldsymbol{\Delta}} \cdot \boldsymbol{\gamma} \geq 0 \
-\end{aligned}
-\right)
+    \Pr\left[\rho | X \langle 1 \rangle \right] \leq \exp(\epsilon) \cdot \Pr\left[\rho | X \langle 2 \rangle\right]
 \end{align*}
 
-Here, the inner minimization problem is a linear program, where $A_{s, \boldsymbol{\Delta}}$ is a matrix of constraints that depends on $s$ and $\boldsymbol{\Delta}$. Similarly, $c_{s, \boldsymbol{\Delta}}$ is a vector of costs that depends on $s$ and $\boldsymbol{\Delta}$.
+\hl{TODO}: Write all of this later after consulting with Sky! ALSO, distinguish between path equivalence and output equivalence.
+
+\begin{definition}
+    Let  $X = \langle a_1, \dots, a_m \rangle$ be an input, and $\rho = q_0 \to q_1 \to \dots \to q_m$ be a path taken by DiPA $\mathcal{A}$ on $X$. Define $\tilde{a_i}$ to be the value of $\insample$ on the $i$th transition in $\rho$ on input $X$.
+\end{definition}
+
+\begin{itemize}
+    \item The above is true if and only if $path_A(X) \Psi_\rho^{(\epsilon, 0)} path_A(X')$, where
+
+    \[\Psi_\rho = \{(\rho_1, \rho_2) \in P \times P : \rho_1 = \rho \implies \rho_2 = \rho \} \]
+    
+    Shift-couplings are a technique to show that $path_A(X) \Psi_\rho^{(\epsilon, 0)} path_A(X')$ by constructing the couplings
+    
+    \[\tilde{a_i} \1 + \gamma_i (=)^{\#(\epsilon_i, 0)} \tilde{a_i} \2 \qquad \forall i \in \{0, \dots, m - 1\}\]
+
+    and showing that 
+
+    \[(\tilde{a} \1 + \gamma = \tilde{a} \2) \implies path_A(X \1) \Psi_\rho path_A(X \2)\]
+
+    thus showing that $path_A(X) \Psi_\rho^{(\epsilon, 0)} path_A(X')$ for \[\epsilon = \sum_{i = 0}^{m - 1} \epsilon_i\]
+    
+    % where \[\psi_{\rho, i} = \{(\rho_1, \rho_2) \in P \times P : \rho_1[i] = \rho[i] \implies \rho_2[i] = \rho[i]\}\]
+    
+    % \[A(X) \Psi_{o, i} A(X') \qquad \forall i \in \{1, \dots, m\}\] where 
+    \item A discussion that ends in choosing $\gamma$ shifts for each segment. 
+    \item Maybe: A discussion of the cost of each shift.    
+\end{itemize}
+
+
+\subsection{Connecting constraints} 
+
+\begin{definition}
+    
+Given a fixed path, we say that an assignment of shifts $\{\gamma_i\}$ is \textbf{valid} if
+
+\[(\tilde{a} \1 + \gamma = \tilde{a} \2) \implies path_A(X \1) \Psi_\rho path_A(X \2)\]
+
+\end{definition}
+
+\begin{definition}
+    Let $\rho = q_0 \to q_1 \to \dots \to q_m$ be a path, and let $i \in \{1, \dots, m\}$. Define $at(i)$ to be the largest index $a(i) < i$ such that $\rho[a(i)] \to \rho[a(i) + 1]$ is an assignment transition.  
+\end{definition}
+
+\begin{definition}
+    Let $\rho = q_0 \to q_1 \to \dots \to q_m$ be a path. Define $t_i$ to be the transition $q_i \to q_{i + 1}$.
+\end{definition}
+
+\begin{definition}
+    Let $X = \langle a_1, \dots, a_m \rangle$ be an input, and let $\rho = q_0 \to q_1 \to \dots \to q_m$ be a path. Define $X[i]$ to be the value of $a_i$.
+\end{definition}
+
+Note that such an index must exist due to the initialization condition on DiPA. 
+
+\begin{proposition}
+    Given $\rho = q_0 \to q_1 \to \dots \to q_m$, an assignment of shifts $\{\gamma_i\}$ is valid if and only if it satisfies the following constraints for all $i \in \{0, \dots, m - 1\}$:
+
+    \begin{align*}
+        \gamma_i \leq \gamma_{at(i)} \qquad &\text{if } t_i \text{ has guard } < \\
+        \gamma_i \geq \gamma_{at(i)} \qquad &\text{if } t_i \text{ has guard } \geq \\
+    \end{align*}
+\end{proposition}
+
+\begin{proof}
+    (Constraints $\implies$ valid) Suppose that the above constraints hold. We will show that $\{\gamma_i\}$ is valid using induction on $m = |\rho|$. Construct the couplings $\tilde{a_i} \1 + \gamma_i (=)^{(\epsilon_i, 0)} \tilde{a_i} \2$ for all $i \in \{0, \dots, m - 1\}$. 
+
+    For a base case, assume $m = 1$. Then $\rho$ consists of an assignment transition $t_0$ with \texttt{true} guard (initialization condition). The constraints are trivially satisfied, and we have that $path_A(X \1 ) \Psi_\rho^{(0, 0)} path_A(X \2)$.
+
+    Assume that the constraints hold for all paths of length $m$. Let $\rho = q_0 \to q_1 \to \dots \to q_{m} \to q_{m + 1}$. We will show that $\{\gamma_i\}$ is valid for $\rho$. First, by the validity of $\{\gamma_i\}_{i = 0}^{m - 1}$ for $\rho[0:m]$ by the inductive hypothesis, we have that \[path_A(X \1) \Psi_{\rho[0:m]} path_A(X \2)\] 
+    
+    by the inductive hypothesis. Now, assume $path_A(X \1) = \rho$. We have $path_A(X \2)[0:m] = \rho[0:m]$. Consider the last transition $t_{m}$ in $\rho$. Since $path_A(X \1) = \rho$, we know that $t_m$ is traversed by $A$ on $X \1$.
+
+    \begin{itemize}
+        \item If $t_{m}$ has guard \texttt{true}, then we trivially have that $path_A(X \2) = \rho$.
+        \item If $t_{m}$ has guard $<$, we have from the constraints that $\gamma_{m} \leq \gamma_{at(m)}$. The value of the state variable $x \langle 1 \rangle$ is 
+        
+        \[x \1 = \tilde{a}_{at(m)} \1 \]
+
+        and since $t_m$ is traversed by $A$ on $X \1$, we have 
+
+        \begin{align*}
+            \tilde{a}_{m} \1 &< \tilde{a}_{at(m)} \1\\
+            \tilde{a}_{m} \2 - \gamma_m &< \tilde{a}_{at(m)} \2 - \gamma_{at(m)}\\
+            \tilde{a}_{m} \2 &< \tilde{a}_{at(m)} \2 - (\gamma_{at(m)} - \gamma_{m}) < \tilde{a}_{at(m)} \2\\
+        \end{align*}
+
+        showing that $\tilde{a}_{m} \2$ satisfies the guard of $t_m$. Thus, $path_A(X \2) = \rho$.
+        \item If $t_{m}$ has guard $\geq$, a similar argument as above shows that $path_A(X \2) = \rho$.
+    \end{itemize}
+
+    Thus, assuming that $a \1 + \gamma = a \2$, we have shown that $path_A(X \1) = \rho \implies path_A(X \2) = \rho$, which shows $path_A(X \1) \Psi_\rho path_A(X \2)$, and so $\{\gamma_i\}$ is valid.
+
+    (Valid $\implies$ constraints) Suppose that $\{\gamma_i\}$ is valid. Let $i \in \{0, \dots, m - 1\}$. We will show that the constraints hold for $i$. 
+
+    We will run the argument above in reverse. Again, we use induction on the length $m = |\rho|$. For a base case, assume $m = 1$, and so $\rho$ consists of an assignment transition $t_0$ with \texttt{true} guard. The constraints are trivially satisfied, since there are none. 
+
+    Assume that the constraints hold for all valid shift assignments on paths of length $m$, and let $\rho = q_0 \to q_1 \to \dots \to q_{m} \to q_{m + 1}$. Since $\{\gamma_i\}$ is valid for $\rho$, we have that $a \1 + \gamma = a \2 \implies path_A(X \1) \Psi_\rho path_A(X \2)$. Also, we have that $\{\gamma_i\}_{i = 0}^{m - 1}$ is valid for $\rho[0:m]$, and that constraints on transitions $t_i \in \rho[0:m]$ hold. 
+
+    We will now show that the constraints on $t_{m}$ hold by cases on the guard of $t_{m}$.
+
+    \begin{itemize}
+        \item If $t_{m}$ has guard \texttt{true}, then there is no constraint on $\gamma_{m}$, and so the constraints hold.
+        \item If $t_{m}$ has guard $<$, the constraint to be shown is $\gamma_m \leq \gamma_{at(m)}$. Recall that we have $a \1 + \gamma = a \2 \implies path_A(X \1) \Psi_\rho path_A(X \2)$, showing that $t_m$ being traversed by $A$ on $X \1$ leads $t_m$ to be traversed by $A$ on $X \2$. Thus, we have 
+        
+        \begin{align*}
+            \tilde{a}_m \1 < \tilde{a}_{at(m)} \1 &\implies \tilde{a}_m \2 < \tilde{a}_{at(m)} \2\\
+             &\iff \tilde{a}_m \1 + \gamma_m < \tilde{a}_{at(m)} \1 + \gamma_{at(m)}\\
+             &\iff \tilde{a}_m \1 < \tilde{a}_{at(m)} \1 + (\gamma_{at(m)} - \gamma_m)\\
+        \end{align*}
+
+        which is true if and only if $\gamma_m \leq \gamma_{at(m)}$. Thus, the constraint holds.
+        \item A symmetric argument shows that the constraint holds if $t_{m}$ has guard $\geq$.
+    \end{itemize}
+
+    Thus, the given constraints on $\gamma$ hold if and only if it is valid for $\rho$.
+\end{proof}
+
+\begin{theorem}
+    A choice of valid $\{\gamma_i\}$ for each path $\rho$ and pairs of inputs $X \1 \sim X\2$ which satisfies 
+    \begin{align*}
+        \gamma_i = 0 \qquad &\text{if } t_i \text{ outputs \texttt{insample} or \texttt{insample'}} 
+    \end{align*} 
+    shows that $\mathcal{A}$ is $(\epsilon, 0)$-differentially private, where $\epsilon = \sup_{X \1 \sim X \2} \sup_{\rho} cost(\{\gamma_i\})$. TODO: Define cost. Maybe prove a proposition before this about (path equivalence and output constraints) $\iff$ output equivalence.
+\end{theorem}
+
+\begin{proof}
+    By definition, almost. 
+\end{proof}
+
+\subsection{The cost of a shift-coupling}
+
+\begin{proposition}
+    Consider a transition $t_i = q_{i} \to q_{i + 1}$ which is traversed independently by $A$ on input $a_i \1$ and $a_i \2$. Let $\Delta_i = a_i \2 - a_i \1$. Let $q_i$ draw from the distribution $Lap(0, \epsilon_i)$ to noise \texttt{insample}. The $\epsilon$-cost of the shift-coupling 
+
+    \[\tilde{a_i} \1 + \gamma_i (=)^{(c_i, 0)} \tilde{a_i} \2\]
+
+    is given by \[c_i = |\Delta_i - \gamma_i| \epsilon_i \]
+\end{proposition} 
+
+\begin{proof}
+    TODO
+\end{proof}
+
+\subsection{A tight proof must regard input differences}
+
+Since the total validity constraints on $\{\gamma_i\}$ does not depend on $X \1$ and $X \2$, one might be tempted to produce a proof of privacy by choosing $\gamma_i$ to be the same for all $X \1$ and $X \2$, given a path $\rho$. Although this is possible, this does not in general produce a tight proof of privacy.
+
+\begin{proposition}
+    
+\end{proposition}
+
+\subsection{A tight proof must regard paths}
+
+\section{The search for a tight proof as an optimization problem}
+
+\subsection{Leading upto the abstract formulation}
+
+\subsection{The problem as a whole}
+
 
 \subsection{Specifying the inner minimization problem}
 
@@ -152,16 +343,26 @@ Then, the minimization problem over $\boldsymbol{\gamma}$ is as follows:
 
 This can be rewritten as a linear program using standard techniques, producing a constraint matrix $A_{s, \boldsymbol{\Delta}}$ and a cost vector $c_{s, \boldsymbol{\Delta}}$.
 
-\subsection{Suspected ways to simplify the problem}
+\subsection{A simplification}
 
-\begin{itemize}
-    \item We might be able to determine the maximizing $\boldsymbol{\Delta}$ in the second minimization problem in linear time given $s \in \mathcal{F}$. 
-    \begin{itemize}
-        \item I suspect this is true since I see that the maximizing $\boldsymbol{\Delta}$ always has $\Delta^i_j = -1$ if $t^{i}_j$ has guard $\geq$, and $\Delta^i_j = 1$ if $t^{i}_j$ has guard $<$. In the case that $t^{i}_j$ has guard $true$ and is an assignment transition, the value of $\Delta^i_j$ seems to depend on the costs $\epsilon^i_j$ in the segment $s_i$.
-        \item If this is true, we need not check exponentially many $\boldsymbol{\Delta}$ in the second maximization problem.
-    \end{itemize}
-    \item It might be possible to solve a local minimization problem over segments instead of segment sequences, and then use the results to solve a global constraint system that is much smaller than the one described above.
-\end{itemize}
+Let $\mathcal{F}$ be a finite family of segment sequences. The global optimization problem is to find 
+
+\begin{align*}
+\max_{s \in \mathcal{F}} \max_{\boldsymbol{\Delta} \in {\{-1, 0, 1\}}^{|s|}} \left(
+\begin{aligned}
+& \underset{\boldsymbol{\gamma} \in [-1, 1]^{|s|}}{\min} & &  c_{s , \boldsymbol{\Delta}}^T \cdot \boldsymbol{\gamma}  \
+& \text{subject to } & & A_{s, \boldsymbol{\Delta}} \cdot \boldsymbol{\gamma} \geq 0 \
+\end{aligned}
+\right)
+\end{align*}
+
+\section{Searching for a tight proof}
+
+\newpage
+\section{Global Optimization}
+
+\subsection{An abstract description of the global optimization problem}
+
 
 \newpage
 
@@ -190,7 +391,7 @@ Some notation:
 
 A coupling strategy is a choice of values $\gamma_0, \dots, \gamma_N$ such that $\gamma_i \in \Gamma$ for all $i$. 
 
-\section{Tightness of the strategies $S^L$, $S^J$}
+\section{Are there tighter bounds than the tightest shift-coupling bound?}
 
 \textbf{Last Updated: Wednesday, June 28th, 2023}
 
