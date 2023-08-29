@@ -182,11 +182,11 @@ Consider a path $\rho = q_0 \to q_1 \to \dots \to q_m$. Consider inputs $X \lang
 \end{itemize}
 
 
-\subsection{Connecting constraints} 
+\subsection{Constraints} 
 
 \begin{definition}
     
-Given a fixed path, we say that an assignment of shifts $\{\gamma_i\}$ is \textbf{valid} if
+Given a fixed path, we say that an assignment of shifts $\{\gamma_i\}$ is \textbf{path-valid} if
 
 \[(\tilde{a} \1 + \gamma = \tilde{a} \2) \implies path_A(X \1) \Psi_\rho path_A(X \2)\]
 
@@ -269,9 +269,23 @@ Note that such an index must exist due to the initialization condition on DiPA.
     Thus, the given constraints on $\gamma$ hold if and only if it is valid for $\rho$.
 \end{proof}
 
+We can now reduce checking path-validity to checking the above constraints. 
+
+\begin{definition}
+    We say that $\gamma$ is output-valid for $\rho$ and $\Delta$ if we have 
+
+    \[(\tilde{a} \1 + \gamma = \tilde{a} \2) \implies output_A(X \1) \Psi_o output_A(X \2)\]
+
+    where \[\Psi_o = \{(o_1, o_2) \in \mathcal{O}_\rho : o_1 = o \implies o_2 = o\}\]
+
+    where $\mathcal{O}_\rho$ is the set of all outputs that can be produced by the path $\rho$.
+\end{definition}
+
 \begin{definition}
     Define $\mathcal{P}$ to be the set of all paths in $\mathcal{A}$.
 \end{definition}
+
+Note: we show that this is actually a proof after the next section. 
 
 \begin{definition}
     Given a DiPA $\mathcal{A}$, a \textbf{shift-coupling proof of privacy} for $\mathcal{A}$ is a map 
@@ -283,8 +297,6 @@ Note that such an index must exist due to the initialization condition on DiPA.
 
     such that for all $\rho \in \mathcal{P}$ and all $\Delta \in [-1, 1]^{\rho}$, we have that $\{\gamma_i\}$ is valid for $\rho$ and $\Delta$, and satisfies the output constraints.
 \end{definition}
-
-Note: we show that this is actually a proof after the next section. 
 
 \subsection{The cost of a shift-coupling}
 
@@ -315,11 +327,11 @@ Note: we show that this is actually a proof after the next section.
 \subsection{Privacy}
 
 \begin{theorem}
-    Let $\mathcal{A}$ be a DiPA, and $\Gamma$ be a shift-coupling proof of privacy for $\mathcal{A}$. Then, $\mathcal{A}$ is $(\epsilon, 0)$-differentially private, where $\epsilon = cost(\Gamma)$.
+    Let $\mathcal{A}$ be a DiPA, and $\Gamma$ be a shift-coupling proof of privacy for $\mathcal{A}$ with finite cost $\epsilon = cost(\Gamma)$. Then, $\mathcal{A}$ is $(\epsilon, 0)$-differentially private.
 \end{theorem}
 
 \begin{proof}
-    This is a direct consequence of path validity + output constraints.
+    This is a direct consequence of output validity. 
 \end{proof}
 
 \subsection{Why the above had to be the way it is.}
@@ -362,17 +374,125 @@ which is characterized by $\Gamma^*$ such that for any shift-coupling proof $\Ga
 
 \[\sup_{\rho} \sup_{\Delta} cost(\Gamma^*(\rho, \Delta)) \leq \sup_{\rho} \sup_{\Delta} cost(\Gamma(\rho, \Delta))\]
 
-\[\min_{\gamma \in [-1, 1]^{|\rho|}} cost_{\rho, \Delta} (\gamma)\]
 
 One such $\Gamma^*$ is the shift-coupling proof that chooses \[\Gamma^*(\rho, \Delta) = \inf_{\gamma \in [-1, 1]^{|\rho|}} cost_{\rho, \Delta} (\gamma)\]
 
 which is the shift-coupling proof that chooses the optimal shift for each input difference and path independently. We will now direct our focus to computing $\Gamma^*$ given an automaton $\mathcal{A}$.
 
-\subsection{Simplifying the problem and introducing segments }
+\subsection{Simplifying the problem with fixed $\rho, \Delta$}
 
-\subsection{The problem as a whole}
+\begin{proposition}
+    \label{prop:gammas_non_assignment}
+    Let $\rho, \Delta$ be given, and let 
+    
+    \[\gamma_i^* = \arg \inf_{\gamma \in [-1, 1]^{|\rho|}} cost_{\rho, \Delta} (\gamma)\]
+    
+    For non-assignment transitions $t_i \in \rho$, we have that 
 
-\section{Finite Bounds and Decidability}
+    \begin{align*}
+        \gamma_i^* &= \min(\Delta_i, \gamma_{at(i)}) \qquad \text{if } t_i \text{ has guard } < \\
+        \gamma_i^* &= \max(\Delta_i, \gamma_{at(i)}) \qquad \text{if } t_i \text{ has guard } \geq \\
+    \end{align*}
+\end{proposition}
+
+\begin{proof}
+    TODO
+\end{proof}
+
+% \begin{corollary}
+%     Let $\rho$ be given, and let $t_i$ and $t_j$ be two instances in which the same non-assignment transition is traversed in $\rho$. If $at(i) = at(j)$, then $\gamma_i = \gamma_j$. 
+% \end{corollary}
+
+% \begin{proposition}
+%     If there exists a path $\rho$ which has the same assignment transition traversed twice, then $\mathcal{A}$ is not $\epsilon$-differentially private for any $\epsilon$.
+% \end{proposition}
+
+% \begin{corollary}
+%     Let $\rho$ be given with each assignment transition traversed at most once. Then, if two instances $t_i$, $t_j$ of the same non-assignment transition are traversed in $\rho$, they must have $at(i) = at(j)$.
+% \end{corollary}
+
+% The above corollaries are important as they show that we can roll-up traversals of a non-assignment transition on a cycle into a single traversal, and so only need to consider one shift.
+
+% \begin{definition}
+%     Let $\rho$ be a path. Define the function $acyclic: P \to P$ such that $acyclic(\rho)$ is the path obtained by removing all cycles in $\rho$. (TODO: Perhaps elaborate using Sky's definition of acyclic)
+% \end{definition}
+
+% \begin{definition}
+%     Let $\mathcal{P}_{eq}$ be the set of equivalence classes of paths, where $\rho, \rho' \in \mathcal{P}$ are equivalent if $acyclic(\rho) = acyclic(\rho')$.
+% \end{definition}
+
+\subsection{Simplifying the problem with fixed $\rho$}
+
+\begin{proposition}
+    \label{prop:deltas_non_assignment}
+    Let $\rho$ be given. Let \[\Delta^* = \arg \sup_{\Delta \in [-1, 1]^{|\rho|}} \inf_{\gamma \in [-1, 1]^{|\rho|}} cost_{\rho, \Delta} (\gamma)\]
+    
+    For non-assignment transitions $t_i \in \rho$, we have that 
+
+    \begin{align*}
+        \Delta_i^* = \begin{cases}
+            1 & \text{if } t_i \text{ has guard } < \\
+            -1 & \text{if } t_i \text{ has guard } \geq \\
+        \end{cases}
+    \end{align*}
+\end{proposition}
+
+\begin{proof}
+    TODO
+\end{proof}
+
+\begin{corollary}
+    \label{cor:non_assignment_solved}
+    Let $\rho$ be given. Let \[\Delta^* = \arg \sup_{\Delta \in [-1, 1]^{|\rho|}} \inf_{\gamma \in [-1, 1]^{|\rho|}} cost_{\rho, \Delta} (\gamma)\]
+    \[\gamma^* = \arg \inf_{\gamma \in [-1, 1]^{|\rho|}} cost_{\rho, \Delta}(\gamma)\]
+    As a consequence of Propositions \ref{prop:gammas_non_assignment} and \ref{prop:deltas_non_assignment}, if $t_i \in \rho$ is a non-assignment transition, then \[\gamma_i^* = 
+    \gamma^*_{at(i)}\].
+
+    % Proof: 
+    % \begin{cases}
+    %     \min(\gamma^*_{at(i)}, \Delta^*_i) & \text{if } t_i \text{ has guard } < \\
+    %     \max(\gamma^*_{at(i)}, \Delta^*_i) & \text{if } t_i \text{ has guard } \geq \\
+    %     \end{cases} = \begin{cases}
+    %         \min(\gamma^*_{at(i)}, 1) & \text{if } t_i \text{ has guard } <  \\
+    %         \max(\gamma^*_{at(i)}, -1) & \text{if } t_i \text{ has guard } \geq \\
+    %         \end{cases}
+\end{corollary}
+
+The corollary above is important: it reveals that the only transitions that matter are assignment transitions!
+
+\subsubsection{Identifying segments}
+
+Corollary \ref{cor:non_assignment_solved} allows us to formulate the problem of finding cost-minimal shifts $\gamma$ over maximal input differences $\Delta \in [-1, 1]^{|\rho|}$ given $\rho$ to the problem of finding $\gamma$ and $\Delta$ for only the assignment transitions in $\rho$. 
+
+\begin{definition}
+    Consider a DiPA $\mathcal{A}$. Let $q_i, q_j \in Q$ be such that there is a path $\rho = a_1 \to \dots \to a_m$ such that:
+
+    \begin{itemize}
+        \item $a_1 = q_i$ and $a_m = q_j$
+        \item $a_1 \to a_2$ is the only assignment transition in $\rho$
+        \item There exists an assignment transition out of $q_j$ or it is a terminal state
+    \end{itemize}
+
+    Then we define $seg(q_i, q_j)$ to be the set of all paths from $q_i$ to $q_j$ that are acyclic with their first transition being their only assignment transition. We call such a path $s \in seg(q_i, q_j)$ a \textbf{segment}. 
+\end{definition}
+
+Consider a path $\rho$ with assignment transitions from states $a_0, a_2, \dots, a_{n - 1}$, and terminal state $a_n$. Further, associate $\rho$ with the sequence of segments $s_1 \hookrightarrow s_2 \hookrightarrow \dots \hookrightarrow s_n$ where $s_i \in seg(a_{i - 1}, a_i)$.
+
+\begin{definition}
+    Given a path $\rho$ associated with the sequence of segments $s_1 \hookrightarrow s_2 \hookrightarrow \dots \hookrightarrow s_n$, we define the \textbf{segment cost} of $s_i$ given $\rho$ to be 
+
+    \[segcost_{s_i, \rho, \Delta}(\gamma) = \sum_{t_j \in \rho, t_j \in s} cost(\gamma_j) \]
+
+    TODO: make this pathless
+\end{definition}
+
+Since we know from Corollary \ref{cor:non_assignment_solved} that shifts on a segment are equal to the shift on the assignment transition of the segment, we can find
+
+\begin{align*}
+    \sup_{\Delta \in [-1, 1]^{|\rho|}} \inf_{\gamma \in [-1, 1]^{|\rho|}} cost_{\rho, \Delta} (\gamma) &= \max_{\Delta \in [-1, 1]^{n}} \min_{\gamma \in [-1, 1]^{n}} seg-cost()\\
+\end{align*}
+
+\section{Deciding Privacy in Linear Time}
 
 \begin{proposition}
     
