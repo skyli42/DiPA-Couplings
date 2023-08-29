@@ -147,6 +147,10 @@ A coupling proof of privacy
 
 \section{Shift-coupling proofs of privacy}
 
+\begin{definition}
+    Let  $X = \langle a_1, \dots, a_m \rangle$ be an input, and $\rho = q_0 \to q_1 \to \dots \to q_m$ be a path taken by DiPA $\mathcal{A}$ on $X$. Define $\tilde{a_i}$ to be the value of $\insample$ on the $i$th transition in $\rho$ on input $X$.
+\end{definition}
+
 Consider a path $\rho = q_0 \to q_1 \to \dots \to q_m$. Consider inputs $X \langle 1 \rangle = \langle a_1 \langle 1 \rangle, \dots, a_m \langle 1 \rangle \rangle$ and $X \langle 2 \rangle = \langle a_1 \langle 2 \rangle, \dots, a_m \langle 2 \rangle \rangle$ such that $X \langle 1 \rangle \sim X \langle 2 \rangle$. We wish to show that there exists $\epsilon \in (0, \infty)$ such that
 
 \begin{align*}
@@ -154,10 +158,6 @@ Consider a path $\rho = q_0 \to q_1 \to \dots \to q_m$. Consider inputs $X \lang
 \end{align*}
 
 \hl{TODO}: Write all of this later after consulting with Sky! ALSO, distinguish between path equivalence and output equivalence.
-
-\begin{definition}
-    Let  $X = \langle a_1, \dots, a_m \rangle$ be an input, and $\rho = q_0 \to q_1 \to \dots \to q_m$ be a path taken by DiPA $\mathcal{A}$ on $X$. Define $\tilde{a_i}$ to be the value of $\insample$ on the $i$th transition in $\rho$ on input $X$.
-\end{definition}
 
 \begin{itemize}
     \item The above is true if and only if $path_A(X) \Psi_\rho^{(\epsilon, 0)} path_A(X')$, where
@@ -315,13 +315,13 @@ Note: we show that this is actually a proof after the next section.
 \begin{definition}
     Given a path $\rho$ and input differences $\Delta$, we define the $\rho$-$\Delta$-\textbf{cost} of the shifts $\{\gamma_i\}$ to be
 
-    \[cost_{\rho, \Delta} (\{\gamma_i\}) = \sum_{i = 0}^{|\rho| - 1} |\Delta_i - \gamma_i| \epsilon_i\]
+    \[cost_{\rho} (\{\Delta, \gamma_i\}) = \sum_{i = 0}^{|\rho| - 1} |\Delta_i - \gamma_i| \epsilon_i\]
 \end{definition}
 
 \begin{definition}
     Given a shift-coupling proof of privacy $\Gamma$, we define the privacy cost of $\Gamma$ to be
 
-    \[cost(\Gamma) = \sup_{\rho \in \mathcal{P}} \sup_{\Delta \in [-1, 1]^{\rho}} cost_{\rho, \Delta}(\Gamma(\rho, \Delta))\]
+    \[cost(\Gamma) = \sup_{\rho \in \mathcal{P}} \sup_{\Delta \in [-1, 1]^{\rho}} cost_{\rho}(\Delta, \Gamma(\rho, \Delta))\]
 \end{definition}
 
 \subsection{Privacy}
@@ -357,7 +357,7 @@ When constructing a shift-coupling proof of privacy, we are actually choosing a 
 \end{proposition}
 
 \begin{proof}
-    
+    I have the counterexample written down, I found it by computer. Will write it up soon.
 \end{proof}
 
 \section{The search for a tight proof as an optimization problem}
@@ -367,7 +367,7 @@ When constructing a shift-coupling proof of privacy, we are actually choosing a 
 Now that we have a characterization of shift-coupling proofs of privacy, the problem of finding a tight proof of privacy can be formulated as finding, given $\rho$ and $\Delta$,
 
 \begin{align*}
-    \inf_{\Gamma} cost(\Gamma) &= \inf_{\Gamma} \sup_{\rho} \sup_{\Delta} cost_{\rho, \Delta}(\Gamma(\rho, \Delta)) \\
+    \inf_{\Gamma} cost(\Gamma) &= \inf_{\Gamma} \sup_{\rho} \sup_{\Delta} cost_{\rho}(\Delta, \Gamma(\rho, \Delta)) \\
 \end{align*}
 
 which is characterized by $\Gamma^*$ such that for any shift-coupling proof $\Gamma$, we have
@@ -375,7 +375,7 @@ which is characterized by $\Gamma^*$ such that for any shift-coupling proof $\Ga
 \[\sup_{\rho} \sup_{\Delta} cost(\Gamma^*(\rho, \Delta)) \leq \sup_{\rho} \sup_{\Delta} cost(\Gamma(\rho, \Delta))\]
 
 
-One such $\Gamma^*$ is the shift-coupling proof that chooses \[\Gamma^*(\rho, \Delta) = \inf_{\gamma \in [-1, 1]^{|\rho|}} cost_{\rho, \Delta} (\gamma)\]
+One such $\Gamma^*$ is the shift-coupling proof that chooses \[\Gamma^*(\rho, \Delta) = \inf_{\gamma \in [-1, 1]^{|\rho|}} cost_{\rho} (\Delta, \gamma)\]
 
 which is the shift-coupling proof that chooses the optimal shift for each input difference and path independently. We will now direct our focus to computing $\Gamma^*$ given an automaton $\mathcal{A}$.
 
@@ -385,7 +385,7 @@ which is the shift-coupling proof that chooses the optimal shift for each input 
     \label{prop:gammas_non_assignment}
     Let $\rho, \Delta$ be given, and let 
     
-    \[\gamma_i^* = \arg \inf_{\gamma \in [-1, 1]^{|\rho|}} cost_{\rho, \Delta} (\gamma)\]
+    \[\gamma_i^* = \arg \inf_{\gamma \in [-1, 1]^{|\rho|}} cost_{\rho} (\Delta, \gamma)\]
     
     For non-assignment transitions $t_i \in \rho$, we have that 
 
@@ -396,7 +396,7 @@ which is the shift-coupling proof that chooses the optimal shift for each input 
 \end{proposition}
 
 \begin{proof}
-    TODO
+    Missing, but I have notes for it. The proof comes from noting that shifts non-assignment transitions have only one linear constraint, and so we can solve for them optimally in terms of the shift on the previous assignment transition. 
 \end{proof}
 
 % \begin{corollary}
@@ -425,7 +425,7 @@ which is the shift-coupling proof that chooses the optimal shift for each input 
 
 \begin{proposition}
     \label{prop:deltas_non_assignment}
-    Let $\rho$ be given. Let \[\Delta^* = \arg \sup_{\Delta \in [-1, 1]^{|\rho|}} \inf_{\gamma \in [-1, 1]^{|\rho|}} cost_{\rho, \Delta} (\gamma)\]
+    Let $\rho$ be given. Let \[\Delta^* = \arg \sup_{\Delta \in [-1, 1]^{|\rho|}} \inf_{\gamma \in [-1, 1]^{|\rho|}} cost_{\rho} (\Delta, \gamma)\]
     
     For non-assignment transitions $t_i \in \rho$, we have that 
 
@@ -438,13 +438,13 @@ which is the shift-coupling proof that chooses the optimal shift for each input 
 \end{proposition}
 
 \begin{proof}
-    TODO
+    Missing, but I have notes for it. The proof goes by showing that the solution to the inner problem is at least as much as the solution to the inner problem with $\Delta_i = 1$ or $\Delta_i = -1$ respectively.
 \end{proof}
 
 \begin{corollary}
     \label{cor:non_assignment_solved}
-    Let $\rho$ be given. Let \[\Delta^* = \arg \sup_{\Delta \in [-1, 1]^{|\rho|}} \inf_{\gamma \in [-1, 1]^{|\rho|}} cost_{\rho, \Delta} (\gamma)\]
-    \[\gamma^* = \arg \inf_{\gamma \in [-1, 1]^{|\rho|}} cost_{\rho, \Delta}(\gamma)\]
+    Let $\rho$ be given. Let \[\Delta^* = \arg \sup_{\Delta \in [-1, 1]^{|\rho|}} \inf_{\gamma \in [-1, 1]^{|\rho|}} cost_{\rho} (\Delta, \gamma)\]
+    \[\gamma^* = \arg \inf_{\gamma \in [-1, 1]^{|\rho|}} cost_{\rho}(\Delta, \gamma)\]
     As a consequence of Propositions \ref{prop:gammas_non_assignment} and \ref{prop:deltas_non_assignment}, if $t_i \in \rho$ is a non-assignment transition, then \[\gamma_i^* = 
     \gamma^*_{at(i)}\].
 
@@ -462,7 +462,7 @@ The corollary above is important: it reveals that the only transitions that matt
 
 \subsubsection{Identifying segments}
 
-Corollary \ref{cor:non_assignment_solved} allows us to formulate the problem of finding cost-minimal shifts $\gamma$ over maximal input differences $\Delta \in [-1, 1]^{|\rho|}$ given $\rho$ to the problem of finding $\gamma$ and $\Delta$ for only the assignment transitions in $\rho$. 
+Corollary \ref{cor:non_assignment_solved} allows us to formulate the problem of finding cost-minimal shifts $\gamma$ over maximal input differences $\Delta \in [-1, 1]^{|\rho|}$ given $\rho$ to the problem of finding $\gamma$ and $\Delta$ for only the assignment transitions in $\rho$. This motivates the definition of a \textit{segment} -- a way of identifying paths in order to consider finitely many classes of paths.
 
 \begin{definition}
     Consider a DiPA $\mathcal{A}$. Let $q_i, q_j \in Q$ be such that there is a path $\rho = a_1 \to \dots \to a_m$ such that:
@@ -476,27 +476,136 @@ Corollary \ref{cor:non_assignment_solved} allows us to formulate the problem of 
     Then we define $seg(q_i, q_j)$ to be the set of all paths from $q_i$ to $q_j$ that are acyclic with their first transition being their only assignment transition. We call such a path $s \in seg(q_i, q_j)$ a \textbf{segment}. 
 \end{definition}
 
-Consider a path $\rho$ with assignment transitions from states $a_0, a_2, \dots, a_{n - 1}$, and terminal state $a_n$. Further, associate $\rho$ with the sequence of segments $s_1 \hookrightarrow s_2 \hookrightarrow \dots \hookrightarrow s_n$ where $s_i \in seg(a_{i - 1}, a_i)$.
-
 \begin{definition}
-    Given a path $\rho$ associated with the sequence of segments $s_1 \hookrightarrow s_2 \hookrightarrow \dots \hookrightarrow s_n$, we define the \textbf{segment cost} of $s_i$ given $\rho$ to be 
-
-    \[segcost_{s_i, \rho, \Delta}(\gamma) = \sum_{t_j \in \rho, t_j \in s} cost(\gamma_j) \]
-
-    TODO: make this pathless
+    Given a segment $s \in seg(q_i, q_j)$, define the \textbf{segment family} $segF(s)$ to be the set of all paths $\rho$ from $q_i$ to $q_j$ such that the only assignment transition in $\rho$ is from $q_i$ and $acyclic(\rho) = s$.
 \end{definition}
 
-Since we know from Corollary \ref{cor:non_assignment_solved} that shifts on a segment are equal to the shift on the assignment transition of the segment, we can find
+\begin{proposition}
+    \label{prop:segmenting}
+    Consider a path $\rho$ with assignment transitions from states $a_0, a_2, \dots, a_{n - 1}$, and terminal state $a_n$. There exists a unique sequence of segments $s_1 \hookrightarrow s_2 \hookrightarrow \dots \hookrightarrow s_n$ such we can write $\rho = \rho_1 \circ \rho_2 \circ \dots \circ \rho_n$ where $\rho_i \in segF(s_i)$ for all $i \in \{1, \dots, n\}$.
+\end{proposition} 
 
-\begin{align*}
-    \sup_{\Delta \in [-1, 1]^{|\rho|}} \inf_{\gamma \in [-1, 1]^{|\rho|}} cost_{\rho, \Delta} (\gamma) &= \max_{\Delta \in [-1, 1]^{n}} \min_{\gamma \in [-1, 1]^{n}} seg-cost()\\
-\end{align*}
+\begin{proof}
+    This is straightforward.
+\end{proof}
 
-\section{Deciding Privacy in Linear Time}
+Since we know from Corollary \ref{cor:non_assignment_solved} that shifts on a segment are equal to the shift on the assignment transition of the segment, we need only consider pairs of $\Delta, \gamma \in \R$ for the assignment transition of the segment. From this, we can deduce the $\gamma$-minimal cost with respect to maximal $\Delta$ for any path in the segment family.
+
+\begin{definition}
+    Given a path $\rho \in segF(s)$, we define the $\rho$\textbf{-segment cost of $s$} given $\gamma$, $\Delta$ to be 
+
+    \[\rho\text{-}segcost_{s}(\Delta, \gamma) = \sum_{t_j \in \rho, t_j \in s} cost_{\rho} (\Delta, \gamma_j) \]
+\end{definition}
+
+\begin{definition}
+    Let $s \in seg(q_i, q_j)$ be a segment, and let $\Delta$ and $\gamma$ be input differences and shifts for all reachable transitions from $s$. Define the \textbf{segment cost of $s$} to be
+
+    \[segcost_{s}(\Delta, \gamma) = \sup_{\rho \in segF(s)} \rho\text{-}segcost_{s}(\Delta, \gamma) \]
+\end{definition}
+
+Now, we can begin to formulate finding optimal $\Delta$ and $\gamma$ for a path $\rho$ as an optimization problem over segments.
 
 \begin{proposition}
-    
+    If a segment $s \in seg(q_i, q_j)$ has a cycle with a transition with guard $<$, then for $\Delta, \gamma \in \R$, we have 
+
+    \[segcost_s(\Delta, \gamma) < \infty \iff \gamma = 1 \]
+
+    Similarly, if $s$ has a cycle with a transition with guard $\geq$, then for $\Delta, \gamma \in \R$, we have
+
+    \[segcost_s(\Delta, \gamma) < \infty \iff \gamma = -1\]
 \end{proposition}
+
+\begin{proof}
+    This follows from the fact that the $<$ transitions in a cycle have cost $|1 - \gamma|$, and $\geq$ transitions in a cycle have cost $|(-1) - \gamma|$. There are paths in $segF(s)$ which make $\rho$-$segcost_s(\Delta, \gamma)$ arbitrarily large if these cyclic transitions are traversed with non-zero coupling cost.
+\end{proof}
+
+\subsection{The optimization problem over segments}
+
+By Proposition \ref{prop:segmenting}, we can write any path $\rho$ as a concatenation of paths each belonging to a segment family. Thus, our search for the tight shift-coupling bound
+
+\begin{align*}
+    b = \sup_{\rho} \sup_{\Delta} \inf_{\gamma} cost(\Gamma^*(\rho, \Delta))
+\end{align*}
+
+can be formulated as 
+
+\begin{align*}
+    \max_{s^*} \max_{\Delta \in [-1, 1]^n} &\inf_{\gamma \in [-1, 1]^n} \sum_{i = 1}^n segcost_{s_i}(\Delta, \gamma) \\ 
+    \text{subject to } G_{s^*}(\gamma) \geq 0
+\end{align*}
+
+where $s^*$ varies over all sequences of segments $s_1 \hookrightarrow s_2 \hookrightarrow \dots \hookrightarrow s_n$, and $G_{s^*} : \R^n \to \R^m$ encodes the set of constraints on $\gamma$ given by the segments in $s^*$. In particular: 
+
+\begin{align*}
+    G_{s^*}(\gamma) = 
+        ( &\\
+        &\gamma_{i} - \gamma_{i + 1},  \qquad &\text{if } s_{i + 1} \text{ has guard } < \qquad \forall i \\
+        &\gamma_{i + 1} - \gamma_{i}, \qquad &\text{if } s_{i + 1} \text{ has guard } \geq \qquad \forall i \\[1em]
+        &\gamma_i, \qquad &\text{if } s_i \text{ has a transition that outputs insample or insample'}     \qquad \forall i \\[1em]
+        &\gamma_i - 1, \qquad &\text{if } s_i \text{ has a cycle with a transition with guard } < \qquad \forall i \\
+        &-\gamma_i - 1 \qquad &\text{if } s_i \text{ has a cycle with a transition with guard } \geq \qquad \forall i \\
+        ) &
+    %     \\)
+    %     \left.ther is \right)\\
+    % \text{pathvalid}_{s^*}(\gamma)_i &= \begin{cases}
+    %     \gamma_{i} - \gamma_{i + 1}  & \text{if } s_{i + 1} \text{ has guard } < \\
+    %     \gamma_i - \gamma_{i + 1} & \text{if } s_{i + 1} \text{ has guard } \geq \\ 
+    %     0 & \text{otherwise}
+    % \end{cases}\\[1em]
+    % \text{outputvalid}_{s^*}(\gamma)_i &= \begin{cases}
+    %     \gamma_i & \text{if } s_i \text{ has a transition that outputs insample or insample'}   \\
+    %     0 & \text{otherwise}
+    % \end{cases}\\[1em]
+    % \text{finitesegcost}_{s^*}(\gamma)_i &= \begin{cases}
+    %     \gamma_i & \text{if } s_i \text{ has a transition that outputs insample or insample'}   \\
+    %     0 & \text{otherwise}
+    % \end{cases}\\[1em]
+\end{align*}
+
+The first two constraints correspond to path validity, the third to output validity, and the last two to finiteness of the segment cost.
+
+\subsection{Solving the optimization problem over segments}
+
+Given a sequence of segments $s_1 \hookrightarrow s_2 \hookrightarrow \dots \hookrightarrow s_n$, we note certain properties about the optimization problem
+
+\begin{align*}
+    \max_{\Delta \in [-1, 1]^n} &\inf_{\gamma \in [-1, 1]^n} \sum_{i = 1}^n segcost_{s_i}(\Delta, \gamma) \\ 
+    \text{subject to } G_{s^*}(\gamma) \geq 0
+\end{align*}
+
+\begin{proposition}
+    As a function of $\Delta$, the inner problem
+
+    \[\Delta \mapsto \inf_{\gamma \in [-1, 1]^n} \sum_{i = 1}^n segcost_{s_i}(\Delta, \gamma) \]
+
+    is strongly convex.
+\end{proposition}
+
+\begin{proof}
+    Segment costs are sums of absolute value functions and so are strongly convex, whose sum is convex. The pointwise infimum of convex functions is convex.
+\end{proof}
+
+This shows that the optimization problem as stated is a convex maximization problem, which is NP-hard in general. Several attempts were made to solving this problem efficiently: 
+
+\begin{itemize}
+    \item Brute-force search over all $\Delta \in \{-1, 1\}^n$ and solving a linear program for $\gamma \in [-1, 1]^n$, which is computationally infeasible for large $n$. We can search for $\Delta \in \{-1, 1\}^n$ since convex functions take maxima at the vertices of their domain.
+    \item Linear program sensitivity analysis -- finding conditions on $\Delta$ that do not change optimal shifts for those $\Delta$. Given $\gamma^* \in \{-1, 0, 1\}^n$ with $G_{s^*}(\gamma) \geq 0$, we use sensitivity analysis to find linear constraints on $\Delta$ for which \[\gamma^* = \arg \inf_{\gamma} \sum_i segcost_{s_i}(\Delta, \gamma) \qquad G_{s^*}(\gamma) \geq 0\]
+    This does not work in general as the number of feasible $\gamma$ satisfying constraints given by $G_{s^*}$ could be exponential in $n$, as shown by the following lemma: 
+
+    \begin{lemma}
+        For the constraints on $\gamma$ of the form 
+
+        \[\gamma_1 \leq \gamma_2 \geq \gamma_3 \leq \dots \geq \gamma_n\]
+        
+        there are $f(n - 1)$ feasible $\gamma$ satisfying the constraints, where $f(n)$ is the $n$th Fibonacci number.
+    \end{lemma}
+\end{itemize}
+
+No efficient solutions were found, and I suspect that the problem of finding maximal input differences with respect to minimal coupling shifts is NP-hard. 
+
+We will now present some equi-finiteness results for solutions to this optimization problem and solutions to a relaxed version of the problem. 
+
+\section{Relaxations, Finite DP bounds, and Linear-Time Decidability}
 
 \section{Do shift-coupling proofs of privacy have matching lower bounds?}
 \textbf{Last Updated: Wednesday, June 28th, 2023}
