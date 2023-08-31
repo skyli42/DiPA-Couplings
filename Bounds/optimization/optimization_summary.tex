@@ -106,8 +106,6 @@
     \end{enumerate}
 \end{enumerate}
 
-\section{Definitions}
-
 % \subsection{DiPA}
 
 % Insert definition for DiPA here. 
@@ -143,26 +141,82 @@
 
 \section{Coupling proofs of privacy}
 
-A coupling proof of privacy 
+In order to set up shift-coupling proofs of privacy, we first need to define the notion of a coupling proof of privacy. 
+
+\begin{definition}
+    Let $\mathcal{A}$ be a randomized mechanism taking outputs in $B$. A \textbf{coupling proof of privacy} with cost $\epsilon$ for $\mathcal{A}$ constructs for every two adjacent inputs $X \sim X'$ and output $b \in B$ of $\mathcal{A}$ the coupling 
+
+    \[\mathcal{A}(X) \Psi_{b}^{\#(\epsilon, 0)} A(X')\]
+
+    where 
+
+    \[\Psi_{b} = \{(x_1, x_2) \in B \times B : x_1 = b \implies x_2 = b\}\]
+\end{definition}
+
+\begin{proposition}
+    A randomized mechanism $\mathcal{A}$ is $\epsilon$-differentially private if there exists a coupling proof of privacy for $\mathcal{A}$ with cost $\epsilon$.
+\end{proposition}
+
+\begin{proof}
+    From "Proving Differential Privacy via Probabilistic Couplings" by Barthe et al. 
+\end{proof}
 
 \section{Shift-coupling proofs of privacy}
 
+Shift-coupling proofs of privacy attempt to couple the neighbouring noised inputs read by a DiPA $\mathcal{A}$ on $X \sim X'$ using shifts in order to construct a coupling proof of privacy. In order to do this, we need to understand the correspondence between paths and outputs in a DiPA.
+
+\begin{proposition}
+    Let $\mathcal{A}$ be a DiPA, and $X \sim X'$ be two neighbouring inputs. We have 
+    \begin{align*}
+        path_A(X) = path_A(X') \text{ with same real-valued outputs} \iff output_A(X) = output_A(X')
+    \end{align*}
+    and 
+    \begin{align*}
+        path_A(X) \Psi_\rho path_A(X') \text{ with same real-valued outputs} \iff \forall o \in [o]_\rho : output_A(X) \Psi_o output_A(X')
+    \end{align*}
+    where $[o]_\rho$ is the class of all possible outputs that can be produced by the path $\rho$.
+\end{proposition}
+
+\begin{proof}
+    This directly follows from the output determinism conditions in DiPA. 
+\end{proof}
+
+% Shift-couplings are a technique that relate every path taken by $\mathcal{A}$ on $X$ and $X'$ by a probabilistic coupling, from which we can relate all outputs produced by $\mathcal{A}$ on that path. We wish to construct the coupling
+
+\begin{proposition}
+    \label{prop:output_coupling}
+    If we have for all $X \sim X'$ and paths $\rho$ taken by $\mathcal{A}$ that 
+    \begin{align*}
+        output_A(X) \Psi_{\rho}^{\#(\epsilon, 0)} output_A(X') \\[1em]
+        \Psi_{\rho} = \{(o_1, o_2) \in B \times B : o_1 \in [o]_\rho \implies o_1 = o_2\}
+    \end{align*}
+
+    then $\mathcal{A}$ is $(\epsilon, 0)$-differentially private.
+\end{proposition}
+
+\begin{proof}
+    For any output $o \in B$, find the path $\rho$ for which $o \in [o]_\rho$. Then we can construct the coupling
+
+    \[output_A(X) \Psi_{o}^{\#} output_A(X')\]
+
+    where 
+
+    \[\Psi_{o} = \{(o_1, o_2) \in B \times B : o_1 = o \implies o_2 = o\}\]
+
+    which shows $(\epsilon, 0)$-privacy. 
+\end{proof}
+
 \begin{definition}
     Let  $X = \langle a_1, \dots, a_m \rangle$ be an input, and $\rho = q_0 \to q_1 \to \dots \to q_m$ be a path taken by DiPA $\mathcal{A}$ on $X$. Define $\tilde{a_i}$ to be the value of $\insample$ on the $i$th transition in $\rho$ on input $X$.
-\end{definition}`'
+\end{definition}
 
-Consider a path $\rho = q_0 \to q_1 \to \dots \to q_m$. Consider inputs $X \langle 1 \rangle = \langle a_1 \langle 1 \rangle, \dots, a_m \langle 1 \rangle \rangle$ and $X \langle 2 \rangle = \langle a_1 \langle 2 \rangle, \dots, a_m \langle 2 \rangle \rangle$ such that $X \langle 1 \rangle \sim X \langle 2 \rangle$. We wish to show that there exists $\epsilon \in (0, \infty)$ such that
+A shift-coupling proof of privacy attempts to construct the couplings in Proposition \ref{prop:output_coupling}  by constructing the couplings for $X = \langle a_1 \1, \dots, a_m \1 \rangle$ and $X' = \langle a_1 \2, \dots, a_m \2 \rangle$ for all $a_i \1, a_i \2 \in [-1, 1]$.
 
-\begin{align*}
-    \Pr\left[\rho | X \langle 1 \rangle \right] \leq \exp(\epsilon) \cdot \Pr\left[\rho | X \langle 2 \rangle\right]
-\end{align*}
-
-\hl{TODO}: Write all of this later after consulting with Sky! ALSO, distinguish between path equivalence and output equivalence.
 
 \begin{itemize}
     \item The above is true if and only if $path_A(X) \Psi_\rho^{(\epsilon, 0)} path_A(X')$, where
 
-    \[\Psi_\rho = \{(\rho_1, \rho_2) \in P \times P : \rho_1 = \rho \implies \rho_2 = \rho \} \]
+    \[\Psi_\rho = \{(\rho_1, \rho_2) \in P \times P : \forall o \in [o]_{\rho_1} : output_A(X) = o \implies output_A(X') = o \} \]
     
     Shift-couplings are a technique to show that $path_A(X) \Psi_\rho^{(\epsilon, 0)} path_A(X')$ by constructing the couplings
     
@@ -170,9 +224,9 @@ Consider a path $\rho = q_0 \to q_1 \to \dots \to q_m$. Consider inputs $X \lang
 
     and showing that 
 
-    \[(\tilde{a} \1 + \gamma = \tilde{a} \2) \implies path_A(X \1) \Psi_\rho path_A(X \2)\]
+    \[(\tilde{a} \1 + \gamma = \tilde{a} \2) \implies output_A(X \1) \Psi_\rho output_A(X \2)\]
 
-    thus showing that $path_A(X) \Psi_\rho^{(\epsilon, 0)} path_A(X')$ for \[\epsilon = \sum_{i = 0}^{m - 1} \epsilon_i\]
+    thus showing that $output_A(X) \Psi_\rho^{(\epsilon, 0)} output_A(X')$ for \[\epsilon = \sum_{i = 0}^{m - 1} \epsilon_i\]
     
     % where \[\psi_{\rho, i} = \{(\rho_1, \rho_2) \in P \times P : \rho_1[i] = \rho[i] \implies \rho_2[i] = \rho[i]\}\]
     
@@ -809,6 +863,7 @@ The relevant definitions and lemmata for proofs in this section are in the appen
 \subsection{$S^L$ is tight when there is an $L$-cycle}
 
 \begin{theorem} ($S^L$ is tight for segments with $L$-cycles)
+    \label
     Consider a segment $s \in seg(\mathcal{A})$ corresponding to the sequence of states $q_0 \to q_1 \to \dots \to q_m$. If $s$ contains an $L$-cycle, then the L-cost of the segment gives a tight upper bound on the privacy loss of the segment. That is, \[\loss(s) =  \exp\left(2 \epsilon_0 + \sum_{i > 0: guard(a_i) = \insamplegeqx} 2\epsilon_i \right)\]
 
     given that state $q_i$ draws from the distribution $Lap(0, 1/\epsilon_i)$ to noise \insample.
@@ -857,10 +912,10 @@ The relevant definitions and lemmata for proofs in this section are in the appen
     We know that $S^L$ is tight, and gives the bound $\exp(2\epsilon(m + 1))$. Thus, we have shown that $\loss(s) = \exp(2\epsilon(m + 1))$, as desired.
 \end{proof}
 
-\subsection{An alternative coupling strategy: $S^J$}
+\subsection{Investigating costs of alternative coupling strategies}
 
 \begin{definition}
-    $S^J$ is a coupling strategy in which we do not couple the noised threshold, but couple the results of all other transitions with twice the cost. [TODO: Describe in more detail]
+    $S^J$ is a coupling strategy in which we do not couple the noised threshold, but couple the results of all other transitions with twice the cost. 
 \end{definition}
 
 \begin{theorem}
@@ -868,7 +923,7 @@ The relevant definitions and lemmata for proofs in this section are in the appen
 \end{theorem}
 
 \begin{proof}
-    I have a proof for this, but I will add it into this document soon. [TODO]
+    Follows from some algebra.
 
     \begin{figure}[H]
         \centering
@@ -895,11 +950,9 @@ The relevant definitions and lemmata for proofs in this section are in the appen
     Note June 28 2023: I think this is not true for segments that contain both $L$-transitions and $G$-transitions.
 \end{proof}
 
-\appendix
+\subsection{Lemmata}
 
-\section{Lemmata}
-
-\subsection{Properties of $f_\epsilon$ and $F_\epsilon$}
+\subsubsection{Properties of $f_\epsilon$ and $F_\epsilon$}
 
 \begin{lemma} 
     \label{lemma:F_equality_neg}
@@ -920,7 +973,7 @@ The relevant definitions and lemmata for proofs in this section are in the appen
     \[f_\epsilon(x) = \exp(2\epsilon) f_\epsilon(x + 2) \]
 \end{lemma}
 
-\subsection{For the proof of Theorem 1}
+\subsubsection{For the proof of Theorem 1}
 \begin{lemma} 
     \label{lemma:sl_tight_minus_infty} 
     \[\int_{-\infty}^{-2} f_{\epsilon}(x) F_{\epsilon}(x + 2)^\ell (1 - F_{\epsilon}(x))^m \dif x = \exp(2 \epsilon \ell) \int_{-\infty}^{-2} f_{\epsilon}(x) F_{\epsilon}(x)^\ell (1 - F_{\epsilon}(x))^m \dif x\]
