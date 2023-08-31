@@ -149,7 +149,7 @@ A coupling proof of privacy
 
 \begin{definition}
     Let  $X = \langle a_1, \dots, a_m \rangle$ be an input, and $\rho = q_0 \to q_1 \to \dots \to q_m$ be a path taken by DiPA $\mathcal{A}$ on $X$. Define $\tilde{a_i}$ to be the value of $\insample$ on the $i$th transition in $\rho$ on input $X$.
-\end{definition}
+\end{definition}`'
 
 Consider a path $\rho = q_0 \to q_1 \to \dots \to q_m$. Consider inputs $X \langle 1 \rangle = \langle a_1 \langle 1 \rangle, \dots, a_m \langle 1 \rangle \rangle$ and $X \langle 2 \rangle = \langle a_1 \langle 2 \rangle, \dots, a_m \langle 2 \rangle \rangle$ such that $X \langle 1 \rangle \sim X \langle 2 \rangle$. We wish to show that there exists $\epsilon \in (0, \infty)$ such that
 
@@ -315,7 +315,7 @@ Note: we show that this is actually a proof after the next section.
 \begin{definition}
     Given a path $\rho$ and input differences $\Delta$, we define the $\rho$-$\Delta$-\textbf{cost} of the shifts $\{\gamma_i\}$ to be
 
-    \[cost_{\rho} (\{\Delta, \gamma_i\}) = \sum_{i = 0}^{|\rho| - 1} |\Delta_i - \gamma_i| \epsilon_i\]
+    \[cost_{\rho} (\Delta, \{\gamma_i\}) = \sum_{i = 0}^{|\rho| - 1} |\Delta_i - \gamma_i| \epsilon_i\]
 \end{definition}
 
 \begin{definition}
@@ -339,6 +339,7 @@ Note: we show that this is actually a proof after the next section.
 Since the total validity constraints on $\{\gamma_i\}$ does not depend on $X \1$ and $X \2$, one might be tempted to produce a proof of privacy by choosing $\gamma_i$ to be the same for all $X \1$ and $X \2$, given a path $\rho$. Although this is possible, this does not in general produce a tight proof of privacy.
 
 \begin{proposition}
+    \label{prop:proofs_must_regard_input_differences}
     \textbf{(A tight proof must regard input differences)} There exists a family of DiPA $\mathcal{F}$ and for $\mathcal{A} \in \mathcal{F}$, a shift-coupling proof $\Gamma^*: \mathcal{P} \to ([-1, 1]^{\rho} \to [-1, 1]^{|\rho|})$ such that for all assignments $\Pi: \mathcal{P} \to [-1, 1]^{\rho}$ of paths to shifts, we have 
 
     \[cost(\Gamma^*) < cost(\Pi)\]
@@ -351,6 +352,7 @@ Since the total validity constraints on $\{\gamma_i\}$ does not depend on $X \1$
 When constructing a shift-coupling proof of privacy, we are actually choosing a shift for each transition. Is it reasonable to ignore paths, and just choose a shift for each transition? The answer is no, as the following proposition shows.
 
 \begin{proposition}
+    \label{prop:proofs_must_regard_paths}
     \textbf{(A tight proof must regard paths)} There exists a family of DiPA $\mathcal{F}$ and for $\mathcal{A} \in \mathcal{F}$, a shift-coupling proof $\Gamma^*: \mathcal{P} \to ([-1, 1]^{\rho} \to [-1, 1]^{|\rho|})$ such that for all assignments $\Pi: E \to ([-1, 1]^{\rho} \to [-1, 1]^{\rho})$ of transitions and differences to shifts, we have
 
     \[cost(\Gamma^*) < cost(\Pi)\]
@@ -603,9 +605,201 @@ This shows that the optimization problem as stated is a convex maximization prob
 
 No efficient solutions were found, and I suspect that the problem of finding maximal input differences with respect to minimal coupling shifts is NP-hard. 
 
-We will now present some equi-finiteness results for solutions to this optimization problem and solutions to a relaxed version of the problem. 
+We will now present some bounds with respect to solutions to this optimization problem and solutions to a relaxed version of the problem. 
 
-\section{Relaxations, Finite DP bounds, and Linear-Time Decidability}
+\section{A Relaxation and Linear-Time Decidability}
+
+\subsection{Relaxing the optimization problem}
+
+Despite Proposition \ref{prop:proofs_must_regard_input_differences}, we will now consider shift-coupling proofs of privacy that do not regard input differences, and investigate the tightness of such proofs.
+
+Recall that a shift-coupling proof of privacy is a map 
+
+\begin{align*}
+    \Gamma: \mathcal{P} &\to ([-1, 1]^{\rho} \to [-1, 1]^{|\rho|})\\
+    \rho &\mapsto (\Delta \mapsto \{\gamma_i\})
+\end{align*}
+
+that assigns a shift to each path and sequence of input differences. We will consider shifts for which $\Gamma(\rho, \Delta)$ is constant for all $\Delta$. We will call such a shift-coupling proof a \textbf{relaxed shift-coupling proof of privacy}.\footnote{I'm open to suggestions for a better name.}
+
+The privacy bound afforded by such a proof is given by
+
+\begin{align*}
+    cost(\Gamma) = \sup_{\rho \in \mathcal{P}} \sup_{\Delta \in [-1, 1]^{\rho}} cost_{\rho}(\Delta, \Gamma(\rho, \Delta))
+\end{align*}
+
+We will now see what the search for a relaxed shift-coupling proof of privacy looks like.
+
+\begin{proposition}
+    \label{prop:relaxed_shifts}
+    Let $\rho$ be given. Let 
+
+    \begin{align*}
+        \gamma^* = \arg &\inf_{\gamma \in [-1, 1]^{|\rho|}} \sup_{\Delta \in [-1, 1]^{|\rho|}} cost_{\rho}(\Delta, \gamma)\\
+        &\text{subject to } G_{\rho}(\gamma) \geq 0
+    \end{align*}
+
+    and define $\Gamma^*(\rho, \Delta) = \gamma^*$ for all $\Delta$. Then, for all relaxed shift-coupling proofs of privacy $\Gamma$, we have $cost(\Gamma^*) \leq cost(\Gamma)$.
+\end{proposition}
+
+\begin{proof}
+    For fixed path $\rho$, we see that $\Gamma^*$ has at most the cost of $\Gamma$ on that path. This remains true when we take the supremum over all paths $\rho$.
+\end{proof}
+
+\begin{proposition}
+    (Relaxed shift-coupling proofs over segments) The search for a relaxed shift-coupling proof of privacy can be formulated as
+
+    \begin{align*}
+        \max_{s^*} &\inf_{\gamma \in [-1, 1]^n} \sup_{\Delta \in [-1, 1]^{n}}\sum_{i = 1}^n segcost_{s_i}(\Delta, \gamma) \\ 
+        &\text{subject to } G_{s^*}(\gamma) \geq 0
+    \end{align*}
+
+    where $s^*$ varies over all sequences of segments $s_1 \hookrightarrow s_2 \hookrightarrow \dots \hookrightarrow s_n$, and $G_{s^*} : \R^n \to \R^m$ encodes the set of constraints on $\gamma$ given by the segments in $s^*$. 
+\end{proposition}
+
+\begin{proof}
+    Writing the problem over segments requires exactly the same steps as the formulation of the non-relaxed optimization problem over segments. The only difference is that we have switched $\gamma$ and $\Delta$. 
+\end{proof}
+
+\begin{lemma}
+    \label{lemma:solved_delta_relaxed_shifts}
+    For $\gamma \in [-1, 1]$, we have that 
+
+    \[\sup_{\Delta \in [-1, 1]} |\gamma - \Delta| = 1 + |\gamma|\]
+\end{lemma}
+
+\begin{proof}
+    Choosing $\Delta = -1 \cdot \sgn(\gamma)$ shows that the supremum is at least $1 + |\gamma|$. To see that the supremum does not exceed $1 + |\gamma|$, use the triangle inequality.
+\end{proof}
+
+\begin{proposition}
+    For sequence of segments $s_1 \hookrightarrow s_2 \hookrightarrow \dots \hookrightarrow s_n$ and $\gamma \in [-1, 1]^n$, we have that
+
+    \[\arg \sup_{\Delta \in [-1, 1]^n} \sum_{i = 1}^n segcost_\rho(\Delta, \gamma) = -1 \cdot \sgn(\gamma)\]
+
+    where $\sgn(\gamma)$ is the vector with $i$th entry $\sgn(\gamma_i)$, for which 
+
+    \[\sum_{i = 1}^n segcost_\rho(-1 \cdot \sgn(\gamma), \gamma) = \sum_{i = 1}^n \left((1 + |\gamma_i|)\epsilon_i^0 + \sum_{t_j \in s_i, guard(t_j) = <} (1 - \gamma_i) \epsilon_i^j +\sum_{t_j \in s_i, guard(t_j) = <} (1 + \gamma_i) \epsilon_i^j \right) \]
+
+    where $\epsilon_i^j$ is the scale factor of the Laplace noise added to $\insample$ at transition $t_j$ in segment $s_i$.
+\end{proposition}
+
+\begin{proof}
+    The main idea in the proof is that $\Delta$ is unconstrained, and each component $\Delta_i$ can be dealt with separately using Lemma \ref{lemma:solved_delta_relaxed_shifts}. 
+\end{proof}
+
+We then see that we can find the minimum cost relaxed coupling shifts for a sequence of segments $s_1 \hookrightarrow s_2 \hookrightarrow \dots \hookrightarrow s_n$ by solving the following linear program with absolute values: 
+
+\begin{align*}
+    \min_{\gamma \in [-1, 1]^n} &\sum_{i = 1}^n segcost_{s_i}(-1 \cdot sgn(\gamma), \gamma) \\
+    \text{subject to } G_{s^*}(\gamma) &\geq 0
+\end{align*}
+
+since the objective function is linear in $\gamma$ and $|\gamma|$. Further, the number of constraints is linear in $n$. Such programs can be solved using the simplex or ellipsoid methods. \footnote{I am yet verifying that it meets the conditions for strongly polynomial solvability.}
+
+
+\subsection{Closeness of relaxed shift-coupling proofs to tight shift-coupling proofs}
+
+We will now show that the cost of a relaxed shift-coupling proof of privacy is can be bounded in terms of the cost of a tight shift-coupling proof of privacy on a sequence of segments, and vice versa. 
+
+\begin{theorem}
+    \label{thm:relaxed_shifts_close}
+    Let $\mathcal{A}$ be a DiPA, and let $\Gamma^*$ be an optimal shift-coupling proof of privacy. Let $\beta^*$ be a relaxed shift-coupling proof of privacy with minimal cost. Consider a sequence of segments $s^* = s_1 \hookrightarrow s_2 \hookrightarrow \dots \hookrightarrow s_n$. Then, for any path $\rho$ with $acyclic(\rho) = s^*$, we have
+
+    \[cost_\rho(\Gamma^*) \leq cost_\rho(\beta^*) \leq cost_\rho(\Gamma^*) + \sum_{i = 1}^n \epsilon_{i, 0} \]
+\end{theorem}
+
+\begin{proof}
+    We immediately have $cost_\rho(\Gamma^*) \leq cost_\rho(\beta^*)$ since $\Gamma^*$ is the optimal shift-coupling proof of privacy. We will now show that $cost_\rho(\beta^*) \leq cost_\rho(\Gamma^*) + \sum_{i = 1}^n \epsilon_{i, 0}$.
+
+    We can write 
+
+    \begin{align*}
+        cost_\rho(\Gamma^*) &= \sup_{\Delta} \inf_{\gamma} \sum_{i = 1}^n segcost_{s_i}(\Delta, \gamma) \qquad \text{ with } G_{s^*}(\gamma) \geq 0\\
+        &= \sup_{\Delta} \inf_{\gamma} \sum_{i = 1}^n \left(|\gamma_i - \Delta_i| \epsilon_{i, 0} + m_i \gamma_i + c_i\right) \qquad \text{ with } G_{s^*}(\gamma) \geq 0\\
+    \end{align*}
+
+    for some $m_i, c_i \in \R$. Similarly, 
+
+    \begin{align*}
+        cost_\rho(\beta^*) &= \inf_{\gamma} \sup_{\Delta} \sum_{i = 1}^n segcost_{s_i}(\Delta, \gamma) \qquad \text{ with } G_{s^*}(\gamma) \geq 0\\
+        &= \inf_{\gamma} \sum_{i = 1}^n \left((1 + |\gamma_i|) \epsilon_{i, 0} + m_i \gamma_i + c_i\right) \qquad \text{ with } G_{s^*}(\gamma) \geq 0\\
+    \end{align*}
+
+    for the same $m_i, c_i \in \R$. Now, applying the reverse triangle inequality, we get that
+
+    \begin{align*}
+        \sum_{i = 1}^n \left(|\gamma_i - \Delta_i| \epsilon_{i, 0} + m_i \gamma_i + c_i\right) &\geq \sum_{i = 1}^n \left((|\gamma_i| - |\Delta_i|) \epsilon_{i, 0} + m_i \gamma_i + c_i\right)\\
+        &= \sum_{i = 1}^n \left((|\gamma_i|) \epsilon_{i, 0} + m_i \gamma_i + c_i\right) - \sum_{i = 1}^n |\Delta_i| \epsilon_{i, 0}\\
+        &= \sum_{i = 1}^n \left((1 + |\gamma_i|) \epsilon_{i, 0} + m_i \gamma_i + c_i\right) - \sum_{i = 1}^n (1 + |\Delta_i|) \epsilon_{i, 0}\\[1em]
+        \inf_{\gamma} \sum_{i = 1}^n \left(|\gamma_i - \Delta_i| \epsilon_{i, 0} + m_i \gamma_i + c_i\right) &\geq \inf_\gamma \sum_{i = 1}^n \left((1 + |\gamma_i|) \epsilon_{i, 0} + m_i \gamma_i + c_i\right) - \sum_{i = 1}^n (1 + |\Delta_i|) \epsilon_{i, 0} \qquad \text{ with } G_{s^*}(\gamma) \geq 0\\[1em]
+        \sup_{\Delta} \inf_{\gamma} \sum_{i = 1}^n \left(|\gamma_i - \Delta_i| \epsilon_{i, 0} + m_i \gamma_i + c_i\right) &\geq \sup_{\Delta} \left[\inf_\gamma \sum_{i = 1}^n \left((1 + |\gamma_i|) \epsilon_{i, 0} + m_i \gamma_i + c_i\right) - \sum_{i = 1}^n (1 + |\Delta_i|) \epsilon_{i, 0}\right] \qquad \text{ with } G_{s^*}(\gamma) \geq 0\\[1em]
+        &= \inf_\gamma \sum_{i = 1}^n \left((1 + |\gamma_i|) \epsilon_{i, 0} + m_i \gamma_i + c_i\right) - \sum_{i = 1}^n \epsilon_{i, 0} \qquad \text{ with } G_{s^*}(\gamma) \geq 0\\[1em]
+        &= cost_\rho(\beta^*) - \sum_{i = 1}^n \epsilon_{i, 0}
+    \end{align*}
+
+    finally showing that 
+
+    \[cost_{\rho}(\beta^*) \leq cost_{\rho}(\Gamma^*) + \sum_{i = 1}^n \epsilon_{i, 0}\]
+\end{proof}
+
+This is a result that shows that the cost of a relaxed shift-coupling proof of privacy is close to the cost of a tight shift-coupling proof of privacy on a sequence of segments. This result is important because it allows us to bound the optimal shift-coupling cost in terms of the optimal relaxed shift-coupling cost, which is relatively easy to compute given a sequence of segments. 
+
+It also allows us to decide privacy by solving a simpler optimization problem. However, the next section shows that we can decide privacy in linear time without solving any optimization problems.
+
+\subsection{Deciding privacy in linear time}
+
+\begin{theorem}
+    A DiPA $\mathcal{A}$ is differentially private if and only if there exists a shift-coupling proof of privacy $\Gamma$ with finite cost. 
+\end{theorem}
+
+\begin{proof}
+    This is one of Sky's theorems. 
+\end{proof}
+
+\begin{definition}
+    Define the \textbf{segment shift graph} of a DiPA $\mathcal{A}$ to be the directed graph $G = (V, E)$ where: 
+
+    \begin{itemize}
+        \item For every segment $s_i \in seg(\mathcal{A})$, there is a vertex $v_i \in V$ representing the coupling shift on the assignment transition of $s_i$.
+        \item For every pair of segments $(s_i, s_j)$ which have the connecting constraint $\gamma_i \leq \gamma_j$, there is an edge $(v_i, v_j) \in E$.
+        \item There are nodes ${\bf 1, -1}\ \in V$ such that: 
+        \begin{itemize}
+            \item The only edge incident to $\bf -1$ is $({\bf -1}, u)$ where $u$ is the segment that initializes $\mathcal{A}$.
+            \item All terminal segments $s_i$ have an edge $(v_i, {\bf 1})$.
+        \end{itemize}
+    \end{itemize}
+\end{definition}
+
+\begin{lemma}
+    \label{lemma:segpath}
+    Let there exist a path $v_1 \to \dots \to v_k$ in the segment shift graph of $\mathcal{A}$, and let the corresponding segments be $s_{i_1}, \dots, s_{i_k}$. Then we either have that 
+    
+    \[s_{i_1} \hookrightarrow s_{i_2} \hookrightarrow \dots \hookrightarrow s_{i_k} \qquad \text{ and } \qquad guard(s_{i_k}) = <\]
+    
+    or 
+    
+    \[s_{i_k} \hookrightarrow s_{i_{k - 1}} \hookrightarrow \dots \hookrightarrow s_{i_1} \qquad \text{ and } \qquad guard(s_{i_k}) = \geq\]
+\end{lemma}
+
+\begin{proof}
+    We will use induction on $k$ with base case $k = 2$. If we have $v_1 \to v_2$ in the segment shift graph, then we either have that $s_{i_1} \hookrightarrow s_{i_2}$ with $guard(s_{i_2}) = <$, or that $s_{i_2} \hookrightarrow s_{i_1}$ with $guard(s_{i_2}) = \geq$. For a path with length $k + 1$ in the segment shift graph, let us assume the desired result. Then apply the base case on $s_{i_{k}} \to s_{i_{k + 1}}$ to conclude. 
+\end{proof}
+
+\begin{theorem}
+    A DiPA $\mathcal{A}$ is differentially private if and only if there does not exist a path from $\bf 1$ to $\bf -1$ in the segment shift graph of $\mathcal{A}$.
+\end{theorem}
+
+\begin{proof}
+    $(\implies)$ Suppose that $\mathcal{A}$ is differentially private. Then there exists a shift-coupling proof of privacy $\Gamma$ with finite cost. Assume that there exists a path ${\bf 1} \to v_1 \to \dots \to v_k \to {\bf -1}$ in the segment shift graph of $\mathcal{A}$. Without loss of generality, we have the sequence of segments $s_{i_1} \hookrightarrow \dots \hookrightarrow s_{i_k}$ corresponding to the path by Lemma \ref{lemma:segpath}. We can then extend this to a sequence of segments $s_1 \to \dots \to s_{i_1} \to \dots \to s_{i_k} \to \dots \to s_n$ that begins with the initialization segment and ends with a terminal segment. 
+
+    If we restrict the segment-shift graph to only these segments, we find that any assignment of shifts $\gamma$ would not be valid, as we would be able to construct a sequence of inequalities to conclude that $1 \leq -1$, which is false. Thus, there is no valid assignment of shifts $\gamma$ for this sequence of segments with finite cost, and so $\Gamma$ is not a shift-coupling proof of privacy with finite cost. This is a contradiction.
+
+    $(\impliedby)$ This direction follows from the fact that there is \textit{some} valid assignment of shifts $\gamma$ with finite cost on each segment, and so we can construct a shift-coupling proof of privacy $\Gamma$ with finite cost.
+\end{proof}
+
+
+We can construct the segment shift graph of a DiPA in linear time, and check for a path from $\bf 1$ to $\bf -1$ in linear time using a breadth-first search. Thus, we can decide privacy in linear time.
 
 \section{Do shift-coupling proofs of privacy have matching lower bounds?}
 \textbf{Last Updated: Wednesday, June 28th, 2023}
