@@ -684,7 +684,7 @@ that assigns a shift to each path and sequence of input differences. We will con
 The privacy bound afforded by such a proof is given by
 
 \begin{align*}
-    cost(\Gamma) = \sup_{\rho \in paths(\mathcal{A})} \sup_{\Delta \in [-1, 1]^{\rho}} cost_{\rho}(\Delta, \Gamma(\rho, \Delta))
+    cost(\Gamma) = \sup_{\rho \in paths(\mathcal{A})} \sup_{\Delta \in [-1, 1]^{\rho}} \rho\text{-}\Delta\text{-}cost(\Gamma(\rho, \Delta))
 \end{align*}
 
 We will now see what the search for a relaxed shift-coupling proof of privacy looks like.
@@ -694,7 +694,7 @@ We will now see what the search for a relaxed shift-coupling proof of privacy lo
     Let $\rho$ be given. Let 
 
     \begin{align*}
-        \gamma^* = \arg &\inf_{\gamma \in [-1, 1]^{|\rho|}} \sup_{\Delta \in [-1, 1]^{|\rho|}} cost_{\rho}(\Delta, \gamma)\\
+        \gamma^* = \arg &\inf_{\gamma \in [-1, 1]^{|\rho|}} \sup_{\Delta \in [-1, 1]^{|\rho|}} \rho\text{-}\Delta\text{-}cost( \gamma)\\
         &\text{subject to } G_{\rho}(\gamma) \geq 0
     \end{align*}
 
@@ -765,23 +765,23 @@ We will now show that the cost of a relaxed shift-coupling proof of privacy is c
     \label{thm:relaxed_shifts_close}
     Let $\mathcal{A}$ be a DiPA, and let $\Gamma^*$ be an optimal shift-coupling proof of privacy. Let $\beta^*$ be a relaxed shift-coupling proof of privacy with minimal cost. Consider a sequence of segments $s^* = s_1 \hookrightarrow s_2 \hookrightarrow \dots \hookrightarrow s_n$. Then, for any path $\rho$ with $acyclic(\rho) = s^*$, we have
 
-    \[cost_\rho(\Gamma^*) \leq cost_\rho(\beta^*) \leq cost_\rho(\Gamma^*) + \sum_{i = 1}^n \epsilon_{i, 0} \]
+    \[\rho\text{-}cost(\Gamma^*) \leq \rho\text{-}cost(\beta^*) \leq \rho\text{-}cost(\Gamma^*) + \sum_{i = 1}^n \epsilon_{i, 0} \]
 \end{theorem}
 
 \begin{proof}
-    We immediately have $cost_\rho(\Gamma^*) \leq cost_\rho(\beta^*)$ since $\Gamma^*$ is the optimal shift-coupling proof of privacy. We will now show that $cost_\rho(\beta^*) \leq cost_\rho(\Gamma^*) + \sum_{i = 1}^n \epsilon_{i, 0}$.
+    We immediately have $\rho\text{-}cost(\Gamma^*) \leq \rho\text{-}cost(\beta^*)$ since $\Gamma^*$ is the optimal shift-coupling proof of privacy. We will now show that $\rho\text{-}(cost\beta^*) \leq \rho\text{-}cost(\Gamma^*) + \sum_{i = 1}^n \epsilon_{i, 0}$.
 
     We can write 
 
     \begin{align*}
-        cost_\rho(\Gamma^*) &= \sup_{\Delta} \inf_{\gamma} \sum_{i = 1}^n s_i\text{-}segcost(\Delta, \gamma) \qquad \text{ with } G_{s^*}(\gamma) \geq 0\\
+        \rho\text{-}cost(\Gamma^*) &= \sup_{\Delta} \inf_{\gamma} \sum_{i = 1}^n s_i\text{-}segcost(\Delta, \gamma) \qquad \text{ with } G_{s^*}(\gamma) \geq 0\\
         &= \sup_{\Delta} \inf_{\gamma} \sum_{i = 1}^n \left(|\gamma_i - \Delta_i| \epsilon_{i, 0} + m_i \gamma_i + c_i\right) \qquad \text{ with } G_{s^*}(\gamma) \geq 0\\
     \end{align*}
 
     for some $m_i, c_i \in \R$. Similarly, 
 
     \begin{align*}
-        cost_\rho(\beta^*) &= \inf_{\gamma} \sup_{\Delta} \sum_{i = 1}^n s_i\text{-}segcost(\Delta, \gamma) \qquad \text{ with } G_{s^*}(\gamma) \geq 0\\
+        \rho\text{-}cost(\beta^*) &= \inf_{\gamma} \sup_{\Delta} \sum_{i = 1}^n s_i\text{-}segcost(\Delta, \gamma) \qquad \text{ with } G_{s^*}(\gamma) \geq 0\\
         &= \inf_{\gamma} \sum_{i = 1}^n \left((1 + |\gamma_i|) \epsilon_{i, 0} + m_i \gamma_i + c_i\right) \qquad \text{ with } G_{s^*}(\gamma) \geq 0\\
     \end{align*}
 
@@ -794,12 +794,12 @@ We will now show that the cost of a relaxed shift-coupling proof of privacy is c
         \inf_{\gamma} \sum_{i = 1}^n \left(|\gamma_i - \Delta_i| \epsilon_{i, 0} + m_i \gamma_i + c_i\right) &\geq \inf_\gamma \sum_{i = 1}^n \left((1 + |\gamma_i|) \epsilon_{i, 0} + m_i \gamma_i + c_i\right) - \sum_{i = 1}^n (1 + |\Delta_i|) \epsilon_{i, 0} \qquad \text{ with } G_{s^*}(\gamma) \geq 0\\[1em]
         \sup_{\Delta} \inf_{\gamma} \sum_{i = 1}^n \left(|\gamma_i - \Delta_i| \epsilon_{i, 0} + m_i \gamma_i + c_i\right) &\geq \sup_{\Delta} \left[\inf_\gamma \sum_{i = 1}^n \left((1 + |\gamma_i|) \epsilon_{i, 0} + m_i \gamma_i + c_i\right) - \sum_{i = 1}^n (1 + |\Delta_i|) \epsilon_{i, 0}\right] \qquad \text{ with } G_{s^*}(\gamma) \geq 0\\[1em]
         &= \inf_\gamma \sum_{i = 1}^n \left((1 + |\gamma_i|) \epsilon_{i, 0} + m_i \gamma_i + c_i\right) - \sum_{i = 1}^n \epsilon_{i, 0} \qquad \text{ with } G_{s^*}(\gamma) \geq 0\\[1em]
-        &= cost_\rho(\beta^*) - \sum_{i = 1}^n \epsilon_{i, 0}
+        &= \rho\text{-}cost(\beta^*) - \sum_{i = 1}^n \epsilon_{i, 0}
     \end{align*}
 
     finally showing that 
 
-    \[cost_{\rho}(\beta^*) \leq cost_{\rho}(\Gamma^*) + \sum_{i = 1}^n \epsilon_{i, 0}\]
+    \[\rho\text{-}cost(\beta^*) \leq \rho\text{-}cost(\Gamma^*) + \sum_{i = 1}^n \epsilon_{i, 0}\]
 \end{proof}
 
 This is a result that shows that the cost of a relaxed shift-coupling proof of privacy is close to the cost of a tight shift-coupling proof of privacy on a sequence of segments. This result is important because it allows us to bound the optimal shift-coupling cost in terms of the optimal relaxed shift-coupling cost, which is relatively easy to compute given a sequence of segments. 
