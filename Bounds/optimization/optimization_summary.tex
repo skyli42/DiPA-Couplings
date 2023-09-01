@@ -36,7 +36,7 @@
 \newcommand{\F}{\mathbb{F}}
 \newtheorem{theorem}{Theorem}
 \newtheorem{proposition}{Proposition}[section]
-\newtheorem{hypothesis}{Hypothesis}[section]
+\newtheorem{conjecture}{Conjecture}[section]
 \newtheorem{corollary}{Corollary}[theorem]
 \newtheorem{definition}{Definition}[section]
 \newtheorem{lemma}[theorem]{Lemma}
@@ -69,42 +69,56 @@
 
 \newcommand{\1}{\langle 1 \rangle}
 \newcommand{\2}{\langle 2 \rangle}
+\renewcommand*\abstractname{Summary}
 
 % End of preamble.  
 
 \begin{document}
 
+\title{Optimizing shift-coupling proofs of privacy for DiPA}
+\date{Summer Research: May -- August 2023}
+\author{Vishnu Nittoor}
+
+\maketitle
+
+\begin{abstract}
+    This document is a summary of the work done this summer on finding tight privacy bounds for DiPA using probabilistic couplings. We restrict ourselves to shift-couplings, which are couplings on the noise of neighbouring inputs on transitions. We find necessary and sufficient conditions on shift-couplings to show $\epsilon$-differential privacy, and show that finding a tight shift-coupling proof of privacy can be formulated as an optimization problem. We show that tight shift-coupling proofs must necessarily depend on the differences between neighbouring inputs, and the paths taken by the automaton on those inputs. 
+    
+    We present the notion of a segment, which allows us to optimize over finitely many families of paths. Although the search for a tight proof is a convex maximization problem, a relaxation can be formulated as linear programs over segment sequences. We bound the cost of a tight proof of privacy in terms of the cost of the tight relaxated shift-coupling proof, and show that differential privacy can be decided in linear-time for DiPA using the model of shift-couplings. An open problem is whether there exist privacy bounds for DiPA that cannot be shown using shift-couplings.
+\end{abstract}
 \tableofcontents
 
-\section{Some notes from which to expand this document}
+\newpage
 
-\begin{enumerate}
-    \item An overview of coupling proofs of privacy
-    \item A tight shift-coupling proof of privacy (segment free)
-    \begin{enumerate}
-        \item What are the connecting constraints, and why are they there?
-        \item Proofs have to depend on $\Delta$!
-        \item Proofs have to depend on sequences of segments! 
-    \end{enumerate}
-    \item Simplifying the problem above in various ways: 
-    \begin{enumerate}
-        \item Separability and the introduction of segments
-        \item Only inter-segment transitions matter! 
-        \begin{itemize}
-            \item Given $\Delta$, the $\gamma$ values on inter-segment transitions are easily determined. 
-            \item The $\Delta$ values on the inter-segment transitions can be determined. 
-        \end{itemize}
-    \end{enumerate}
-    \item Solving the problem.
-    \begin{enumerate}
-        \item Hardness (incomplete)!!!
-        \item Solving the easier version, where proofs don't depend on $\Delta$.
-        \item Showing that they are bounded within $n$ of each other. 
-        \begin{align*}
-            \exists \text{ finite DP bound } &\iff \text{ hard system admits a feasible solution }
-        \end{align*}
-    \end{enumerate}
-\end{enumerate}
+% \section{Some notes from which to expand this document}
+
+% \begin{enumerate}
+%     \item An overview of coupling proofs of privacy
+%     \item A tight shift-coupling proof of privacy (segment free)
+%     \begin{enumerate}
+%         \item What are the connecting constraints, and why are they there?
+%         \item Proofs have to depend on $\Delta$!
+%         \item Proofs have to depend on sequences of segments! 
+%     \end{enumerate}
+%     \item Simplifying the problem above in various ways: 
+%     \begin{enumerate}
+%         \item Separability and the introduction of segments
+%         \item Only inter-segment transitions matter! 
+%         \begin{itemize}
+%             \item Given $\Delta$, the $\gamma$ values on inter-segment transitions are easily determined. 
+%             \item The $\Delta$ values on the inter-segment transitions can be determined. 
+%         \end{itemize}
+%     \end{enumerate}
+%     \item Solving the problem.
+%     \begin{enumerate}
+%         \item Hardness (incomplete)!!!
+%         \item Solving the easier version, where proofs don't depend on $\Delta$.
+%         \item Showing that they are bounded within $n$ of each other. 
+%         \begin{align*}
+%             \exists \text{ finite DP bound } &\iff \text{ hard system admits a feasible solution }
+%         \end{align*}
+%     \end{enumerate}
+% \end{enumerate}
 
 % \subsection{DiPA}
 
@@ -144,13 +158,13 @@
 In order to set up shift-coupling proofs of privacy, we first need to define the notion of a coupling proof of privacy. 
 
 \begin{definition}
-    Let $\mathcal{A}$ be a randomized mechanism taking outputs in $B$. A \textbf{coupling proof of privacy} with cost $\epsilon$ for $\mathcal{A}$ constructs for every two adjacent inputs $X \sim X'$ and output $b \in B$ of $\mathcal{A}$ the coupling 
+    Let $\mathcal{A}$ be a randomized mechanism taking outputs in $B$. A \textbf{coupling proof of privacy} with cost $\epsilon$ for $\mathcal{A}$ constructs for every two adjacent inputs $X \1 \sim X \2$ and output $b \in B$ of $\mathcal{A}$ the coupling 
 
-    \[\mathcal{A}(X) \Psi_{b}^{\#(\epsilon, 0)} A(X')\]
+    \[\mathcal{A}(X \1) \Phi_b^{\#(\epsilon, 0)} A(X \2)\]
 
     where 
 
-    \[\Psi_{b} = \{(x_1, x_2) \in B \times B : x_1 = b \implies x_2 = b\}\]
+    \[\Phi_{b} = \{(x_1, x_2) \in B \times B : x_1 = b \implies x_2 = b\}\]
 \end{definition}
 
 \begin{proposition}
@@ -163,16 +177,19 @@ In order to set up shift-coupling proofs of privacy, we first need to define the
 
 \section{Shift-coupling proofs of privacy}
 
-Shift-coupling proofs of privacy attempt to couple the neighbouring noised inputs read by a DiPA $\mathcal{A}$ on $X \sim X'$ using shifts in order to construct a coupling proof of privacy. In order to do this, we need to understand the correspondence between paths and outputs in a DiPA.
+Shift-coupling proofs of privacy attempt to couple the neighbouring noised inputs read by a DiPA $\mathcal{A}$ on $X \1 \sim X \2$ using shifts in order to construct a coupling proof of privacy. In order to do this, we need to understand the correspondence between paths and outputs in a DiPA.
+
+Let $path_{\mathcal{A}}(X)$ be a random variable representing the path taken by $\mathcal{A}$ on $X$, and $output_{\mathcal{A}}(X)$ be a random variable representing the output produced by $\mathcal{A}$ on $X$.
 
 \begin{proposition}
-    Let $\mathcal{A}$ be a DiPA, and $X \sim X'$ be two neighbouring inputs. We have 
+    \label{prop:output_determinism}
+    Let $\mathcal{A}$ be a DiPA, and $X \1 \sim X \2$ be two neighbouring inputs. We have 
     \begin{align*}
-        path_A(X) = path_A(X') \text{ with same real-valued outputs} \iff output_A(X) = output_A(X')
+        path_{\mathcal{A}}(X \1) = path_{\mathcal{A}}(X \2) \text{ with same real-valued outputs} \iff output_{\mathcal{A}}(X \1) = output_{\mathcal{A}}(X \2)
     \end{align*}
     and 
     \begin{align*}
-        path_A(X) \Psi_\rho path_A(X') \text{ with same real-valued outputs} \iff \forall o \in [o]_\rho : output_A(X) \Psi_o output_A(X')
+        path_{\mathcal{A}}(X \1) \Psi_\rho path_{\mathcal{A}}(X \2) \text{ with same real-valued outputs} \iff \forall o \in [o]_\rho : output_{\mathcal{A}}(X \1) \Phi_o output_{\mathcal{A}}(X \2)
     \end{align*}
     where $[o]_\rho$ is the class of all possible outputs that can be produced by the path $\rho$.
 \end{proposition}
@@ -185,9 +202,9 @@ Shift-coupling proofs of privacy attempt to couple the neighbouring noised input
 
 \begin{proposition}
     \label{prop:output_coupling}
-    If we have for all $X \sim X'$ and paths $\rho$ taken by $\mathcal{A}$ that 
+    If we have for all $X \1 \sim X \2$ and paths $\rho$ taken by $\mathcal{A}$ that 
     \begin{align*}
-        output_A(X) \Psi_{\rho}^{\#(\epsilon, 0)} output_A(X') \\[1em]
+        output_{\mathcal{A}}(X \1) \Psi_{\rho}^{\#(\epsilon, 0)} output_{\mathcal{A}}(X \2) \\[1em]
         \Psi_{\rho} = \{(o_1, o_2) \in B \times B : o_1 \in [o]_\rho \implies o_1 = o_2\}
     \end{align*}
 
@@ -197,89 +214,90 @@ Shift-coupling proofs of privacy attempt to couple the neighbouring noised input
 \begin{proof}
     For any output $o \in B$, find the path $\rho$ for which $o \in [o]_\rho$. Then we can construct the coupling
 
-    \[output_A(X) \Psi_{o}^{\#} output_A(X')\]
+    \[output_{\mathcal{A}}(X \1) \Phi_o^{\#} output_{\mathcal{A}}(X \2)\]
 
     where 
 
-    \[\Psi_{o} = \{(o_1, o_2) \in B \times B : o_1 = o \implies o_2 = o\}\]
+    \[\Phi_o = \{(o_1, o_2) \in B \times B : o_1 = o \implies o_2 = o\}\]
 
     which shows $(\epsilon, 0)$-privacy. 
 \end{proof}
+
+The goal of shift-coupling proofs of privacy is to construct the lifting in Proposition \ref{prop:output_coupling} by the relation $\Psi_\rho$. This is because working with paths is more amenable to shift-couplings than working with outputs.
 
 \begin{definition}
     Let  $X = \langle a_1, \dots, a_m \rangle$ be an input, and $\rho = q_0 \to q_1 \to \dots \to q_m$ be a path taken by DiPA $\mathcal{A}$ on $X$. Define $\tilde{a_i}$ to be the value of $\insample$ on the $i$th transition in $\rho$ on input $X$.
 \end{definition}
 
-A shift-coupling proof of privacy attempts to construct the couplings in Proposition \ref{prop:output_coupling}  by constructing the couplings for $X = \langle a_1 \1, \dots, a_m \1 \rangle$ and $X' = \langle a_1 \2, \dots, a_m \2 \rangle$ for all $a_i \1, a_i \2 \in [-1, 1]$.
+A shift-coupling proof of privacy attempts to construct the couplings in Proposition \ref{prop:output_coupling}  by constructing the couplings for $X \1 = \langle a_1 \1, \dots, a_m \1 \rangle$ and $X \2 = \langle a_1 \2, \dots, a_m \2 \rangle$ for all $a_i \1, a_i \2 \in [-1, 1]$. Let us use the notation \[\tilde{a} \1 + \boldsymbol{\gamma} = \tilde{a} \2\] to denote the couplings \begin{align*}
+    \tilde{a}_i \1 + \gamma_i =^{\#} \tilde{a}_i \2 \qquad \forall i 
+\end{align*}
 
-
-\begin{itemize}
-    \item The above is true if and only if $path_A(X) \Psi_\rho^{(\epsilon, 0)} path_A(X')$, where
-
-    \[\Psi_\rho = \{(\rho_1, \rho_2) \in P \times P : \forall o \in [o]_{\rho_1} : output_A(X) = o \implies output_A(X') = o \} \]
-    
-    Shift-couplings are a technique to show that $path_A(X) \Psi_\rho^{(\epsilon, 0)} path_A(X')$ by constructing the couplings
-    
-    \[\tilde{a_i} \1 + \gamma_i (=)^{\#(\epsilon_i, 0)} \tilde{a_i} \2 \qquad \forall i \in \{0, \dots, m - 1\}\]
-
-    and showing that 
-
-    \[(\tilde{a} \1 + \gamma = \tilde{a} \2) \implies output_A(X \1) \Psi_\rho output_A(X \2)\]
-
-    thus showing that $output_A(X) \Psi_\rho^{(\epsilon, 0)} output_A(X')$ for \[\epsilon = \sum_{i = 0}^{m - 1} \epsilon_i\]
-    
-    % where \[\psi_{\rho, i} = \{(\rho_1, \rho_2) \in P \times P : \rho_1[i] = \rho[i] \implies \rho_2[i] = \rho[i]\}\]
-    
-    % \[A(X) \Psi_{o, i} A(X') \qquad \forall i \in \{1, \dots, m\}\] where 
-    \item A discussion that ends in choosing $\gamma$ shifts for each segment. 
-    \item Maybe: A discussion of the cost of each shift.    
-\end{itemize}
-
-
-\subsection{Constraints} 
+We call $\boldsymbol{\gamma}$ an assignment of shifts.
 
 \begin{definition}
     
-Given a fixed path, we say that an assignment of shifts $\{\gamma_i\}$ is \textbf{path-valid} if
+    Given a fixed path, we say that an assignment of shifts $\boldsymbol{\gamma} = \{\gamma_i\}$ is \textbf{path-valid} if
+    
+    \[(\tilde{a} \1 + \gamma = \tilde{a} \2) \implies \big(path_{\mathcal{A}}(X \1) = \rho \implies path_{\mathcal{A}}(X \2) = \rho \big)\]
+    
+    \end{definition}
+    
+    \begin{definition}
+        Given a fixed path, we say that an assignment of shifts $\boldsymbol{\gamma} = \{\gamma_i\}$ is \textbf{valid} if
+    
+        \[(\tilde{a} \1 + \gamma = \tilde{a} \2) \implies \big(output_{\mathcal{A}}(X \1) \Psi_\rho output_{\mathcal{A}}(X \2) \big)\]
+    
+        where $\Psi_\rho$ is the relation on outputs defined by
+    
+        \[\Psi_\rho = \{(o_1, o_2) \in B \times B : o_1 \in [o]_\rho \implies o_1 = o_2\}\]
+    \end{definition}
 
-\[(\tilde{a} \1 + \gamma = \tilde{a} \2) \implies path_A(X \1) \Psi_\rho path_A(X \2)\]
 
-\end{definition}
+    \begin{definition}
+        Given a DiPA $\mathcal{A}$, a \textbf{shift-coupling proof of privacy} for $\mathcal{A}$ is a map 
+    
+        \begin{align*}
+            \Gamma: paths(\mathcal{A}) &\to ([-1, 1]^{|\rho|} \to [-1, 1]^{|\rho|})\\
+            \rho &\mapsto (\Delta \mapsto \{\gamma_i\})
+        \end{align*}
+    
+        such that for all $\rho \in paths(\mathcal{A})$ and all $\Delta \in [-1, 1]^{|\rho|}$, we have that $\{\gamma_i\}$ is valid for $\rho$.
+    \end{definition}
+
+    We choose $\gamma \in [-1, 1]$ as any choice of $\gamma \in \R$ can be projected to $[-1, 1]$ to construct a valid shift-coupling proof of privacy without increasing 'cost', as defined below.
+
+\subsection{Constraints} 
+We now wish to find necessary and sufficient conditions on $\boldsymbol{\gamma}$ that ensure that it is valid.
 
 \begin{definition}
     Let $\rho = q_0 \to q_1 \to \dots \to q_m$ be a path, and let $i \in \{1, \dots, m\}$. Define $at(i)$ to be the largest index $a(i) < i$ such that $\rho[a(i)] \to \rho[a(i) + 1]$ is an assignment transition.  
 \end{definition}
 
-\begin{definition}
-    Let $\rho = q_0 \to q_1 \to \dots \to q_m$ be a path. Define $t_i$ to be the transition $q_i \to q_{i + 1}$.
-\end{definition}
-
-\begin{definition}
-    Let $X = \langle a_1, \dots, a_m \rangle$ be an input, and let $\rho = q_0 \to q_1 \to \dots \to q_m$ be a path. Define $X[i]$ to be the value of $a_i$.
-\end{definition}
-
 Note that such an index must exist due to the initialization condition on DiPA. 
 
 \begin{proposition}
-    Given $\rho = q_0 \to q_1 \to \dots \to q_m$, an assignment of shifts $\{\gamma_i\}$ is valid if and only if it satisfies the following constraints for all $i \in \{0, \dots, m - 1\}$:
+    Given $\rho = q_0 \to q_1 \to \dots \to q_m$, an assignment of shifts $\boldsymbol{\gamma} = \{\gamma_i\}$ is path-valid if and only if it satisfies the following constraints for all $i \in \{0, \dots, m - 1\}$:
 
-    \begin{align*}
+    \begin{align}
         \gamma_i \leq \gamma_{at(i)} \qquad &\text{if } t_i \text{ has guard } < \\
-        \gamma_i \geq \gamma_{at(i)} \qquad &\text{if } t_i \text{ has guard } \geq \\
-    \end{align*}
+        \gamma_i \geq \gamma_{at(i)} \qquad &\text{if } t_i \text{ has guard } \geq 
+    \end{align}
+
+    where $t_i = q_i \to q_{i + 1}$ is the $i$th transition in $\rho$.
 \end{proposition}
 
 \begin{proof}
-    (Constraints $\implies$ valid) Suppose that the above constraints hold. We will show that $\{\gamma_i\}$ is valid using induction on $m = |\rho|$. Construct the couplings $\tilde{a_i} \1 + \gamma_i (=)^{(\epsilon_i, 0)} \tilde{a_i} \2$ for all $i \in \{0, \dots, m - 1\}$. 
+    (Constraints $\implies$ path-valid) Suppose that the above constraints hold. We will show that $\{\gamma_i\}$ is path-valid using induction on $m = |\rho|$. Construct the couplings $\tilde{a_i} \1 + \gamma_i (=)^{(\epsilon_i, 0)} \tilde{a_i} \2$ for all $i \in \{0, \dots, m - 1\}$. 
 
-    For a base case, assume $m = 1$. Then $\rho$ consists of an assignment transition $t_0$ with \texttt{true} guard (initialization condition). The constraints are trivially satisfied, and we have that $path_A(X \1 ) \Psi_\rho^{(0, 0)} path_A(X \2)$.
+    For a base case, assume $m = 1$. Then $\rho$ consists of an assignment transition $t_0$ with \texttt{true} guard (initialization condition). The constraints are trivially satisfied, and we have that $path_{\mathcal{A}}(X \1 ) \Psi_\rho^{(0, 0)} path_{\mathcal{A}}(X \2)$.
 
-    Assume that the constraints hold for all paths of length $m$. Let $\rho = q_0 \to q_1 \to \dots \to q_{m} \to q_{m + 1}$. We will show that $\{\gamma_i\}$ is valid for $\rho$. First, by the validity of $\{\gamma_i\}_{i = 0}^{m - 1}$ for $\rho[0:m]$ by the inductive hypothesis, we have that \[path_A(X \1) \Psi_{\rho[0:m]} path_A(X \2)\] 
+    Assume that the constraints hold for all paths of length $m$. Let $\rho = q_0 \to q_1 \to \dots \to q_{m} \to q_{m + 1}$. We will show that $\{\gamma_i\}$ is path-valid for $\rho$. First, by the path-validity of $\{\gamma_i\}_{i = 0}^{m - 1}$ for $\rho[0:m]$ by the inductive hypothesis, we have that \[path_{\mathcal{A}}(X \1) \Psi_{\rho[0:m]} path_{\mathcal{A}}(X \2)\] 
     
-    by the inductive hypothesis. Now, assume $path_A(X \1) = \rho$. We have $path_A(X \2)[0:m] = \rho[0:m]$. Consider the last transition $t_{m}$ in $\rho$. Since $path_A(X \1) = \rho$, we know that $t_m$ is traversed by $A$ on $X \1$.
+    by the inductive hypothesis. Now, assume $path_{\mathcal{A}}(X \1) = \rho$. We have $path_{\mathcal{A}}(X \2)[0:m] = \rho[0:m]$. Consider the last transition $t_{m}$ in $\rho$. Since $path_{\mathcal{A}}(X \1) = \rho$, we know that $t_m$ is traversed by $A$ on $X \1$.
 
     \begin{itemize}
-        \item If $t_{m}$ has guard \texttt{true}, then we trivially have that $path_A(X \2) = \rho$.
+        \item If $t_{m}$ has guard \texttt{true}, then we trivially have that $path_{\mathcal{A}}(X \2) = \rho$.
         \item If $t_{m}$ has guard $<$, we have from the constraints that $\gamma_{m} \leq \gamma_{at(m)}$. The value of the state variable $x \langle 1 \rangle$ is 
         
         \[x \1 = \tilde{a}_{at(m)} \1 \]
@@ -292,23 +310,23 @@ Note that such an index must exist due to the initialization condition on DiPA.
             \tilde{a}_{m} \2 &< \tilde{a}_{at(m)} \2 - (\gamma_{at(m)} - \gamma_{m}) < \tilde{a}_{at(m)} \2\\
         \end{align*}
 
-        showing that $\tilde{a}_{m} \2$ satisfies the guard of $t_m$. Thus, $path_A(X \2) = \rho$.
-        \item If $t_{m}$ has guard $\geq$, a similar argument as above shows that $path_A(X \2) = \rho$.
+        showing that $\tilde{a}_{m} \2$ satisfies the guard of $t_m$. Thus, $path_{\mathcal{A}}(X \2) = \rho$.
+        \item If $t_{m}$ has guard $\geq$, a similar argument as above shows that $path_{\mathcal{A}}(X \2) = \rho$.
     \end{itemize}
 
-    Thus, assuming that $a \1 + \gamma = a \2$, we have shown that $path_A(X \1) = \rho \implies path_A(X \2) = \rho$, which shows $path_A(X \1) \Psi_\rho path_A(X \2)$, and so $\{\gamma_i\}$ is valid.
+    Thus, assuming that $a \1 + \gamma = a \2$, we have shown that $path_{\mathcal{A}}(X \1) = \rho \implies path_{\mathcal{A}}(X \2) = \rho$, which shows $path_{\mathcal{A}}(X \1) \Psi_\rho path_{\mathcal{A}}(X \2)$, and so $\{\gamma_i\}$ is path-valid.
 
-    (Valid $\implies$ constraints) Suppose that $\{\gamma_i\}$ is valid. Let $i \in \{0, \dots, m - 1\}$. We will show that the constraints hold for $i$. 
+    (Path-valid $\implies$ constraints) Suppose that $\{\gamma_i\}$ is path-valid. Let $i \in \{0, \dots, m - 1\}$. We will show that the constraints hold for $i$. 
 
     We will run the argument above in reverse. Again, we use induction on the length $m = |\rho|$. For a base case, assume $m = 1$, and so $\rho$ consists of an assignment transition $t_0$ with \texttt{true} guard. The constraints are trivially satisfied, since there are none. 
 
-    Assume that the constraints hold for all valid shift assignments on paths of length $m$, and let $\rho = q_0 \to q_1 \to \dots \to q_{m} \to q_{m + 1}$. Since $\{\gamma_i\}$ is valid for $\rho$, we have that $a \1 + \gamma = a \2 \implies path_A(X \1) \Psi_\rho path_A(X \2)$. Also, we have that $\{\gamma_i\}_{i = 0}^{m - 1}$ is valid for $\rho[0:m]$, and that constraints on transitions $t_i \in \rho[0:m]$ hold. 
+    Assume that the constraints hold for all path-valid shift assignments on paths of length $m$, and let $\rho = q_0 \to q_1 \to \dots \to q_{m} \to q_{m + 1}$. Since $\{\gamma_i\}$ is path-valid for $\rho$, we have that $a \1 + \gamma = a \2 \implies path_{\mathcal{A}}(X \1) \Psi_\rho path_{\mathcal{A}}(X \2)$. Also, we have that $\{\gamma_i\}_{i = 0}^{m - 1}$ is path-valid for $\rho[0:m]$, and that constraints on transitions $t_i \in \rho[0:m]$ hold. 
 
     We will now show that the constraints on $t_{m}$ hold by cases on the guard of $t_{m}$.
 
     \begin{itemize}
         \item If $t_{m}$ has guard \texttt{true}, then there is no constraint on $\gamma_{m}$, and so the constraints hold.
-        \item If $t_{m}$ has guard $<$, the constraint to be shown is $\gamma_m \leq \gamma_{at(m)}$. Recall that we have $a \1 + \gamma = a \2 \implies path_A(X \1) \Psi_\rho path_A(X \2)$, showing that $t_m$ being traversed by $A$ on $X \1$ leads $t_m$ to be traversed by $A$ on $X \2$. Thus, we have 
+        \item If $t_{m}$ has guard $<$, the constraint to be shown is $\gamma_m \leq \gamma_{at(m)}$. Recall that we have $a \1 + \gamma = a \2 \implies path_{\mathcal{A}}(X \1) \Psi_\rho path_{\mathcal{A}}(X \2)$, showing that $t_m$ being traversed by $A$ on $X \1$ leads $t_m$ to be traversed by $A$ on $X \2$. Thus, we have 
         
         \begin{align*}
             \tilde{a}_m \1 < \tilde{a}_{at(m)} \1 &\implies \tilde{a}_m \2 < \tilde{a}_{at(m)} \2\\
@@ -320,42 +338,24 @@ Note that such an index must exist due to the initialization condition on DiPA.
         \item A symmetric argument shows that the constraint holds if $t_{m}$ has guard $\geq$.
     \end{itemize}
 
-    Thus, the given constraints on $\gamma$ hold if and only if it is valid for $\rho$.
+    Thus, the given constraints on $\gamma$ hold if and only if it is path-valid for $\rho$.
 \end{proof}
 
-We can now reduce checking path-validity to checking the above constraints. 
-
-\begin{definition}
-    We say that $\gamma$ is output-valid for $\rho$ and $\Delta$ if we have 
-
-    \[(\tilde{a} \1 + \gamma = \tilde{a} \2) \implies output_A(X \1) \Psi_o output_A(X \2)\]
-
-    where \[\Psi_o = \{(o_1, o_2) \in \mathcal{O}_\rho : o_1 = o \implies o_2 = o\}\]
-
-    where $\mathcal{O}_\rho$ is the set of all outputs that can be produced by the path $\rho$.
-\end{definition}
-
-\begin{definition}
-    Define $\mathcal{P}$ to be the set of all paths in $\mathcal{A}$.
-\end{definition}
-
-Note: we show that this is actually a proof after the next section. 
-
-\begin{definition}
-    Given a DiPA $\mathcal{A}$, a \textbf{shift-coupling proof of privacy} for $\mathcal{A}$ is a map 
-
+\begin{proposition}
+    A shift assignment $\boldsymbol{\gamma} = \{\gamma_i\}$ is valid for $\rho$ if and only if it is path-valid for $\rho$ and satisfies the following output determinism constraint:
     \begin{align*}
-        \Gamma: \mathcal{P} &\to ([-1, 1]^{\rho} \to [-1, 1]^{|\rho|})\\
-        \rho &\mapsto (\Delta \mapsto \{\gamma_i\})
+        \gamma_i = 0 \qquad &\text{if } t_i \text{ outputs } \insample \text{ or } \insample'
     \end{align*}
+\end{proposition}
 
-    such that for all $\rho \in \mathcal{P}$ and all $\Delta \in [-1, 1]^{\rho}$, we have that $\{\gamma_i\}$ is valid for $\rho$ and $\Delta$, and satisfies the output constraints.
-\end{definition}
+\begin{proof}
+    To obtain path validity and the output determinism constraint from validity and vice versa, one applies Proposition \ref{prop:output_determinism}.
+\end{proof}
 
 \subsection{The cost of a shift-coupling}
 
 \begin{proposition}
-    Consider a transition $t_i = q_{i} \to q_{i + 1}$ which is traversed independently by $A$ on input $a_i \1$ and $a_i \2$. Let $\Delta_i = a_i \2 - a_i \1$. Let $q_i$ draw from the distribution $Lap(0, \epsilon_i)$ to noise \texttt{insample}. The $\epsilon$-cost of the coupling 
+    Consider a transition $t_i = q_{i} \to q_{i + 1}$ which is traversed independently by $A$ on input $a_i \1$ and $a_i \2$. Let $\Delta_i = a_i \2 - a_i \1$. Let $q_i$ draw from the distribution $Lap(0, \epsilon_i)$ to noise \texttt{insample}. The cost of the coupling 
 
     \[\tilde{a_i} \1 + \gamma_i (=)^{(c_i, 0)} \tilde{a_i} \2\]
 
@@ -363,22 +363,28 @@ Note: we show that this is actually a proof after the next section.
 \end{proposition} 
 
 \begin{proof}
-    TODO, but easy to see from coupling construction rules.
+    This is seen from coupling construction rules.
 \end{proof}
 
 \begin{definition}
-    Given a path $\rho$ and input differences $\Delta$, we define the $\rho$-$\Delta$-\textbf{cost} of the shifts $\{\gamma_i\}$ to be
+    Given a path $\rho$ and input differences $\Delta$, we define the $\rho$-$\Delta$-\textbf{cost} of the shifts $\gamma = \{\gamma_i\}$ to be
 
-    \[cost_{\rho} (\Delta, \{\gamma_i\}) = \sum_{i = 0}^{|\rho| - 1} |\Delta_i - \gamma_i| \epsilon_i\]
+    \[\rho{\text -}\Delta{\text -}cost(\gamma) = \sum_{i = 0}^{|\rho| - 1} |\Delta_i - \gamma_i| \epsilon_i\]
+\end{definition}
+
+\begin{definition}
+    Given a path $\rho$ and a shift-coupling proof of privacy $\Gamma$ define the $\rho$-\textbf{cost} of $\Gamma$
+
+    \[\rho{\text -}cost(\Gamma) = \sup_{\Delta \in [-1, 1]^{|\rho|}} \rho{\text -}\Delta{\text -}cost(\Gamma(\rho, \Delta))\]
 \end{definition}
 
 \begin{definition}
     Given a shift-coupling proof of privacy $\Gamma$, we define the privacy cost of $\Gamma$ to be
 
-    \[cost(\Gamma) = \sup_{\rho \in \mathcal{P}} \sup_{\Delta \in [-1, 1]^{\rho}} cost_{\rho}(\Delta, \Gamma(\rho, \Delta))\]
+    \[cost(\Gamma) = \sup_{\rho \in paths(\mathcal{A})} \rho\text{-}cost(\Gamma)\]
 \end{definition}
 
-\subsection{Privacy}
+\subsection{Tight proofs of privacy}
 
 \begin{theorem}
     Let $\mathcal{A}$ be a DiPA, and $\Gamma$ be a shift-coupling proof of privacy for $\mathcal{A}$ with finite cost $\epsilon = cost(\Gamma)$. Then, $\mathcal{A}$ is $(\epsilon, 0)$-differentially private.
@@ -388,32 +394,35 @@ Note: we show that this is actually a proof after the next section.
     This is a direct consequence of output validity. 
 \end{proof}
 
-\subsection{Why the above had to be the way it is.}
-
 Since the total validity constraints on $\{\gamma_i\}$ does not depend on $X \1$ and $X \2$, one might be tempted to produce a proof of privacy by choosing $\gamma_i$ to be the same for all $X \1$ and $X \2$, given a path $\rho$. Although this is possible, this does not in general produce a tight proof of privacy.
 
 \begin{proposition}
     \label{prop:proofs_must_regard_input_differences}
-    \textbf{(A tight proof must regard input differences)} There exists a family of DiPA $\mathcal{F}$ and for $\mathcal{A} \in \mathcal{F}$, a shift-coupling proof $\Gamma^*: \mathcal{P} \to ([-1, 1]^{\rho} \to [-1, 1]^{|\rho|})$ such that for all assignments $\Pi: \mathcal{P} \to [-1, 1]^{\rho}$ of paths to shifts, we have 
+    \textbf{(A tight proof must regard input differences)} There exists a family of DiPA $\mathcal{F}$ and for $\mathcal{A} \in \mathcal{F}$, a shift-coupling proof $\Gamma^*: paths(\mathcal{A}) \to ([-1, 1]^{\rho} \to [-1, 1]^{|\rho|})$ such that for all assignments $\Pi: paths(\mathcal{A}) \to [-1, 1]^{\rho}$ of paths to shifts, we have 
 
     \[cost(\Gamma^*) < cost(\Pi)\]
 \end{proposition}
 
 \begin{proof}
-    The construction is a DiPA with a one-segment path with same number of $<$ and $\geq$ transitions.
+    The construction is a DiPA with a path with one assignment transition, and the same number of $<$ and $\geq$ transitions.
 \end{proof}
 
 When constructing a shift-coupling proof of privacy, we are actually choosing a shift for each transition. Is it reasonable to ignore paths, and just choose a shift for each transition? The answer is no, as the following proposition shows.
 
 \begin{proposition}
     \label{prop:proofs_must_regard_paths}
-    \textbf{(A tight proof must regard paths)} There exists a family of DiPA $\mathcal{F}$ and for $\mathcal{A} \in \mathcal{F}$, a shift-coupling proof $\Gamma^*: \mathcal{P} \to ([-1, 1]^{\rho} \to [-1, 1]^{|\rho|})$ such that for all assignments $\Pi: E \to ([-1, 1]^{\rho} \to [-1, 1]^{\rho})$ of transitions and differences to shifts, we have
+    \textbf{(A tight proof must regard paths)} There exists a family of DiPA $\mathcal{F}$ and for $\mathcal{A} \in \mathcal{F}$, a shift-coupling proof $\Gamma^*: paths(\mathcal{A}) \to ([-1, 1]^{\rho} \to [-1, 1]^{|\rho|})$ such that for all assignments $\Pi: E \to ([-1, 1]^{\rho} \to [-1, 1]^{\rho})$ of transitions and differences to shifts, we have
 
     \[cost(\Gamma^*) < cost(\Pi)\]
 \end{proposition}
 
 \begin{proof}
-    I have the counterexample written down, I found it by computer. Will write it up soon.
+    In the construction, we have a DiPA for which there are two constraints on three assignment transitions, but also the assignment transition followed by $\gamma_1$ has a cycle of $<$ transitions before reaching the $\gamma_3$ assignment transition. For finite cost, this forces $\gamma_1 = 1$.
+    \begin{align*}
+        \gamma_1 &\leq \gamma_3 \\
+        \gamma_2 &\leq \gamma_3
+    \end{align*}
+    Then satisfying this constraint system also requires $\gamma_3 = 1$, which forces a high cost on paths that pass through the $\gamma_2$ and $\gamma_3$ transitions. We can achieve a lower maximum cost by assigning shifts independently to paths. 
 \end{proof}
 
 \section{The search for a tight proof as an optimization problem}
@@ -423,15 +432,15 @@ When constructing a shift-coupling proof of privacy, we are actually choosing a 
 Now that we have a characterization of shift-coupling proofs of privacy, the problem of finding a tight proof of privacy can be formulated as finding, given $\rho$ and $\Delta$,
 
 \begin{align*}
-    \inf_{\Gamma} cost(\Gamma) &= \inf_{\Gamma} \sup_{\rho} \sup_{\Delta} cost_{\rho}(\Delta, \Gamma(\rho, \Delta)) \\
+    \inf_{\Gamma} cost(\Gamma) &= \inf_{\Gamma} \sup_{\rho} \sup_{\Delta} \rho\text{-}\Delta\text{-}cost(\Gamma(\rho, \Delta)) \\
 \end{align*}
 
 which is characterized by $\Gamma^*$ such that for any shift-coupling proof $\Gamma$, we have
 
-\[\sup_{\rho} \sup_{\Delta} cost(\Gamma^*(\rho, \Delta)) \leq \sup_{\rho} \sup_{\Delta} cost(\Gamma(\rho, \Delta))\]
+\[\sup_{\rho} \sup_{\Delta} \rho\text{-}\Delta\text{-}cost(\Gamma^*(\rho, \Delta)) \leq \sup_{\rho} \sup_{\Delta} \rho\text{-}\Delta\text{-}cost(\Gamma(\rho, \Delta))\]
 
 
-One such $\Gamma^*$ is the shift-coupling proof that chooses \[\Gamma^*(\rho, \Delta) = \inf_{\gamma \in [-1, 1]^{|\rho|}} cost_{\rho} (\Delta, \gamma)\]
+One such $\Gamma^*$ is the shift-coupling proof that chooses \[\Gamma^*(\rho, \Delta) = \inf_{\gamma \in [-1, 1]^{|\rho|}} \rho\text{-}\Delta\text{-}cost(\Delta, \gamma)\]
 
 which is the shift-coupling proof that chooses the optimal shift for each input difference and path independently. We will now direct our focus to computing $\Gamma^*$ given an automaton $\mathcal{A}$.
 
@@ -441,7 +450,7 @@ which is the shift-coupling proof that chooses the optimal shift for each input 
     \label{prop:gammas_non_assignment}
     Let $\rho, \Delta$ be given, and let 
     
-    \[\gamma_i^* = \arg \inf_{\gamma \in [-1, 1]^{|\rho|}} cost_{\rho} (\Delta, \gamma)\]
+    \[\gamma_i^* = \arg \inf_{\gamma \in [-1, 1]^{|\rho|}} \rho\text{-}\Delta\text{-}cost (\gamma)\]
     
     For non-assignment transitions $t_i \in \rho$, we have that 
 
@@ -474,14 +483,14 @@ which is the shift-coupling proof that chooses the optimal shift for each input 
 % \end{definition}
 
 % \begin{definition}
-%     Let $\mathcal{P}_{eq}$ be the set of equivalence classes of paths, where $\rho, \rho' \in \mathcal{P}$ are equivalent if $acyclic(\rho) = acyclic(\rho')$.
+%     Let $paths(\mathcal{A})_{eq}$ be the set of equivalence classes of paths, where $\rho, \rho' \in paths(\mathcal{A})$ are equivalent if $acyclic(\rho) = acyclic(\rho')$.
 % \end{definition}
 
 \subsection{Simplifying the problem with fixed $\rho$}
 
 \begin{proposition}
     \label{prop:deltas_non_assignment}
-    Let $\rho$ be given. Let \[\Delta^* = \arg \sup_{\Delta \in [-1, 1]^{|\rho|}} \inf_{\gamma \in [-1, 1]^{|\rho|}} cost_{\rho} (\Delta, \gamma)\]
+    Let $\rho$ be given. Let \[\Delta^* = \arg \sup_{\Delta \in [-1, 1]^{|\rho|}} \inf_{\gamma \in [-1, 1]^{|\rho|}} \rho\text{-}\Delta\text{-}cost (\gamma)\]
     
     For non-assignment transitions $t_i \in \rho$, we have that 
 
@@ -499,8 +508,8 @@ which is the shift-coupling proof that chooses the optimal shift for each input 
 
 \begin{corollary}
     \label{cor:non_assignment_solved}
-    Let $\rho$ be given. Let \[\Delta^* = \arg \sup_{\Delta \in [-1, 1]^{|\rho|}} \inf_{\gamma \in [-1, 1]^{|\rho|}} cost_{\rho} (\Delta, \gamma)\]
-    \[\gamma^* = \arg \inf_{\gamma \in [-1, 1]^{|\rho|}} cost_{\rho}(\Delta, \gamma)\]
+    Let $\rho$ be given. Let \[\Delta^* = \arg \sup_{\Delta \in [-1, 1]^{|\rho|}} \inf_{\gamma \in [-1, 1]^{|\rho|}} \rho\text{-}\Delta\text{-}cost(\gamma)\]
+    \[\gamma^* = \arg \inf_{\gamma \in [-1, 1]^{|\rho|}} \rho\text{-}\Delta\text{-}cost(\gamma)\]
     As a consequence of Propositions \ref{prop:gammas_non_assignment} and \ref{prop:deltas_non_assignment}, if $t_i \in \rho$ is a non-assignment transition, then \[\gamma_i^* = 
     \gamma^*_{at(i)}\].
 
@@ -548,31 +557,27 @@ Corollary \ref{cor:non_assignment_solved} allows us to formulate the problem of 
 Since we know from Corollary \ref{cor:non_assignment_solved} that shifts on a segment are equal to the shift on the assignment transition of the segment, we need only consider pairs of $\Delta, \gamma \in \R$ for the assignment transition of the segment. From this, we can deduce the $\gamma$-minimal cost with respect to maximal $\Delta$ for any path in the segment family.
 
 \begin{definition}
-    Given a path $\rho \in segF(s)$, we define the $\rho$\textbf{-segment cost of $s$} given $\gamma$, $\Delta$ to be 
+    Let $s \in seg(q_i, q_j)$ be a segment, and let $\Delta, \gamma \in \R$ be the input difference and shift for the assignment transition of $s$. Define the \textbf{$s$-segment cost} of $\Delta$ and $\gamma$ to be
 
-    \[\rho\text{-}segcost_{s}(\Delta, \gamma) = \sum_{t_j \in \rho, t_j \in s} cost_{\rho} (\Delta, \gamma_j) \]
+    \[s\text{-}segcost(\Delta, \gamma) = \sup_{\rho \in segF(s)} \rho\text{-}cost(\Gamma) \]
+
+    where $\Gamma$ is a coupling strategy that chooses shift $\gamma$ for all transitions in $s$ given maximal non-assignment transition input differences with assignment input difference $\Delta$.
 \end{definition}
 
-\begin{definition}
-    Let $s \in seg(q_i, q_j)$ be a segment, and let $\Delta$ and $\gamma$ be input differences and shifts for all reachable transitions from $s$. Define the \textbf{segment cost of $s$} to be
-
-    \[segcost_{s}(\Delta, \gamma) = \sup_{\rho \in segF(s)} \rho\text{-}segcost_{s}(\Delta, \gamma) \]
-\end{definition}
-
-Now, we can begin to formulate finding optimal $\Delta$ and $\gamma$ for a path $\rho$ as an optimization problem over segments.
+The above is well-defined since the maximizing input differences for non-assignment transitions are determined independently of $\Delta$, and the optimal shifts on those transitions with respect to the differences depend only on $\gamma$. Now, we can begin to formulate finding optimal $\Delta$ and $\gamma$ for a path $\rho$ as an optimization problem over segments.
 
 \begin{proposition}
     If a segment $s \in seg(q_i, q_j)$ has a cycle with a transition with guard $<$, then for $\Delta, \gamma \in \R$, we have 
 
-    \[segcost_s(\Delta, \gamma) < \infty \iff \gamma = 1 \]
+    \[s\text{-}segcost(\Delta, \gamma) < \infty \iff \gamma = 1 \]
 
     Similarly, if $s$ has a cycle with a transition with guard $\geq$, then for $\Delta, \gamma \in \R$, we have
 
-    \[segcost_s(\Delta, \gamma) < \infty \iff \gamma = -1\]
+    \[s\text{-}segcost(\Delta, \gamma) < \infty \iff \gamma = -1\]
 \end{proposition}
 
 \begin{proof}
-    This follows from the fact that the $<$ transitions in a cycle have cost $|1 - \gamma|$, and $\geq$ transitions in a cycle have cost $|(-1) - \gamma|$. There are paths in $segF(s)$ which make $\rho$-$segcost_s(\Delta, \gamma)$ arbitrarily large if these cyclic transitions are traversed with non-zero coupling cost.
+    This follows from the fact that the $<$ transitions in a cycle have cost $|1 - \gamma|$, and $\geq$ transitions in a cycle have cost $|(-1) - \gamma|$. There are paths $\rho \in segF(s)$ which make $\rho$-$cost(\Gamma)$ arbitrarily large if these cyclic transitions are traversed with non-zero coupling cost.
 \end{proof}
 
 \subsection{The optimization problem over segments}
@@ -580,17 +585,17 @@ Now, we can begin to formulate finding optimal $\Delta$ and $\gamma$ for a path 
 By Proposition \ref{prop:segmenting}, we can write any path $\rho$ as a concatenation of paths each belonging to a segment family. Thus, our search for the tight shift-coupling bound
 
 \begin{align*}
-    b = \sup_{\rho} \sup_{\Delta} \inf_{\gamma} cost(\Gamma^*(\rho, \Delta))
+    b = \sup_{\rho} \sup_{\Delta} \inf_{\gamma} \rho\text{-}\Delta\text{-}cost(\gamma) ; \qquad \text{ $\gamma$ is valid for $\rho$}
 \end{align*}
 
 can be formulated as 
 
 \begin{align*}
-    \max_{s^*} \max_{\Delta \in [-1, 1]^n} &\inf_{\gamma \in [-1, 1]^n} \sum_{i = 1}^n segcost_{s_i}(\Delta, \gamma) \\ 
+    \max_{s^*} \max_{\Delta \in [-1, 1]^n} &\inf_{\gamma \in [-1, 1]^n} \sum_{i = 1}^n s_i\text{-}segcost(\Delta, \gamma) \\ 
     \text{subject to } G_{s^*}(\gamma) \geq 0
 \end{align*}
 
-where $s^*$ varies over all sequences of segments $s_1 \hookrightarrow s_2 \hookrightarrow \dots \hookrightarrow s_n$, and $G_{s^*} : \R^n \to \R^m$ encodes the set of constraints on $\gamma$ given by the segments in $s^*$. In particular: 
+where $s^*$ varies over all sequences of segments $s_1 \hookrightarrow s_2 \hookrightarrow \dots \hookrightarrow s_n$, and $G_{s^*} : \R^n \to \R^m$ encodes the set of validity constraints on $\gamma$ given by the segments in $s^*$. In particular: 
 
 \begin{align*}
     G_{s^*}(\gamma) = 
@@ -625,14 +630,14 @@ The first two constraints correspond to path validity, the third to output valid
 Given a sequence of segments $s_1 \hookrightarrow s_2 \hookrightarrow \dots \hookrightarrow s_n$, we note certain properties about the optimization problem
 
 \begin{align*}
-    \max_{\Delta \in [-1, 1]^n} &\inf_{\gamma \in [-1, 1]^n} \sum_{i = 1}^n segcost_{s_i}(\Delta, \gamma) \\ 
+    \max_{\Delta \in [-1, 1]^n} &\inf_{\gamma \in [-1, 1]^n} \sum_{i = 1}^n s_i\text{-}segcost(\Delta, \gamma) \\ 
     \text{subject to } G_{s^*}(\gamma) \geq 0
 \end{align*}
 
 \begin{proposition}
     As a function of $\Delta$, the inner problem
 
-    \[\Delta \mapsto \inf_{\gamma \in [-1, 1]^n} \sum_{i = 1}^n segcost_{s_i}(\Delta, \gamma) \]
+    \[\Delta \mapsto \inf_{\gamma \in [-1, 1]^n} \sum_{i = 1}^n s_i\text{-}segcost(\Delta, \gamma) \]
 
     is strongly convex.
 \end{proposition}
@@ -645,7 +650,7 @@ This shows that the optimization problem as stated is a convex maximization prob
 
 \begin{itemize}
     \item Brute-force search over all $\Delta \in \{-1, 1\}^n$ and solving a linear program for $\gamma \in [-1, 1]^n$, which is computationally infeasible for large $n$. We can search for $\Delta \in \{-1, 1\}^n$ since convex functions take maxima at the vertices of their domain.
-    \item Linear program sensitivity analysis -- finding conditions on $\Delta$ that do not change optimal shifts for those $\Delta$. Given $\gamma^* \in \{-1, 0, 1\}^n$ with $G_{s^*}(\gamma) \geq 0$, we use sensitivity analysis to find linear constraints on $\Delta$ for which \[\gamma^* = \arg \inf_{\gamma} \sum_i segcost_{s_i}(\Delta, \gamma) \qquad G_{s^*}(\gamma) \geq 0\]
+    \item Linear program sensitivity analysis -- finding conditions on $\Delta$ that do not change optimal shifts for those $\Delta$. Given $\gamma^* \in \{-1, 0, 1\}^n$ with $G_{s^*}(\gamma) \geq 0$, we use sensitivity analysis to find linear constraints on $\Delta$ for which \[\gamma^* = \arg \inf_{\gamma} \sum_i s_i\text{-}segcost(\Delta, \gamma) \qquad G_{s^*}(\gamma) \geq 0\]
     This does not work in general as the number of feasible $\gamma$ satisfying constraints given by $G_{s^*}$ could be exponential in $n$, as shown by the following lemma: 
 
     \begin{lemma}
@@ -670,7 +675,7 @@ Despite Proposition \ref{prop:proofs_must_regard_input_differences}, we will now
 Recall that a shift-coupling proof of privacy is a map 
 
 \begin{align*}
-    \Gamma: \mathcal{P} &\to ([-1, 1]^{\rho} \to [-1, 1]^{|\rho|})\\
+    \Gamma: paths(\mathcal{A}) &\to ([-1, 1]^{\rho} \to [-1, 1]^{|\rho|})\\
     \rho &\mapsto (\Delta \mapsto \{\gamma_i\})
 \end{align*}
 
@@ -679,7 +684,7 @@ that assigns a shift to each path and sequence of input differences. We will con
 The privacy bound afforded by such a proof is given by
 
 \begin{align*}
-    cost(\Gamma) = \sup_{\rho \in \mathcal{P}} \sup_{\Delta \in [-1, 1]^{\rho}} cost_{\rho}(\Delta, \Gamma(\rho, \Delta))
+    cost(\Gamma) = \sup_{\rho \in paths(\mathcal{A})} \sup_{\Delta \in [-1, 1]^{\rho}} cost_{\rho}(\Delta, \Gamma(\rho, \Delta))
 \end{align*}
 
 We will now see what the search for a relaxed shift-coupling proof of privacy looks like.
@@ -704,7 +709,7 @@ We will now see what the search for a relaxed shift-coupling proof of privacy lo
     (Relaxed shift-coupling proofs over segments) The search for a relaxed shift-coupling proof of privacy can be formulated as
 
     \begin{align*}
-        \max_{s^*} &\inf_{\gamma \in [-1, 1]^n} \sup_{\Delta \in [-1, 1]^{n}}\sum_{i = 1}^n segcost_{s_i}(\Delta, \gamma) \\ 
+        \max_{s^*} &\inf_{\gamma \in [-1, 1]^n} \sup_{\Delta \in [-1, 1]^{n}}\sum_{i = 1}^n s_i\text{-}segcost(\Delta, \gamma) \\ 
         &\text{subject to } G_{s^*}(\gamma) \geq 0
     \end{align*}
 
@@ -729,11 +734,11 @@ We will now see what the search for a relaxed shift-coupling proof of privacy lo
 \begin{proposition}
     For sequence of segments $s_1 \hookrightarrow s_2 \hookrightarrow \dots \hookrightarrow s_n$ and $\gamma \in [-1, 1]^n$, we have that
 
-    \[\arg \sup_{\Delta \in [-1, 1]^n} \sum_{i = 1}^n segcost_\rho(\Delta, \gamma) = -1 \cdot \sgn(\gamma)\]
+    \[\arg \sup_{\Delta \in [-1, 1]^n} \sum_{i = 1}^n s_i\text{-}segcost(\Delta, \gamma) = -1 \cdot \sgn(\gamma)\]
 
     where $\sgn(\gamma)$ is the vector with $i$th entry $\sgn(\gamma_i)$, for which 
 
-    \[\sum_{i = 1}^n segcost_\rho(-1 \cdot \sgn(\gamma), \gamma) = \sum_{i = 1}^n \left((1 + |\gamma_i|)\epsilon_i^0 + \sum_{t_j \in s_i, guard(t_j) = <} (1 - \gamma_i) \epsilon_i^j +\sum_{t_j \in s_i, guard(t_j) = <} (1 + \gamma_i) \epsilon_i^j \right) \]
+    \[\sum_{i = 1}^n s_i\text{-}segcost(-1 \cdot \sgn(\gamma), \gamma) = \sum_{i = 1}^n \left((1 + |\gamma_i|)\epsilon_i^0 + \sum_{t_j \in s_i, guard(t_j) = <} (1 - \gamma_i) \epsilon_i^j +\sum_{t_j \in s_i, guard(t_j) = <} (1 + \gamma_i) \epsilon_i^j \right) \]
 
     where $\epsilon_i^j$ is the scale factor of the Laplace noise added to $\insample$ at transition $t_j$ in segment $s_i$.
 \end{proposition}
@@ -745,7 +750,7 @@ We will now see what the search for a relaxed shift-coupling proof of privacy lo
 We then see that we can find the minimum cost relaxed coupling shifts for a sequence of segments $s_1 \hookrightarrow s_2 \hookrightarrow \dots \hookrightarrow s_n$ by solving the following linear program with absolute values: 
 
 \begin{align*}
-    \min_{\gamma \in [-1, 1]^n} &\sum_{i = 1}^n segcost_{s_i}(-1 \cdot sgn(\gamma), \gamma) \\
+    \min_{\gamma \in [-1, 1]^n} &\sum_{i = 1}^n s_i\text{-}segcost(-1 \cdot sgn(\gamma), \gamma) \\
     \text{subject to } G_{s^*}(\gamma) &\geq 0
 \end{align*}
 
@@ -769,14 +774,14 @@ We will now show that the cost of a relaxed shift-coupling proof of privacy is c
     We can write 
 
     \begin{align*}
-        cost_\rho(\Gamma^*) &= \sup_{\Delta} \inf_{\gamma} \sum_{i = 1}^n segcost_{s_i}(\Delta, \gamma) \qquad \text{ with } G_{s^*}(\gamma) \geq 0\\
+        cost_\rho(\Gamma^*) &= \sup_{\Delta} \inf_{\gamma} \sum_{i = 1}^n s_i\text{-}segcost(\Delta, \gamma) \qquad \text{ with } G_{s^*}(\gamma) \geq 0\\
         &= \sup_{\Delta} \inf_{\gamma} \sum_{i = 1}^n \left(|\gamma_i - \Delta_i| \epsilon_{i, 0} + m_i \gamma_i + c_i\right) \qquad \text{ with } G_{s^*}(\gamma) \geq 0\\
     \end{align*}
 
     for some $m_i, c_i \in \R$. Similarly, 
 
     \begin{align*}
-        cost_\rho(\beta^*) &= \inf_{\gamma} \sup_{\Delta} \sum_{i = 1}^n segcost_{s_i}(\Delta, \gamma) \qquad \text{ with } G_{s^*}(\gamma) \geq 0\\
+        cost_\rho(\beta^*) &= \inf_{\gamma} \sup_{\Delta} \sum_{i = 1}^n s_i\text{-}segcost(\Delta, \gamma) \qquad \text{ with } G_{s^*}(\gamma) \geq 0\\
         &= \inf_{\gamma} \sum_{i = 1}^n \left((1 + |\gamma_i|) \epsilon_{i, 0} + m_i \gamma_i + c_i\right) \qquad \text{ with } G_{s^*}(\gamma) \geq 0\\
     \end{align*}
 
@@ -855,21 +860,22 @@ It also allows us to decide privacy by solving a simpler optimization problem. H
 
 We can construct the segment shift graph of a DiPA in linear time, and check for a path from $\bf 1$ to $\bf -1$ in linear time using a breadth-first search. Thus, we can decide privacy in linear time.
 
-\section{Do shift-coupling proofs of privacy have matching lower bounds?}
+\section{Is the tight shift-coupling proof also a tight coupling proof?}
 \textbf{Last Updated: Wednesday, June 28th, 2023}
 
 The relevant definitions and lemmata for proofs in this section are in the appendix. It is also assumed, for now, that all transition outputs are in the output alphabet. 
 
-\subsection{$S^L$ is tight when there is an $L$-cycle}
+\subsection{Conjecture: $S^L$ is tight when there is an $L$-cycle}
 
-\begin{theorem} ($S^L$ is tight for segments with $L$-cycles)
+\begin{conjecture} ($S^L$ is tight for segments with $L$-cycles)
     \label
     Consider a segment $s \in seg(\mathcal{A})$ corresponding to the sequence of states $q_0 \to q_1 \to \dots \to q_m$. If $s$ contains an $L$-cycle, then the L-cost of the segment gives a tight upper bound on the privacy loss of the segment. That is, \[\loss(s) =  \exp\left(2 \epsilon_0 + \sum_{i > 0: guard(a_i) = \insamplegeqx} 2\epsilon_i \right)\]
 
     given that state $q_i$ draws from the distribution $Lap(0, 1/\epsilon_i)$ to noise \insample.
-\end{theorem}
+\end{conjecture}
 
 \begin{proof}
+    Note: the proof of this conjecture can be reduced to showing Lemma \ref{lemma:sl_asymptotic}.
     We will prove the result for when $\epsilon_i = \epsilon$ for all $i \geq 0$. The proof for the general case goes through in the same fashion. Let $f, F$ be the probability density function and cumulative distribution function of a random variable $X$ with $X \sim Lap(0, 1/\epsilon)$ as defined in the appendix. 
 
     Since $s$ has an L-cycle, there exists a sequence of paths $\rho_i$ for $i \in \N$ each with $l_i$ number of L-transitions such that $\lim_{i \to \infty} l_i = \infty$. Let $m$ be the number of $G$-transitions in $\rho_i$. We will assume that this number is the same across all $\rho_i$.\footnote{Otherwise, $s$ has a G-cycle, and $\mathcal{A}$ is not differentially private. The privacy loss through $s$ is $\infty$, which matches the $L$-cost.}
@@ -940,9 +946,9 @@ The relevant definitions and lemmata for proofs in this section are in the appen
     \end{figure}
 \end{proof}
 
-\begin{hypothesis}
+\begin{conjecture}
     For segments which contain only $L$-transitions and for which the $J$-cost exceeds the $L$-cost, $S^L$ is tight.
-\end{hypothesis}
+\end{conjecture}
 
 \begin{proof}
     I think this is true from the graph above, but I need to prove it.
@@ -950,9 +956,9 @@ The relevant definitions and lemmata for proofs in this section are in the appen
     Note June 28 2023: I think this is not true for segments that contain both $L$-transitions and $G$-transitions.
 \end{proof}
 
-\subsection{Lemmata}
+\subsection*{Lemmata}
 
-\subsubsection{Properties of $f_\epsilon$ and $F_\epsilon$}
+\subsubsection*{Properties of $f_\epsilon$ and $F_\epsilon$}
 
 \begin{lemma} 
     \label{lemma:F_equality_neg}
@@ -973,7 +979,7 @@ The relevant definitions and lemmata for proofs in this section are in the appen
     \[f_\epsilon(x) = \exp(2\epsilon) f_\epsilon(x + 2) \]
 \end{lemma}
 
-\subsubsection{For the proof of Theorem 1}
+\subsubsection*{For the proof of Theorem 1}
 \begin{lemma} 
     \label{lemma:sl_tight_minus_infty} 
     \[\int_{-\infty}^{-2} f_{\epsilon}(x) F_{\epsilon}(x + 2)^\ell (1 - F_{\epsilon}(x))^m \dif x = \exp(2 \epsilon \ell) \int_{-\infty}^{-2} f_{\epsilon}(x) F_{\epsilon}(x)^\ell (1 - F_{\epsilon}(x))^m \dif x\]
@@ -1004,6 +1010,7 @@ The relevant definitions and lemmata for proofs in this section are in the appen
 \end{proof}
 
 \begin{lemma}
+    \label{lemma:sl_asymptotic}
     There exists a function $g: \N \to \mathbb{R}$ such that
     \label{lemma:sl_tight_minus_2}
     \[\int_{-2}^{0} f_{\epsilon}(x) F_{\epsilon}(x + 2)^\ell (1 - F_{\epsilon}(x))^m \dif x = g(\ell) \exp(2 \epsilon (m + 1)) \int_{-2}^{2} f_{\epsilon}(x) F_{\epsilon}(x)^\ell (1 - F_{\epsilon}(x))^m \dif x\]
