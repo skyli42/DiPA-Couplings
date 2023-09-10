@@ -846,6 +846,7 @@ It also allows us to decide privacy by solving a simpler optimization problem. H
 \end{proof}
 
 \begin{theorem}
+    \label{theorem:decide_privacy}
     A DiPA $\mathcal{A}$ is differentially private if and only if there does not exist a path from $\bf 1$ to $\bf -1$ in the segment shift graph of $\mathcal{A}$.
 \end{theorem}
 
@@ -859,6 +860,51 @@ It also allows us to decide privacy by solving a simpler optimization problem. H
 
 
 We can construct the segment shift graph of a DiPA in linear time, and check for a path from $\bf 1$ to $\bf -1$ in linear time using a breadth-first search. Thus, we can decide privacy in linear time.
+
+
+\subsection{A comparison of the naive and relaxed shift-coupling proofs}
+
+\begin{definition}
+    Define a \textbf{naive} shift-coupling proof of privacy to be a collection of shifts $\{\gamma_i\}$ on segments $s_i$ that adheres to the segment shift graph inequalities of $\mathcal{A}$.
+\end{definition}
+
+Theorem \ref{theorem:decide_privacy} shows that a naive shift-coupling proof of privacy exists if and only if $\mathcal{A}$ is differentially private. The cost of a naive shift-coupling proof of privacy is the cost of its most expensive sequence of segments, and Proposition \ref{prop:proofs_must_regard_paths} shows that it is not tight in general.
+
+Here, we will show that there exists a family of automata $\mathfrak{F}$ for which the cost of a naive shift-coupling proof of privacy grows arbitrarily large while the cost of a relaxed shift-coupling proof of privacy remains bounded.
+
+\begin{theorem}
+    \label{theorem:naive_shifts_unbounded}
+    There exists a family of automata $\mathfrak{F} = \{\mathcal{A}_n\}$, $n \in \N$ such that the cost of the tight relaxed shift-coupling proof of privacy is in $O(n)$, but the cost of any naive shift-coupling proof of privacy is in $\Omega(n^2)$.
+\end{theorem}
+
+\begin{proof}
+    Define $\mathcal{A}_n$ as shown below in Figure \ref{fig:naive_vs_relaxed}. It consists of segments $q_i$ and $p_i$ for $i \in \{1, \dots, n\}$. The identical segments $p_i$ have L-cycles, and are such that $p_i \hookrightarrow q_i$. The segments $q_i$ are in sequence but separated by $true$ transition segments so that their shifts do not constrain each other. We also have $guard(q_i) = <$. 
+
+    \begin{figure}[H]
+        \label{fig:naive_vs_relaxed}
+        \centering
+        \includegraphics[width=0.8 \textwidth]{figures/naive_vs_relaxed.jpeg}
+        \caption{An illustration of $\mathcal{A}_n$}
+    \end{figure}
+
+    Let the states $p_i$ have only one $\geq$ transition, and let the states $q_i$ have $m$ transitions with guard $\geq$ and no $<$ transitions. 
+
+    All other transitions not shown in this diagram are to a designated terminal state, which is also not shown as they are not relevant to the proof. Let us denote the shift assigned to a segment $s$ by $\gamma_s$.
+
+    Any naive shift-coupling proof of privacy assigns a shift of $\gamma_{p_i} = 1$ since $p_i$ has an $L$-cycle. Since $p_i \hookrightarrow q_i$, we have that $\gamma_{p_i} \leq \gamma_{q_i}$, which forces $\gamma_{q_i} = 1$. Let $q_0$ be the initial segment with some coupling cost $c_0$. Let $c_1$ bound the cost of the segment $p_i$ if we choose $\gamma_{p_i} = 1$. 
+    
+    The cost of constructing the naive shift-coupling proof of privacy is then the maximum cost over all segments, which is $q_0 \to p_1 \to q_1 \to \dots \to q_n$. This has cost at least $c_0 + c_1 + n \cdot (2 + 2m)$, or 
+
+    \[\text{ naive cost } \geq c_0 + c_1 + 2n + 2mn\]
+
+    However, the cost of the relaxed shift-coupling proof of privacy is at most $c_0 + c_1 + 2 + 2m + 2n$, since only one of the $q_i$ segments would have a shift of $1$ for any given sequence of segments. This is because paths traverse through at most one $p_i$, and the shifts on $q_i$ do not constrain each other. 
+
+    \[\text{ relaxed cost } \leq c_0 + c_1 + 2 + 2m + 2n\]
+
+    If we let $m = n$, then we get that the naive cost is in $\Omega(n^2)$ while the relaxed cost is in $O(n)$.
+
+\end{proof}
+
 
 \section{Is the tight shift-coupling proof also a tight coupling proof?}
 \textbf{Last Updated: Wednesday, June 28th, 2023}
