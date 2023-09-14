@@ -1,0 +1,176 @@
+// DiPA
+digraph {
+	graph [rankdir=LR]
+	node [filled=true fontname="Courier New" fontsize=14]
+	edge [fontname="Courier New" fontsize=12 minlen=2.0]
+	0 [label="0
+--------
+(0, 1)
+(0, 1)" shape=circle]
+	0 -> 1 [label="true
+⊥, True" color=black fontcolor=black penwidth=3.0]
+	1 [label="1
+--------
+(0, 1)
+(0, 1)" shape=circle]
+	1 -> "1_top" [label="insample >= x
+⊤, True" color=black fontcolor=red penwidth=3.0]
+	1 -> "1_bot" [label="insample < x
+⊥, True" color=black fontcolor=blue penwidth=3.0]
+	2 [label="2
+--------
+(0, 1)
+(0, 1)" shape=circle]
+	2 -> "2_top" [label="insample >= x
+⊤, True" color=black fontcolor=red penwidth=3.0]
+	2 -> "2_bot" [label="insample < x
+⊥, True" color=black fontcolor=blue penwidth=3.0]
+	3 [label="3
+--------
+(0, 1)
+(0, 1)" shape=circle]
+	3 -> "3_top" [label="insample >= x
+⊤, True" color=black fontcolor=red penwidth=3.0]
+	3 -> "3_bot" [label="insample < x
+⊥, True" color=black fontcolor=blue penwidth=3.0]
+	4 [label="4
+--------
+(0, 1)
+(0, 1)" shape=circle]
+	4 -> "4_top" [label="insample >= x
+⊤, True" color=black fontcolor=red penwidth=3.0]
+	4 -> "4_bot" [label="insample < x
+⊥, True" color=black fontcolor=blue penwidth=3.0]
+	5 [label="5
+--------
+(0, 1)
+(0, 1)" shape=circle]
+	5 -> "5_top" [label="insample >= x
+⊤, True" color=black fontcolor=red penwidth=3.0]
+	5 -> "5_bot" [label="insample < x
+⊥, True" color=black fontcolor=blue penwidth=3.0]
+	6 [label="6
+--------
+(0, 1)
+(0, 1)" shape=circle]
+	6 -> "6_top" [label="insample >= x
+⊤, True" color=black fontcolor=red penwidth=3.0]
+	6 -> "6_bot" [label="insample < x
+⊥, True" color=black fontcolor=blue penwidth=3.0]
+	7 [label="7
+--------
+(0, 1)
+(0, 1)" shape=circle]
+	7 -> "7_top" [label="insample >= x
+⊤, True" color=black fontcolor=red penwidth=3.0]
+	7 -> "7_bot" [label="insample < x
+⊥, True" color=black fontcolor=blue penwidth=3.0]
+	8 [label="8
+--------
+(0, 1)
+(0, 1)" shape=circle]
+	8 -> "8_top" [label="insample >= x
+⊤, True" color=black fontcolor=red penwidth=3.0]
+	8 -> "8_bot" [label="insample < x
+⊥, True" color=black fontcolor=blue penwidth=3.0]
+	9 [label="9
+--------
+(0, 1)
+(0, 1)" shape=doublecircle]
+	"1_top" [label="1_top
+--------
+(0, 1)
+(0, 1)" shape=circle]
+	"1_top" -> 2 [label="true
+⊤, False" color=black fontcolor=black penwidth=1.0]
+	"1_bot" [label="1_bot
+--------
+(0, 1)
+(0, 1)" shape=circle]
+	"1_bot" -> 2 [label="true
+⊥, False" color=black fontcolor=black penwidth=1.0]
+	"2_top" [label="2_top
+--------
+(0, 1)
+(0, 1)" shape=circle]
+	"2_top" -> 3 [label="true
+⊤, False" color=black fontcolor=black penwidth=1.0]
+	"2_bot" [label="2_bot
+--------
+(0, 1)
+(0, 1)" shape=circle]
+	"2_bot" -> 3 [label="true
+⊥, False" color=black fontcolor=black penwidth=1.0]
+	"3_top" [label="3_top
+--------
+(0, 1)
+(0, 1)" shape=circle]
+	"3_top" -> 4 [label="true
+⊤, False" color=black fontcolor=black penwidth=1.0]
+	"3_bot" [label="3_bot
+--------
+(0, 1)
+(0, 1)" shape=circle]
+	"3_bot" -> 4 [label="true
+⊥, False" color=black fontcolor=black penwidth=1.0]
+	"4_top" [label="4_top
+--------
+(0, 1)
+(0, 1)" shape=circle]
+	"4_top" -> 5 [label="true
+⊤, False" color=black fontcolor=black penwidth=1.0]
+	"4_bot" [label="4_bot
+--------
+(0, 1)
+(0, 1)" shape=circle]
+	"4_bot" -> 5 [label="true
+⊥, False" color=black fontcolor=black penwidth=1.0]
+	"5_top" [label="5_top
+--------
+(0, 1)
+(0, 1)" shape=circle]
+	"5_top" -> 6 [label="true
+⊤, False" color=black fontcolor=black penwidth=1.0]
+	"5_bot" [label="5_bot
+--------
+(0, 1)
+(0, 1)" shape=circle]
+	"5_bot" -> 6 [label="true
+⊥, False" color=black fontcolor=black penwidth=1.0]
+	"6_top" [label="6_top
+--------
+(0, 1)
+(0, 1)" shape=circle]
+	"6_top" -> 7 [label="true
+⊤, False" color=black fontcolor=black penwidth=1.0]
+	"6_bot" [label="6_bot
+--------
+(0, 1)
+(0, 1)" shape=circle]
+	"6_bot" -> 7 [label="true
+⊥, False" color=black fontcolor=black penwidth=1.0]
+	"7_top" [label="7_top
+--------
+(0, 1)
+(0, 1)" shape=circle]
+	"7_top" -> 8 [label="true
+⊤, False" color=black fontcolor=black penwidth=1.0]
+	"7_bot" [label="7_bot
+--------
+(0, 1)
+(0, 1)" shape=circle]
+	"7_bot" -> 8 [label="true
+⊥, False" color=black fontcolor=black penwidth=1.0]
+	"8_top" [label="8_top
+--------
+(0, 1)
+(0, 1)" shape=circle]
+	"8_top" -> 9 [label="true
+⊤, False" color=black fontcolor=black penwidth=1.0]
+	"8_bot" [label="8_bot
+--------
+(0, 1)
+(0, 1)" shape=circle]
+	"8_bot" -> 9 [label="true
+⊥, False" color=black fontcolor=black penwidth=1.0]
+}

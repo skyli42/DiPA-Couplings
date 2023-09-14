@@ -1,0 +1,82 @@
+\documentclass{article}
+\usepackage[x11names, svgnames, rgb]{xcolor}
+\usepackage[utf8]{inputenc}
+\usepackage{tikz}
+\usetikzlibrary{snakes,arrows,shapes}
+\usepackage{amsmath}
+%
+%
+
+\usepackage[active,tightpage]{preview}
+\PreviewEnvironment{tikzpicture}
+\setlength\PreviewBorder{0pt}%
+
+%
+
+\begin{document}
+\pagestyle{empty}
+%
+%
+%
+
+\enlargethispage{100cm}
+% Start of code
+% \begin{tikzpicture}[anchor=mid,>=latex',line join=bevel,]
+\begin{tikzpicture}[>=latex',line join=bevel,]
+  \pgfsetlinewidth{1bp}
+%%
+\pgfsetcolor{black}
+  % Edge: 0 -> 1
+  \draw [->] (54.258bp,27.0bp) .. controls (77.15bp,27.0bp) and (110.6bp,27.0bp)  .. (146.94bp,27.0bp);
+  \definecolor{strokecol}{rgb}{0.0,0.0,0.0};
+  \pgfsetstrokecolor{strokecol}
+  \draw (100.5bp,37.0bp) node {$true
+, True$};
+  \draw (60.258bp,21.0bp) node {$$};
+  \draw (140.94bp,21.0bp) node {$$};
+  % Edge: 1 -> 1
+  \draw [->] (160.56bp,50.615bp) .. controls (158.9bp,61.973bp) and (163.38bp,72.0bp)  .. (174.0bp,72.0bp) .. controls (180.97bp,72.0bp) and (185.3bp,67.682bp)  .. (187.44bp,50.615bp);
+  \draw (174.0bp,82.0bp) node {$insample < x
+⊥, False$};
+  \draw (154.56bp,56.615bp) node {$$};
+  \draw (181.44bp,56.615bp) node {$$};
+  % Edge: 1 -> 2
+  \draw [->] (201.38bp,27.0bp) .. controls (243.73bp,27.0bp) and (327.05bp,27.0bp)  .. (386.5bp,27.0bp);
+  \draw (294.0bp,37.0bp) node {$insample >= x
+insample, False$};
+  \draw (207.38bp,21.0bp) node {$$};
+  \draw (380.5bp,21.0bp) node {$$};
+  % Node: 0
+\begin{scope}
+  \definecolor{strokecol}{rgb}{0.0,0.0,0.0};
+  \pgfsetstrokecolor{strokecol}
+  \draw (27.0bp,27.0bp) ellipse (27.0bp and 27.0bp);
+  \draw (27.0bp,27.0bp) node {$0
+4/9, 1$};
+\end{scope}
+  % Node: 1
+\begin{scope}
+  \definecolor{strokecol}{rgb}{0.0,0.0,0.0};
+  \pgfsetstrokecolor{strokecol}
+  \draw (174.0bp,27.0bp) ellipse (27.0bp and 27.0bp);
+  \draw (174.0bp,27.0bp) node {$1
+4/9, 1$};
+\end{scope}
+  % Node: 2
+\begin{scope}
+  \definecolor{strokecol}{rgb}{0.0,0.0,0.0};
+  \pgfsetstrokecolor{strokecol}
+  \draw (414.0bp,27.0bp) ellipse (27.0bp and 27.0bp);
+  \draw (414.0bp,27.0bp) node {$2
+4/9, 1$};
+\end{scope}
+%
+\end{tikzpicture}
+% End of code
+
+%
+\end{document}
+%
+
+
+

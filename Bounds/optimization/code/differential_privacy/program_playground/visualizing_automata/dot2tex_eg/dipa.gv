@@ -1,0 +1,18 @@
+// DiPA
+digraph {
+	graph [rankdir=LR]
+	node [fontname="Courier New" shape=circle]
+	edge [fontname="Courier New"]
+	0 [label="0
+4/9, 1"]
+	0 -> 1 [label="true
+, True"]
+	1 [label="1
+4/9, 1"]
+	1 -> 1 [label="insample < x
+⊥, False"]
+	1 -> 2 [label="insample >= x
+insample, False"]
+	2 [label="2
+4/9, 1"]
+}

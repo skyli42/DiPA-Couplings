@@ -1,0 +1,24 @@
+// DiPA
+digraph {
+	graph [rankdir=LR]
+	node [fontname=Helvetica shape=circle]
+	edge [fontname=Helvetica]
+	0 [label="$$q_0$$
+0.5
+1"]
+	0 -> 1 [label="true
+
+True"]
+	1 [label="$$q_1$$
+0.25
+1"]
+	1 -> 1 [label="insample < x
+⊥
+False"]
+	1 -> 2 [label="insample >= x
+⊤
+False"]
+	2 [label="$$q_2$$
+0.25
+1"]
+}

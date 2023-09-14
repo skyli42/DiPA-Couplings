@@ -1,0 +1,11 @@
+numpy==1.25.0
+networkx~=3.1
+
+matplotlib~=3.7.1
+
+scipy==1.11.1
+PySMT~=0.9.5
+graphviz~=0.20.1
+sympy~=1.12
+
+ipython
