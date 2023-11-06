@@ -1,0 +1,957 @@
+\documentclass[12pt]{article}
+
+\usepackage[shortlabels]{enumitem} 
+\usepackage{amsmath,amsfonts,amssymb,amsthm,bm,mathrsfs}
+\usepackage{fancyhdr}
+\usepackage[margin=1in]{geometry}
+\usepackage{parskip}
+\usepackage{tikz}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+% \usepackage{mdframed}
+\usepackage{hyperref}
+\usepackage{xcolor, soul}
+\sethlcolor{cyan}
+
+
+\newcommand{\NN}{\mathbb{N}}
+\newcommand{\ZZ}{\mathbb{Z}}
+\newcommand{\QQ}{\mathbb{Q}}
+\newcommand{\RR}{\mathbb{R}}
+\newcommand{\CC}{\mathbb{C}}
+\newcommand{\PP}{\mathbb{P}}
+\newcommand{\EE}{\mathbb{E}}
+\newcommand{\notimplies}{\;\not\!\!\!\implies}
+\newcommand{\gguard}[1][x]{\texttt{insample}\geq #1}
+\newcommand{\lguard}[1][x]{\texttt{insample} < #1}
+\newcommand{\gaguard}{n<N \text{ AND } \texttt{insample} \geq \texttt{x}}
+\newcommand{\laguard}{n<N\text{ AND }\texttt{insample} < \texttt{x}}
+\newcommand{\itgguard}{\texttt{input}\neq\tau \text{ AND } \texttt{insample} \geq \texttt{x}}
+\newcommand{\itlguard}{\texttt{input}\neq\tau \text{ AND }\texttt{insample} < \texttt{x}}
+\newcommand{\range}{\texttt{range}}
+\newcommand{\brangle}[1]{\langle #1 \rangle}
+\newcommand{\guard}{\texttt{guard}}
+\newcommand{\trans}{\texttt{trans}}
+\newcommand{\Lap}{\texttt{Lap}}
+\newcommand{\gcycle}{\texttt{G}-cycle}
+\newcommand{\lcycle}{\texttt{L}-cycle}
+\newcommand{\sgn}{\texttt{sgn}}
+\newcommand{\andtext}{\text{ AND }}
+\newcommand{\ortext}{\text{ OR }}
+\newcommand{\supp}{\texttt{supp}}
+
+\newcommand{\im}{\texttt{im}}
+
+
+\DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator*{\argmin}{arg\,min}
+
+\providecommand{\floor}[1]{ \lfloor #1 \rfloor }
+\newtheorem{thm}{Theorem}[section]
+\newtheorem{lemma}[thm]{Lemma}
+\newtheorem{prop}[thm]{Proposition}
+\newtheorem{cor}[thm]{Corollary}
+\theoremstyle{definition}
+\newtheorem{defn}[thm]{Definition}
+\newtheorem{const}[thm]{Construction}
+\newtheorem{examp}[thm]{Example}
+\newtheorem{conj}[thm]{Conjecture}
+\newtheorem{rmk}[thm]{Remark}
+\newtheorem{clm}[thm]{Claim}
+
+\newcommand{\isto}{\stackrel{\sim}{\smash{\longrightarrow}\rule{0pt}{0.4ex}}} 
+\graphicspath{ {./} }
+\bibliographystyle{plain} 
+
+
+\begin{document}
+
+\section{Introduction}
+
+Differential privacy is a framework for privacy that gives rigorous guarantees on the amount of data leakage any one person's data can be subjected to when releasing statistical data. Since being introduced in 2006 \cite{DP2006}, differential privacy has become the gold standard for private statistical analysis. 
+Differentially private algorithms, whose efficacy are characterized by a ``privacy cost'' $\varepsilon$, primarily rely on the addition of statistical noise, ensuring that statistical results remain approximately correct while preventing any one person's information from being revealed. 
+
+Differentially private algorithms are notoriously tricky to analyze for correctness; most famously, the Sparse Vector Technique (SVT) algorithm has gone through multiple iterations, some of which were later shown to completely fail at protecting privacy\cite{10.14778/3055330.3055331}. Previous implementations of differential privacy by Apple have similarly been shown to have an increase from the claimed privacy cost by a factor of up to 16 \cite{appleleakprivacy}. 
+
+Thus, much work has been done on developing methods for automatic verification of differentially private algorithms, both in their overall privacy and in the specific privacy costs they claim to achieve. 
+Because even for limited programs the problem of determining if a program is differentially private is undecidable\cite{barthe.etal2020decidingdp}, previous work tends to focus on semi-decidability or further restricting program models. 
+
+Recently, a line of work has emerged around \textbf{approximate liftings} \cite{BartheEtAl2016,bartheKopfOlmedo2012ProbabilisticRelationalReasoningforDifferentialPriv,BartheOlmedo2013,HsuThesis2017}. Approximate liftings are a generalization of probabilistic couplings, themselves a well-known technique in probability theory for analyzing relationships between random variables. 
+Approximate liftings allow for a more structured proof approach to many algorithms that themselves are not conducive to a standard compositional analysis, such as SVT. Because of their structure, liftings also lend themselves to automated proof construction~\cite{AlbarghouthiHsu2018}. 
+
+We first rewrite the major results of approximate liftings in \{not program logic\}\footnote{not sure how to describe this, also not sure if worth mentioning}. 
+We then use approximate liftings to demonstrate that a certain limited class of programs, first described in \cite{chadhaLinearTimeDecidability2021}, are differentially private; interestingly, we show that our class of liftings completely characterizes this class of programs. Additionally, we demonstrate that the privacy of a natural generalization of this class of programs can be proven using liftings and almost immediately follows from the privacy of the smaller class. 
+
+\section{Differential Privacy}
+
+Differential privacy is a mathematically robust approach to privacy; most generally, differential privacy ensures that it is unlikely for an adversary to distinguish between whether or not one person's data was used in a private algorithm. To do this, differentially private algorithms rely on randomization, especially through the addition of statistical noise.
+
+More precisely then, for a fixed output $\sigma$ of a private algorithm $A$, the probability of obtaining $\sigma$ for a dataset with some individual Alex is close (measured by a multiplicative factor) to the probability of obtaining $\sigma$ for the same dataset with Alex removed or Alex's data changed.
+
+We will consider \textbf{datasets} $\mathcal{X}\in X^n$ of size $n$, where $X$ is the set of all possible rows in the dataset; each person is represented by a single row. 
+
+We next define what it means for datasets to be ``similar'' to each other. 
+
+\begin{defn}
+    Two datasets $\mathcal{X}=(x_1, \ldots, x_n), \mathcal{X}'=(x'_1, \ldots, x'_n)\in X^n$ are \textbf{adjacent} (notated $\mathcal{X}\sim\mathcal{X}'$) if $|\{i: x_i\neq x'_i\}|\leq 1$\footnote{A common variant is to define adjacency by the removal or addition of an entry, rather than changing one}.
+\end{defn}
+
+We thus formalize privacy under this framework as follows.
+\begin{defn}[Pure Differential Privacy]
+    A randomized algorithm $A$ is $\varepsilon$-differentially private if, for all pairs of \textbf{adjacent} datasets $X$ and $X'$ and all events $E \subseteq \im(A)$, \[\PP[A(X) \in E]\leq e^\varepsilon \PP[A(X')\in E]\]
+\end{defn}
+
+
+An extremely useful property of differential privacy is that differentially private programs can be \textbf{sequentially composed} with a linear degradation in privacy:
+
+\begin{thm}[Standard Composition]
+    If $A$ is $\varepsilon_1$-differentially private and, for all $\sigma$, $B(\sigma, \cdot)$ is $\varepsilon_2$-differentially private, then $B(A(X), X)$ is $\varepsilon_1+\varepsilon_2$-differentially private. 
+\end{thm}
+
+Composition therefore allows us to view privacy parameters $\varepsilon$ as a ``budget'' for privacy-leaking operations in a program. Many\footnote{generic platitude - reword} common differentially private algorithms are thus built out of well-known private components combined together, which also lend themselves to straightforward analyses. 
+
+\subsection{Sensitivity and the Laplace Mechanism}
+
+Because we are typically interested in analyzing \textit{functions} of our raw dataset (for example, the average age of a town), it is often useful to examine differential privacy through a similar model - instead of comparing two adjacent datasets $X\sim X'$, we compare \textbf{queries} $f(X)$ and $f(X')$. In this world, we care about the \textit{sensitivity} of functions: how much a function \textit{changes} when considering adjacent inputs.  
+
+\begin{defn}
+    The ($\ell_1$-)sensitivity of a function $f: X\to \RR$, often denoted $\Delta f$, is defined as $\Delta f = \max_{X\sim X'}||f(X)-f(X')||_1$.
+\end{defn}
+
+Given a function's sensitivity, we can easily make it differentially private through the use of the \textbf{Laplace Mechanism}.
+
+\begin{defn}
+    The Laplace distribution $\Lap(\mu, b)$ with mean $\mu$ and spread parameter $b$ is the probability distribution with probability density function $f(x) = \frac{1}{2b}\exp(-\frac{|x-\mu|}{b})$. If $\mu =0$, we will often abbreviate $\Lap(0, b)$ as $\Lap(b)$. 
+\end{defn}
+
+The Laplace Mechanism, as expected, simply adds noise sampled from the Laplace distribution to a query result. 
+
+\begin{thm}[Theorem 3.6~\cite{dworkrothmonograph}]
+    For a function $f$ with sensitivity $\Delta$, $A(X) = f(X) + \Lap(\frac{\Delta}{\varepsilon})$ is $\varepsilon$-differentially private. 
+\end{thm}
+
+We will consider the scenario where we are given a potentially infinite \textit{sequence} of real-valued query functions $q_0, q_1, \ldots$, each with sensitivity at most $\Delta$.
+
+\subsection{Deciding Privacy}
+
+Because designing differentially private algorithms can be quite tricky, we would like to be able to automatically (i.e. algorithmically) verify whether or not a given program is private, especially for algorithms whose privacy proofs do not rely primarily on composition. 
+Ideally, beyond just determining whether a program is private or not, if a program is private, we'd like to find a good bound on the privacy cost for the program as well. 
+
+Unfortunately, even for relatively simple programs, just the basic problem is undecidable. 
+
+\begin{thm}[\cite{barthe.etal2020decidingdp}]
+    The problem of determining whether a program from a certain class of algorithms with assignments, conditionals, and while loops is $\varepsilon$-differentially private is undecidable\footnote{rephrase?}.
+\end{thm}
+
+Thus, we will derive a decision procedure for a very specific class of potentially private programs; in particular, this class of programs lends itself to a straightforward analysis by \textbf{approximate liftings}, which we now introduce. 
+
+\section{Couplings and Liftings}
+
+Probabilistic couplings are a common tool in probability theory; intuitively, couplings allow for the joint analysis of nominally unrelated probabilistic processes. 
+
+\begin{defn}
+    A coupling between two distributions $A$ and $B$ is a joint distribution $C$ such that $\pi_1(C)=A$ and $\pi_2(C)=B$, where $\pi_1(C)$ and $\pi_2(C)$ are the first and second marginals of $C$, respectively. 
+\end{defn}
+
+In particular, couplings can be useful when analyzing the relation between two probablistic processes; couplings were first formulated by [check name] to analyze the behaviour of markov chains and have close connections to concepts such as total variation distance and stochastic domination. 
+
+As useful as standard couplings are, however, we must use more powerful machinery to properly reason about privacy.
+
+\textbf{Approximate liftings} \cite{BartheOlmedo2013,bartheKopfOlmedo2012ProbabilisticRelationalReasoningforDifferentialPriv,HsuThesis2017,BartheEtAl2016} allow us to apply couplings to the realm of differential privacy. 
+
+\begin{defn}
+    Let $A_1, A_2$ be two probability spaces\footnote{may need to formally rewrite this at some point}. We say a distribution $\mu_1$ on $A_1$ and $\mu_2$ on $A_2$ are related by the $\mathbf{\varepsilon}$\textbf{-lifting} of the relation $\Psi\subseteq A_1\times A_2$ (written $\mu_1\Psi^{\#\varepsilon}\mu_2$) if there exist two \textbf{witness distributions} $\mu_L, \mu_R$ on $A_1\times A_2$ such that\begin{enumerate}
+        \item $\pi_1(\mu_L) = \mu_1$ and $\pi_2(\mu_R) = \mu_2$
+        \item $\supp(\mu_L), \supp(\mu_R)\subseteq \Psi$
+        \item $\sup_{E\subseteq A_1\times A_2}(\PP_{x\gets \mu_L}[x\in E]- e^\varepsilon \PP_{x\gets \mu_R}[x\in E])\leq 0$
+    \end{enumerate}
+\end{defn}
+
+The similarities between the third condition and the definition of differential privacy should be clear. Indeed, there is a close connection between approximate liftings and differential privacy:
+
+\begin{thm}
+    An algorithm $A(X)$ is $\varepsilon$-differentially private if and only if, for all adjacent input sequences $X\sim X'$, $A(X)(=)^{\#\varepsilon}A(X')$.
+\end{thm}
+
+If we are solely aiming to show that a program is private, we can instead work with the following relaxation: 
+
+\begin{thm}\label{implicationcouplingthm}
+    If for all adjacent input sequences $X\sim X'$, $A(X)\{(a, b): a=\sigma\implies b=\sigma\}^{\#\varepsilon}A(X')$, then $A(X)$ is $\varepsilon-$differentially private.
+\end{thm}
+
+As expected, the foundational results of differential privacy can be restated in terms of liftings:
+
+\begin{prop}[Laplace Mechanism for Liftings]
+    If $X_1\sim\Lap(\mu_1, \frac{1}{\varepsilon})$ and $X_2\sim\Lap(\mu_2, \frac{1}{\varepsilon})$, then $X_1(=)^{\#\varepsilon|\mu_1-\mu_2|}X_2$.
+\end{prop}
+
+\begin{thm}[Composition of Liftings]\label{liftingcomposition}
+    Let $A_1, B_2, A_2, B_2$ be distributions over $S_1, T_1, S_2, T_2$, respectively and let $R_1\subseteq S_1\times T_1$, $R_2\subseteq S_2\times T_2$ be relations. If $A_1 R_1^{\#\varepsilon_1}B_1$ and $A_1 R_1 B_1\implies A_2R_2^{\#\varepsilon_2}B_2$, then $A_2 R_2^{\#\varepsilon_1+\varepsilon_2}B_2$.
+\end{thm}
+
+The structure of theorems \ref{implicationcouplingthm} and \ref{liftingcomposition} suggests the format that coupling proofs of privacy take: given two ``runs'' of an algorithm on adjacent inputs, construct many smaller liftings between program variables in each run and compose these liftings together to show that a final implicatory lifting between the outputs of the two runs exists. 
+
+\subsection{Proving SVT with couplings}
+
+A classic algorithm that requires analysis beyond standard composition is Sparse Vector Technique (SVT). Given a possibly infinite stream of inputs and a threshold value, SVT will output if the queries are above or below the threshold (with noise on both the query and the threshold). 
+
+Unusually for differentially private algorithms, SVT can output a potentially unbounded number of ``below threshold'' queries before the first $c$ ``above threshold''s (or vice-versa), where $c$ is some constant set by the user; when $c=1$, SVT is frequently also referred to as ``Above (or Below) Threshold''. Potential applications include, for example, checking that a series of inputs is within an expected range or, appropriately, privately determining the non-zero elements of a sparse vector. 
+
+Because SVT allows for a potentially unbounded number of ``below threshold'' query outputs, its analysis requires a non-standard approach; a naive composition approach that assigns a fixed cost to outputting the result of each query will immediately result in unbounded privacy cost as well. 
+Indeed, the analysis of SVT is notoriously difficult, with multiple published attempts at privacy proofs that were later shown to be incorrect\footnote{A textbook analysis of SVT, along with a discussion of bugged versions and incorrect privacy proofs, can be found at \cite{10.14778/3055330.3055331}}. 
+
+However, re-analyzing SVT using approximate liftings can be relatively simple. 
+
+\begin{algorithm}
+    \hspace*{\algorithmicindent}\textbf{Input}: $\mathcal{X}\in X^n$, $T\in \RR$, $Q=q_1, \ldots \in {(X^n\to \RR)}^*$ with sensitivity $\Delta$, $c\in \NN$.
+    \begin{algorithmic}[1]
+        \caption{Sparse Vector Technique}\label{couplingAlg}
+        \State $\varepsilon_1, \varepsilon_2 \gets \frac{\varepsilon}{2},
+        \rho \gets \Lap(\frac{\Delta}{\varepsilon_1})$, $count \gets 0$
+		\For{$q_i \in Q$} 
+			\State $z\gets \Lap(\frac{2c\Delta}{\varepsilon_2})$
+            \If{$q_i(\mathcal{X}) + z \geq T + \rho$}
+                \State\textbf{output} $\top$
+                \State$count\gets count+1$
+                \If{$count \geq c$}
+                    \State$\textbf{break}$
+                \EndIf
+            \Else
+                \State\textbf{output} $\bot$
+            \EndIf
+		\EndFor
+    \end{algorithmic}
+\end{algorithm}
+
+
+\begin{thm}
+    Sparse Vector Technique is $\varepsilon$-differentially private. 
+\end{thm}
+
+\begin{proof}
+    Consider two runs of SVT with adjacent inputs $\mathcal{X}\sim\mathcal{X}'$, respectively. We are aiming to show that $SVT(\mathcal{X}, T, Q, c)\{(a, b): a=\sigma \implies b=\sigma\}^{\#\varepsilon}SVT(\mathcal{X}', T, Q, c)$ is a valid lifting. 
+
+    Fix some output $\sigma \in \{\bot, \top\}^n$. Let $A = \{i:\sigma_i = \top\}$ be the indices of queries that are measured to be above the threshold. Note that $|A| = c$. For every program variable $x$, let $x\brangle{1}$ and $x\brangle{2}$ represent the value of $x$ in $SVT(\mathcal{X}, T, Q, c)$ and $SVT(\mathcal{X}', T, Q, c)$, respectively, so, for example, $q_i(\mathcal{X})\brangle{1} = q_i(\mathcal{X})$ and $q_i(\mathcal{X})\brangle{2} = q_i(\mathcal{X}')$. 
+
+    Let $\tilde{T}=T + \rho$. Then $\tilde{T} \sim \Lap(T, \frac{\Delta}{\varepsilon_1})$, so $\tilde{T}\brangle{1} +\Delta (=)^{\#\varepsilon_1}\tilde{T}\brangle{2}$. 
+
+    Let $S_i = q_i(\mathcal{X}) + z_i$, so $S_i \sim\Lap(q_i(\mathcal{X}), \frac{2c\Delta}{\varepsilon_2})$.
+
+    For all $i$ such that $0\leq i < n$, $i\notin A$, we construct the lifting $z_i\langle 1\rangle (=)^{\#0}z_i\langle 2\rangle$. 
+
+    Then note that $\tilde{T}\brangle{1}+\Delta = \tilde{T}\brangle{2}\land z_i\brangle{1} = z_i \brangle{2} \implies (S_i\brangle{1} < \tilde{T}\brangle{1} \implies S_i\brangle{2} < \tilde{T}\brangle{2} )$.
+
+    For all $i\in A$, create the lifting $z_i\brangle{1}(=)^{\#\frac{\varepsilon_2}{c}}z_i\brangle{2} - q_i(\mathcal{X})+q_i(\mathcal{X}')-\Delta$, or equivalently, \\$S_i\brangle{1} +\Delta (=)^{\#\frac{\varepsilon_2}{c}} S_i\brangle{2}$. Note that this costs $\frac{\varepsilon_2}{c}$ since $|q_i(\mathcal{X})-q_i(\mathcal{X}')|\leq \Delta$.
+
+    Then \[\tilde{T}\brangle{1} +\Delta = \tilde{T}\brangle{2} \land S_i\brangle{1} + \Delta = S_i\brangle{2} \implies (S_i\brangle{1} \geq \tilde{T}\brangle{1} \implies S_i\langle 2\rangle \geq \tilde{T}\brangle{2})\]
+
+    Thus, for all $i$, $SVT(\mathcal{X}, T, Q, c)_i = \sigma_i \implies SVT(\mathcal{X}', T, Q, c)_i = \sigma_i$, so $SVT(\mathcal{X}, T, Q, c)\{(a, b): a=\sigma \implies b=\sigma\}^{\#\varepsilon_1+\varepsilon_2}SVT(\mathcal{X}', T, Q, c)$.
+
+    By Theorem \ref{implicationcouplingthm}, SVT is $\varepsilon$-differentially private. 
+\end{proof}
+
+\section{Segments}
+
+\subsection{A Program Model}
+
+We begin by building up a program model for SVT-style algorithms. There are three major components of SVT: taking in a threshold value and adding Laplace noise to it, taking in input and adding Laplace noise to it, and comparing the noisy threshold to the noisy input. 
+
+We start with a basic, ``straight-line'' program model. 
+
+\begin{defn}\label{SSADefn}
+    A simple segment automaton (SSA) $A(x)$ with initial value $x\in \RR$ is a tuple $(Q, \Sigma, C, \Gamma, q_{init}, X, P, \delta)$ where\begin{itemize}
+        \item $Q$ is a finite set of states
+        \item $\Sigma = \RR$ is the input alphabet
+        \item $C = \{\texttt{true}, \lguard, \gguard\}$ is a set of transition \textbf{guards}
+        \item $\Gamma$ is a finite output alphabet
+        \item $q_{init}\in Q$ is the starting state
+        \item $X = \{\texttt{x}, \texttt{insample}, \texttt{insample}'\}$ is a set of real-valued program variables
+        \item $P: Q\to \QQ\times \QQ^{\geq 0}\times \QQ\times  \QQ^{\geq 0}$ is a function that assigns a series of Laplace distribution parameters to each state for sampling
+        \item $\delta: (Q\times C)\to Q\times (\Gamma\cup\{\texttt{insample}, \texttt{insample}'\})$ is a (partial) transition function. 
+    \end{itemize}
+    Additionally, $\delta$ is restricted such that \begin{itemize}  
+        \item For every state $q\in Q$,  $\delta(q, c)$ can be defined for \textbf{at most one} $c\in C$. 
+        \item There are no cycles in the graph of $A$; i.e., for every path $\rho = q_{init} \to q_1\to\ldots\to q_n$ in $A$ starting from $q_{init}$, $q_{init}$ and $q_i$ are all pairwise distinct. 
+    \end{itemize}
+
+    Note in particular that $A(x)$ is parameterized by some initial real value $x$, stored in the variable $\texttt{x}$. Importantly, we will treat $x$ as a random variable drawn from some Laplace distribution.
+\end{defn}
+
+An SSA $A(x)$ runs as follows:
+\begin{itemize}
+    \item The variable $\texttt{x}$ has a stored real value, which is initialized to $x$. 
+    \item At \textbf{every} state $q\in Q$, $A$ will read in some real-valued input value $a$. Here, $a$ corresponds to the ``true'' value of a query function $q_i(X)$. Let $P(q) = (\mu, b, \mu', b')$. 
+    The variables $\texttt{insample}$ and $\texttt{insample}'$ are initialized such that $\texttt{insample} = a + \Lap(\mu, b)$ and $\texttt{insample}' = a + \Lap(\mu', b')$.
+    \item If $\delta(q, \texttt{true}) = (q', \sigma)$, then $A$ transitions to $q'$ and outputs $\sigma \in(\Gamma\cup\{\texttt{insample}, \texttt{insample}'\})$. Similarly if $\lguard$ (symmetrically, $\gguard$) and $\delta(q, \lguard) = (q', \sigma)$ (symmetrically, $\delta(q, \gguard) = (q', \sigma)$), then then $A$ transitions to $q'$ and outputs $\sigma \in(\Gamma\cup\{\texttt{insample}, \texttt{insample}'\})$.
+    \item If, at a state $q\in Q$, a guard $c$ is valid (e.g. $c=\lguard$ and $\lguard$) and $\delta(q, c)$ is not defined (including if $\delta(q, c)$ is not defined for any $c$), the automaton terminates.
+    \item If $q = q_{init}$, then $\texttt{x}$ is \textbf{assigned} so that $\texttt{x}\gets \texttt{insample}$ after the transition comparison.
+\end{itemize}
+
+Note that, without loss of generality, we can assume that $P(q) = (0, b, 0, b')$ by shifting the inputs appropriately. Thus, we will frequently abuse notation and write $P(q) = (b, b')$. 
+
+
+\begin{defn}
+    A path $\rho$ of an SSA $A(x)$ is a sequence of states $r_0\to r_1\to\ldots\to r_n$ such that for every $i\in\{0, 1,\ldots, n-1\}$, there exists some guard $c\in C$ such that $\delta(q_i, c) = (q_{i+1}, \sigma)$ for some output $\sigma$. 
+\end{defn}
+
+Given a path $\rho = r_0\to r_1\to \ldots \to r_n$ in $A$, we will notate the transition $r_i\to r_{i+1}$ with $\trans(r_i)$ and the guard (i.e. $\texttt{true}, \lguard$, or $\gguard$) of $\trans(r_i)$ as $\guard(r_i)$. 
+
+For technical reasons, whenever either $\texttt{insample}$ or $\texttt{insample}'$ are output by an SSA, we must define an interval $(a, b)$ that contains the output. Thus, when a transition outputs $\texttt{insample}$ or $\texttt{insample}'$, we say that $\sigma$ is of the form $(\texttt{insample}, c, d)$ or $(\texttt{insample}', c, d)$ for $c, d\in R_\infty$. 
+
+If such a tuple is output, it can be interpreted as $\texttt{insample}$ or $\texttt{insample}'$ being output with the outputted real value falling within the interval $(c, d)$. 
+
+Importantly, this allows us to define the \textbf{probability} of an SSA traversing a specified path with a specified output. 
+
+\begin{defn}
+    Let $A(x)$ be an SSA, $\rho = r_0\to r_1\to \ldots \to r_n$ be a path in $A$, and let $\sigma$ be a possible output of $A$. Additionally, let $\alpha \in \RR^*$ be a sequence of real-valued inputs. 
+
+    Then $\PP[x, \rho^{(\alpha, \sigma)}]$ is the probability of $A$ outputting $\sigma$ while traversing path $\rho$ with $\texttt{x} = x$ at the initial state and input sequence $\alpha$.
+    
+    In particular, we can define $\PP[x, \rho^{(\alpha, \sigma)}]$ inductively. Let $\delta(r_0, \guard(r_0))=(q, \sigma_0)$ and $P(r_0) = (\mu, b, \mu', b')$. If $\sigma_0 \in \{\texttt{insample}, \texttt{insample}'\}$, then let $\sigma_0 = (\texttt{insample}, c, d)$ or $\sigma_0 = (\texttt{insample}', c', d')$ as appropriate. 
+
+    Additionally, let $(u, v), (u', v')\in \RR_{\infty}$ be defined as follows:
+    \begin{align*}
+        (u, v) &= \begin{cases}
+        (-\infty, \infty) & \guard(r_0)=\texttt{true}\land \sigma_0 \neq \texttt{insample}\\
+        (c, d) &\guard(r_0)=\texttt{true}\land \sigma_0 = \texttt{insample}\\
+        (-\infty, x) & \guard(r_0)=\lguard\land \sigma_0 \neq \texttt{insample}\\
+        (c, \min(x, d)) &\guard(r_0)=\lguard\land \sigma_0 = \texttt{insample}\\
+        (x, \infty) & \guard(r_0)=\gguard\land \sigma_0 \neq \texttt{insample}\\
+        (\max(x, c), d) &\guard(r_0)=\gguard\land \sigma_0 = \texttt{insample}\\
+    \end{cases}\\
+    (u, v)& = (c', d')\end{align*}
+    
+    Then \[
+        \PP[x, \rho^{(\alpha, \sigma)}] = \begin{cases}
+            1 & |\rho| = 0\\
+            \int_u^v \Lap_{\mu+a, b}(z)dz\PP[x, tail(\rho^{(\alpha, \sigma)})]& \sigma_0 \neq \texttt{insample}' \land r_0 \neq q_{init}\\
+            \int_{u'}^{v'}\Lap_{\mu'+a, b'}(z')dz'\int_u^v \Lap_{\mu+a, b}(z)dz\PP[x, tail(\rho^{(\alpha, \sigma)})]& \sigma_0 = \texttt{insample}' \land r_0 \neq q_{init}\\
+            \int_u^v \Lap_{\mu+a, b}(z)\PP[z, tail(\rho^{(\alpha, \sigma)})]dz& \sigma_0 \neq \texttt{insample}' \land r_0 = q_{init}\\
+            \int_{u'}^{v'}\Lap_{\mu'+a, b'}(z')dz'\int_u^v \Lap_{\mu+a, b}(z)\PP[z, tail(\rho^{(\alpha, \sigma)})]dz& \sigma_0 = \texttt{insample}' \land r_0 = q_{init}
+        \end{cases}
+    \] 
+    where $\Lap_{\mu, b}(x)$ is the PDF of a Laplace distribution with mean $\mu$ and spread parameter $b$ and $tail(\rho) = r_1\to\ldots\to r_n$.
+\end{defn}
+
+We now work towards defining what it means for an SSA to be differentially private. Recall that $\alpha$ is, in reality, a sequence of \textbf{functions} of some underlying dataset. This means that adjacency in this context is defined as follows:
+
+\begin{defn}
+    Two input sequences $\alpha, \alpha'$ of length $n$ are $\Delta$-adjacent if, for all $i\in [n]$, $|\alpha_i-\alpha'_i|\leq \Delta$. 
+
+    Similarly, two paths $\rho^{(\alpha, \sigma)}$ and $\rho^{(\alpha', \sigma)}$ are $\Delta$-adjacent if $\alpha$ and $\alpha'$ are adjacent. 
+
+    If $\Delta$ is not specified, we assume that $\Delta = 1$. 
+\end{defn}
+
+We can now define what it means for SSAs to be \textbf{differentially private}.
+
+\begin{defn}
+    An SSA $A(x)$ with initial value $x$ is $d\varepsilon$-differentially private if there exists some $d>0$ such that $\forall \varepsilon> 0$, for all paths $\rho$, possible outputs $\sigma$, and adjacent input sequences $\alpha\sim \alpha'$, $\PP[x, \rho^{(\alpha, \sigma)}]\leq e^{d\varepsilon}\PP[x, \rho^{(\alpha', \sigma)}]$. 
+
+    Recall that $x$ is treated as a random variable drawn from a Laplace distribution. 
+\end{defn}
+
+Note that we slightly redefine $\varepsilon$-differential privacy as $d\varepsilon$-differential privacy, treating $\varepsilon$ as a universal scaling parameter that can be fine-tuned by users for their own purposes. 
+In particular, we argue that this definition is functionally equivalent\footnote{\cite{chadhaLinearTimeDecidability2021} notes that it is not entirely clear how this differs from standard differential privacy, but that the known decidability result does not apply here - {\color{red} maybe something to investigate}}, since if we target $\varepsilon^*$-differential privacy, we can always take $\varepsilon = \frac{\varepsilon^*}{d}$.
+
+\subsection{Coupling Strategies}
+
+For an SSA $A(x)$ as defined above, there are a finite set of \textbf{strategies}, using approximate liftings, that we can use to show that $A(x)$ is $d\varepsilon$-differentially private. 
+
+
+These \textbf{coupling strategies} are comprised of a series of liftings that, when combined together, will prove that $A$ is private. 
+
+As a preliminary step, we fix $\varepsilon>0$ as a generic privacy scale parameter, as described previously. 
+
+\subsubsection{A Discrete Set of Coupling Strategies}
+
+First, fix some possible output $\sigma$ of $A$. Note that this implicitly also determines some path $\rho$ in $A$, since SSAs have no branching. Fix two adjacent datasets $X\sim X'$; this also determines two adjacent input sequences $\alpha, \alpha'$. We will consider the adjacent paths $\rho^{(\alpha, \sigma)}$ and $\rho^{(\alpha', \sigma)}$
+
+For this path, we are aiming to construct the lifting $\rho(X)\{(a, b): a=o \implies b=o\}^{\#d\varepsilon}\rho(X')$. 
+
+In particular, because SSAs have no branching, we must only ensure that all transitions in $\rho$ are taken and, if a real-value $r$ is output, that $A(X)$ outputting $r$ implies $A(X')$ outputting $r$ as well. 
+
+We claim that, in all cases, we can select one of three \textbf{coupling strategies} that will allow us to construct the larger lifting for the entire segment. 
+
+We will first set up some preliminary notation. Let $\rho = r_0\to r_1\to\ldots r_n$ where $r_0 = q_{init}$ and let $\sigma = \sigma_1\sigma_2\cdots\sigma_n$. 
+
+For all states $r_i$, let $P(r_i) = (\frac{1}{d_i\varepsilon}, \frac{1}{d'_i\varepsilon})$ and let $z_i\sim \Lap(\frac{1}{d_i\varepsilon}), z'_i\sim \Lap(\frac{1}{d'_i\varepsilon})$ be the noises added to the input for $\texttt{insample}$ and $\texttt{insample}'$ at each state, respectively. Additionally, suppose that $\texttt{x} = x_0\sim \Lap(\mu_x, \frac{1}{d_x\varepsilon})$ initially.
+
+Similarly, let $\texttt{in}_i$ for $i \in \{0,\ldots, n\}$ represent the input value read at each state $r_i$ and let $x$ be the value of the stored variable of $A$ after $q_0$. Note that $\texttt{insample}_i = \texttt{in}_i + z_i$ by definition.
+
+For all of these variables $v$, let $v\brangle{1}$ represent its value in a run of $A(X)$, and let $v\brangle{2}$ represent its value in a run of $A(X')$. For example, this means that $\texttt{in}_i \brangle{1}= \alpha_i$ and $\texttt{in}_i\brangle{2} = \alpha'_i$. 
+In particular, we will overload notation and use $\sigma\brangle{k}$ to represent the random variable corresponding to the output of run $k$\footnote{As distinguished from the fixed output $\sigma$ from before}.
+
+
+We call the three coupling strategies we can apply $S^L, S^G$, and $S^N$. 
+
+\textbf{Coupling Strategies 1 and 2}: $S^L$ and $S^G$. 
+
+Suppose that $\trans(r_0)$ does not output $\texttt{insample}$. If it does, then we cannot use $S^L$, and must use $S^N$.
+
+Create the lifting $z_0\brangle{1} (=)^{\#2d_0\varepsilon} z_0\brangle{2} + \texttt{in}_0\brangle{2}- \texttt{in}_0\brangle{1} - 1$. 
+Note that since $\texttt{insample}_0$ gets assigned into $\texttt{x}$ and $\texttt{insample}_0 = \texttt{in}_0 + z_0$, this is equivalent to constructing the lifting $x\brangle{1} + 1 (=)^{\#2d_0\varepsilon}x\brangle{2}$. 
+
+Recall that $|\texttt{in}_0\brangle{1}-\texttt{in}_0\brangle{2}|\leq 1$ since the input sequences $\alpha, \alpha'$ are (1-)adjacent; this is why the lifting has a cost of $2d_0\varepsilon$. 
+
+We must ensure that the initial transition guard $\guard(r_0)$ is satisfied. This is a unique situation because this guard is dependent on the \textit{initial} value of $\texttt{x} = x_0$; all later guards will depend on the value that $\texttt{x}$ takes \textit{after} this transition. 
+
+If $\guard(r_0) = \texttt{true}$ this is trivially satisfied. Otherwise, if $\guard(r_0) = \lguard$, then if we construct $x_0\brangle{1}+1(=)^{\#d_x\varepsilon}x_0\brangle{2}$, we have that $\texttt{insample}_0\brangle{1} < x_0\brangle{1}+1\implies \texttt{insample}_0\brangle{2}-1<x_0\brangle{2}-1$. 
+
+Similarly, if $\guard(r_0) = \gguard$, then if we construct $x_0\brangle{1}(=)^{\#0}x_0\brangle{2}$, we have that $\texttt{insample}_0\brangle{1} \geq x_0\brangle{1}\implies \texttt{insample}_0\brangle{2} \geq x_0\brangle{2}$.
+
+Although we can freely couple $x_0\brangle{1}$ and $x_0\brangle{2}$ together in this case, we will see that with more complicated families of automata, there may be additional restrictions on $x_0$ that constrain our ability to do so in the future. 
+
+We now consider all transitions after the initial transition. Fix some $i\in\{1, \ldots, n-1\}$. 
+
+If $\trans(r_i)$ outputs $\texttt{insample}$, then construct the lifting $z_i\brangle{1} (=)^{\#d_i}z_i\brangle{2} + \texttt{in}_i\brangle{2}-\texttt{in}_0\brangle{1}$. This is equivalent to constructing the lifting $\texttt{insample}\brangle{1} (=)^{\#d_i}\texttt{insample}\brangle{2}$.
+
+Similarly, if $\trans(r_i)$ outputs $\texttt{insample}'$, then construct the lifting \\$\texttt{insample}'\brangle{1} (=)^{\#(d'_i, 0)} \texttt{insample}'\brangle{2}$.
+
+
+Otherwise if $\guard(r_i) = \lguard$, construct the lifting $z_i\brangle{1} (=)^{\#(0, 0)}z_i\brangle{2}$. If $\trans(r_i)$ doesn't output $\texttt{insample}$ and $\guard(r_i) = \gguard$, construct the lifting $z_i\brangle{1} + 2 (=)^{\#(2\epsilon_i, 0)}z_i\brangle{2}$. 
+
+Because every transition must have an output, we can construct our final lifting by creating liftings for each character of the output; i.e. creating the liftings $\sigma_i\brangle{1}\{(a, b): o = a\implies o=b\}^{\#d_i}\sigma_i\brangle{2}$ for all $i$. 
+
+We claim that if $\sigma_i \in \Gamma$ and $\guard(a_i) \in \{\lguard, \texttt{true}\}$, we can construct the lifting $\sigma_i\brangle{1}\{(a, b): a = \sigma_i \implies b = \sigma_i\}^{\#0}\sigma_i\brangle{2}$. 
+
+We demonstrate why this holds for $\guard(a_i) = \lguard$: \begin{align*}\sigma_i\brangle{1} = \sigma_i&\implies A(X)\text{ takes }\trans(a_i)\\
+&\implies \texttt{in}_i\langle 1 \rangle + z_i\langle 1 \rangle < x\langle 1 \rangle\\
+&\implies\texttt{in}_i\langle 1 \rangle +1 + z_i\langle 2 \rangle < x\langle 2 \rangle\\
+&\implies\texttt{in}_i\langle 2 \rangle + z_i\langle 2 \rangle < x\langle 2 \rangle\\
+&\implies \mathcal{A}(X')\text{ takes }\trans(a_i)\\
+&\implies \sigma_i\brangle{2} = \sigma_i
+\end{align*}
+
+When $\sigma_i = \texttt{insample}$ or $\sigma_i = \texttt{insample}'$, a similar analysis holds, with the additional caveat that $\texttt{insample}\brangle{1} = \texttt{insample}\brangle{2}$ and $\texttt{insample}'\brangle{1} = \texttt{insample}'\brangle{2}$ hold, as guaranteed by a previous lifting. 
+
+Similarly, if $\sigma_i \in \Gamma$ and $\guard(r_i) = \gguard$, then we can construct the lifting $\sigma_i\brangle{1}\{(a, b): a = \sigma_i \implies b = \sigma_i\}^{\#2d_i}\sigma_i\brangle{2}$.
+
+However, if $\sigma_i = \texttt{insample}$ and $\guard(r_i) = \gguard$, the only lifting we can construct is $\sigma_i\brangle{1}\{(a, b): a = \sigma_i \implies b = \sigma_i\}^{\#\infty}\sigma_i\brangle{2}$. If this is the case, we say $r_i$ is \textit{faulty} (in the context of $S^L$).
+
+Intuitively, with some overhead initial privacy cost, we assign 0 cost to every transition with guard $\lguard$ and twice the standard cost to every transition with guard $\gguard$, which is why we call this strategy $S^L$ (for ``less than'').
+
+Indeed, we have the following transition cost function for $i\in\{1, \ldots, n-1\}$:
+\[
+    c^L(t_i) = \begin{cases}
+        0 & \sigma_i \in \Gamma \land \guard(t_i)\neq \gguard\\
+        d_i & \sigma_i = \texttt{insample}\land \guard(t_i)\neq \gguard\\
+        d'_i & \sigma_i = \texttt{insample}'\land \guard(t_i)\neq \gguard\\
+        2d_i & \sigma_i \in \Gamma \land \guard(t_i) =\gguard\\
+        \infty & \sigma_i = \texttt{insample} \land \guard(t_i) =\gguard\\
+        2d_i +d'_i& \sigma_i = \texttt{insample}' \land \guard(t_i) =\gguard
+    \end{cases}    
+\] 
+
+By sequential composition of liftings, we have $\rho_\sigma(X)\{(a, b): a = \sigma_k \implies b = \sigma_k\}^{\#d_L\varepsilon}\rho_\sigma(X')$, where the total privacy cost $d_L^\rho$ of $S^L$ on path $\rho$ is \[
+	d_L^\rho=2d_0+ \sum_{i\in\{1, \ldots, n-1\}}c^L(t_i)
+\]
+
+Note that for an SSA, $d_L < \infty$ if and only if no transitions in $d_L$ are faulty. 
+
+The construction and cost of $S^G$ is exactly symmetric. 
+
+\textbf{Coupling Strategy 3:} $S^N$.
+
+As mentioned, there are occasional restrictions on when $S^L$ and $S^G$ can be used to prove the privacy of a segment. In particular, if $\trans(r_0)$ outputs $\texttt{insample}$, or if both a $\lguard$ and a $\gguard$ transition output $\texttt{insample}$, then neither $S^G$ nor $S^L$ are valid. For this scenario, we define the coupling strategy $S^N$ as follows. 
+
+Fix some $i\in\{0, \ldots, n-1\}$. 
+
+For all states $r_i$, construct the lifting $z_i\brangle{1} (=)^{\#(d_i\varepsilon, 0)}z_i\brangle{2}+ \texttt{in}_i\brangle{2}- \texttt{in}_i\brangle{1}$. This is equivalent to constructing the lifting $\texttt{insample}\brangle{1} (=)^{\#d_i\varepsilon}\texttt{insample}\brangle{2}$. For $i=0$, this specifically also is equivalent to constructing the lifting $x\brangle{1} (=)^{\#d_0\varepsilon}x\brangle{2}$
+
+Again, if $\trans(r_i)$ outputs $\texttt{insample}'$, then construct the lifting \\$\texttt{insample}'\brangle{1} (=)^{\#(d'_i, 0)} \texttt{insample}'\brangle{2}$.
+
+As before, we must ensure that the initial transition guard $\guard(r_0)$ is satisfied.
+
+We claim that $x_0\brangle{1}(=)^{\#0}x_0\brangle{2}$, which is sufficient to show that $\guard(r_0)$ is satisfied in $A(X)\implies \guard(r_0)$ is satisfied in $A(X')$.
+
+We claim that if $\sigma_i \in \Gamma\cup\{\texttt{insample}\}$, we can construct the lifting $\sigma_i\brangle{1}\{(a, b): a = \sigma_i \implies b = \sigma_i\}^{\#d_i\varepsilon}\sigma_i\brangle{2}$. 
+
+Otherwise, if $\sigma_i = \texttt{insample}'$, then we can construct the lifting $\sigma_i\brangle{1}\{(a, b): a = \sigma_i \implies b = \sigma_i\}^{\#(d_i+d'_i)\varepsilon}\sigma_i\brangle{2}$
+
+This gives us the following transition cost function for $i\in [n-1]$:
+\[
+    c^N(t_i) =\begin{cases}
+        d_i & \sigma_i \neq \texttt{insample}'\\
+        d_i +d'_i& \sigma_i = \texttt{insample}'
+    \end{cases}    
+\] 
+
+
+Thus by sequential composition of liftings, we have $\rho_\sigma(X)\{(a, b): a = \sigma_k \implies b = \sigma_k\}^{\#d_N\varepsilon}\rho_\sigma(X')$, where the total privacy cost $d_N^\rho$ of $S^N$ on path $\rho$ is \[d_N^\rho= \sum_{i\in [n-1]} c^N(t_i).\]
+
+$S^N$ (the ``null'' coupling strategy) assigns each transition cost proportional to the spread parameter of the Laplace distribution being sampled from at each transition. With $S^N$, we gain flexibility in outputting $\texttt{insample}$ at the cost of every transition being ``costly''.
+
+\subsubsection{Privacy}
+
+\begin{defn}
+    The coupling costs $d_N, d_L, d_G$ for an SSA $A$ are defined as \begin{align*}
+        d_N &= \sup_{\rho} d_N^\rho\\
+        d_L &= \sup_{\rho} d_L^\rho\\
+        d_G &= \sup_{\rho} d_G^\rho
+    \end{align*}
+\end{defn}
+
+
+\begin{prop}
+    If an SSA $A(x)$ has coupling costs $d_N, d_L, d_G$, $A(x)$ is \\
+    $\min\{d_N, d_L, d_G\}\varepsilon$-differentially private. 
+\end{prop}
+
+\begin{proof}
+    For every output $\sigma$ and associated path $\rho$, we have shown that the lifting \[A(x)(X)\{(a, b): a = \sigma \implies b=\sigma\}^{\#\min\{d_N^{\rho}, d_L^{\rho}, d_G^{\rho}\}\varepsilon}A(x)(X')\] is valid for adjacent datasets $X\sim X'$. In particular, note that at least $d_N^\rho$ is always finite. 
+    
+    Because there are a finite set of paths through $A$, $d_N$, $d_L$, $d_G$ are always finite if for all $\rho$, $d_N^\rho$, $d_L^\rho$, and $d_G^\rho$ are finite, respectively.
+    
+    Thus, we can construct the lifting \[A(x)(X)\{(a, b): a = \sigma \implies b=\sigma\}^{\#\min\{d_N, d_L, d_G\}\varepsilon}A(x)(X'),\]
+    which gives us the finite cost $d = \min\{d_N, d_L, d_G\}$.
+    Applying theorem \ref{implicationcouplingthm} then completes the proof.
+\end{proof}
+
+It is worth noting that all SSAs are inherently $d\varepsilon$-differentially private for \textit{some} $d > 0$ because there are a finite number of paths through any SSA $A$.
+
+Thus, we now examine an extension of SSAs that allows for loops in which this is not necessarily the case. 
+
+\subsection{Loops}
+\begin{defn}\label{LSADefn}
+    A looping segment automaton (LSA) $A(x)$ with initial value $x\in \RR$ is a tuple $(Q, \Sigma, C, \Gamma, q_{init}, X, P, \delta)$ where $(Q, \Sigma, C, \Gamma, q_{init}, X, P, \delta)$ are defined exactly as in \ref{SSADefn}, \textbf{except} that $\delta$ has the following, changed set of restrictions: \begin{itemize}  
+        \item \textbf{Determinism:} For any state $q\in Q$, if $\delta(q,\texttt{true})$ is defined, then $\delta(q,\lguard)$ and $\delta(q,\gguard)$ are not defined. 
+
+        \item \textbf{Output Distinction:} For any state $q\in Q$, if $\delta(q, \gguard) = (q_1, o_1, b_1)$ and $\delta(q, \lguard) = (q_2, o_2, b_2)$, then $o_1\neq o_2$ and at least one of $o_1\in \Gamma$ and $o_2\in \Gamma$ is true.
+        \item \textbf{No Branching:} If $\delta(q, \lguard)$ and $\delta(q, \gguard)$ {\color{red}figure out exactly how to define this later}
+        \item Also $q_{init}$ can't be in a cycle. 
+    \end{itemize}
+
+    As with SSAs, $A(x)$ is parameterized by some initial real value $x$, stored in the variable $\texttt{x}$ and we will treat $x$ as a random variable drawn from some Laplace distribution.
+\end{defn}
+
+\begin{defn}
+    A cycle $C$ in an SSA $A$ is a \gcycle\ if there exists a transition $t$ in $C$ with guard $\guard(t) = \gguard$. Similarly, $C$ is an \lcycle\ if there exists a transition $t$ in $C$ with guard $\guard(t) = \lguard$.
+\end{defn}
+
+Note that a cycle can be both an \lcycle~and a \gcycle.\ Also, we will assume that all executions of an LSA $A$ terminate; this means that every cycle in $A$ \textit{must} be either an \lcycle~or a \gcycle.
+
+Paths, path probabilities, and the concept of $d\varepsilon$-differential privacy remain identical for LSAs as for SSAs. 
+
+Importantly, the same three coupling strategies for SSAs are still valid proof strategies for LSAs. 
+
+\begin{prop}\label{LSAcouplingsvalid}
+    For an LSA $A$, if at least one of $S^N, S^L$, or $S^G$ have finite coupling cost on $A$, then $A$ is $\min\{\varepsilon_N, \varepsilon_L, \varepsilon_G\}$-differentially private. 
+\end{prop}
+
+The proof of validity for coupling strategies on SSAs holds for LSAs as well.
+
+However, now that LSAs can \textit{fail} to be differentially private, it is worth exploring in exactly what scenarios LSAs will or will not be private, and what couplings have to say about them.
+
+We begin by identifying three graph-theoretic structures that mean that an LSA is not private. 
+
+\begin{defn}
+    A \textbf{leaking pair} in an LSA $A$ is a pair of cycles $C, C'$ in $A$ such that there exists a path from $C$ to $C'$, $C$ is an \lcycle, and $C'$ is a \gcycle(or vice versa). 
+\end{defn}
+
+\begin{defn}
+    A \textbf{disclosing cycle} in an LSA $A$ is a cycle $C$ in $A$ where a transition in $C$ outputs either $\texttt{insample}$ or $\texttt{insample}'$.
+\end{defn}
+
+\begin{defn}
+    A \textbf{privacy violating path} in an LSA $A$ is a path $\rho = q_0\to q_1\to\ldots\to q_n$ in $A$ such that one of the following conditions holds:\begin{itemize}
+        \item $q_0= q_{init}$, $\trans(q_0)$ outputs $\texttt{insample}$, and $q_n$ is in a \gcycle\ or an \lcycle.
+        \item $q_n$ is in a \gcycle (symmetrically, \lcycle), $\guard(q_0) =\lguard$ (symmetrically, $\gguard$), and $\trans(q_0)$ outputs $\texttt{insample}$.
+        \item $q_0$ is in a \gcycle (symmetrically, \lcycle), $\guard(q_n) =\lguard$ (symmetrically, $\gguard$), and $\trans(q_n)$ outputs $\texttt{insample}$.
+    \end{itemize}
+\end{defn}
+
+\begin{prop}\label{LSAnotwellformed}
+    If an LSA $A$ contains a leaking pair, a disclosing cycle, or privacy violating path, then $A$ is not $d\varepsilon$-differentially private for any $d>0$. 
+\end{prop}
+
+The proof can be found in~\cite{chadhaLinearTimeDecidability2021}.
+
+Perhaps surprisingly, we can thus show that if none of the coupling strategies have finite coupling cost for an LSA $A$, then $A$ is not $d\varepsilon$-differentially private. 
+
+\begin{lemma}
+    For an LSA $A$, $d_N < \infty$ if and only if there is no cycle in $A$. Further, if there exists an \lcycle~in $A$, then $d_G = \infty$ and if there exists a \gcycle~in $A$, then $d_L = \infty$. 
+\end{lemma}
+\begin{proof}
+    Follows immediately from the coupling strategies cost functions. 
+\end{proof}
+
+\begin{lemma}
+    For an LSA $A$, there exists a global bound $N_A\in \NN$ such that every path $\rho$ in $A$ has at most $N_A$ non-cycle transitions. 
+\end{lemma}
+\begin{proof}
+    Follows from the fact that $A$ has a finite number of states. 
+\end{proof}
+
+\begin{lemma}\label{LSAnocouplingsnotwellformed}
+    If $d_N =\infty, d_L=\infty$, and $d_G=\infty$, then $A$ must contain a leaking pair, a disclosing cycle, or a privacy violating path. 
+\end{lemma}
+\begin{proof}
+    Because $d_N = \infty$, we know there must be some cycle $C$ in $A$. WLOG suppose that $C$ is an \lcycle. 
+    
+    If $C$ is also a \gcycle, then $C$ is a leaking pair with itself, so we can assume that $C$ is not also a \gcycle. Similarly, if $\trans(q_0)$ outputs $\texttt{insample}$, then there must be a privacy violating path from $q_0$ to $C$, so suppose $\trans(q_0)$ doesn't output $\texttt{insample}$. 
+
+    Suppose that there are no disclosing cycles and no leaking pairs in $A$. Because there are no leaking pairs, a \gcycle~cannot exist in $A$. Additionally, because there are no disclosing cycles and no \gcycle{}s, every cycle transition $t$ must have $c^L(t) = 0$. Because there are a bounded number of non-cycle transitions in $A$, $d_L$ can only be $\infty$ if there exists a faulty transition with respect to $S^L$ in $A$. 
+    Thus, there must be some transition with guard $\gguard$ that outputs $\texttt{insample}$; the path from or to this transition from $C$ must be a privacy violating path. 
+
+    Now suppose that there are no privacy violating paths and no leaking pairs in $A$. If there is no privacy violating path, then there can be no faulty transitions with respect to $S^L$ in $A$ by the reasoning above. Because of the bound on non-cycle transitions in a path in $A$, $d_L=\infty$ only if there exists some cycle transition $t_i$ in $A$ with non-zero cost. 
+    In particular, because there are no leaking pairs, every cycle in $A$ only has transitions with guard $\lguard$. In order for such a transition $t_i$ to have cost $c^L(t_i) > 0$, $t_i$ must output either $\texttt{insample}$ or $\texttt{insample}'$, creating a disclosing cycle.
+
+    Finally, suppose that there are no privacy violating paths and no disclosing cycles in $A$. As before, there can be no faulty transitions with respect to $S^L$ in $A$ and every cycle transition with guard $\lguard$ or $\texttt{true}$ must have cost 0. Again because of the bound on non-cycle transitions in a path in $A$, this implies that there must be some cycle transition in $A$ with guard $\gguard$, creating a \gcycle.
+\end{proof}
+
+\begin{thm}
+    An LSA $A$ is $d\varepsilon$-differentially private if and only if $\min\{d_N, d_L, d_G\}<\infty$.
+\end{thm}
+\begin{proof}
+    This follows directly from proposition \ref{LSAcouplingsvalid}, proposition \ref{LSAnotwellformed}, and lemma \ref{LSAnocouplingsnotwellformed}.
+\end{proof}
+
+\subsection{Branching}
+
+\begin{defn}
+    A segment automaton (SA) $A(x)$ with initial value $x\in \RR$ is a tuple $(Q, \Sigma, C, \Gamma, q_{init}, X, P, \delta)$ where $(Q, \Sigma, C, \Gamma, q_{init}, X, P, \delta)$ are defined exactly as in \ref{SSADefn} and \ref{LSADefn}, except that $\delta$ has the following set of restrictions: \begin{itemize}  
+        \item \textbf{Determinism:} For any state $q\in Q$, if $\delta(q,\texttt{true})$ is defined, then $\delta(q,\lguard)$ and $\delta(q,\gguard)$ are not defined. 
+
+        \item \textbf{Output Distinction:} For any state $q\in Q$, if $\delta(q, \gguard) = (q_1, o_1, b_1)$ and $\delta(q, \lguard) = (q_2, o_2, b_2)$, then $o_1\neq o_2$ and at least one of $o_1\in \Gamma$ and $o_2\in \Gamma$ is true.
+        \item $q_{init}$ is not in a cycle. 
+    \end{itemize}
+
+    As before, $A(x)$ is parameterized by some initial real value $x$, stored in the variable $\texttt{x}$ and we will treat $x$ as a random variable drawn from some Laplace distribution.
+\end{defn}
+
+Once branching gets added into the program model, a single coupling strategy no longer works for the entire automaton; instead, each distinct branch of the automaton will require a possibly different coupling strategy. 
+
+\begin{defn}
+    Consider a path $\rho$ in an SA $A$. Let $acyclic(\rho)$ be a function that given a path $\rho$, removes all cycles in $\rho$; i.e. if $\rho = q_0\to \ldots\to q_n$, $acyclic(\rho) = q_{x_0}\to \ldots \to q_{x_k}$, where $\{x_i\}_{i=0}^k$ is the longest possible subsequence of $[n]$ such that $i\neq j\implies q_{x_i}\neq q_{x_j}$. 
+    
+    Let $\equiv_b$ be an equivalence relation between paths of $A$ where $\rho\equiv_b\rho'$ iff $acyclic(\rho) = acyclic(\rho')$. Then $branches(A)$ is the set of equivalence classes of $\equiv_b$. 
+\end{defn}
+
+Note that there are a finite number of branches for every segment automaton. We aim to assign one coupling strategy to each \textbf{branch}. In particular, note that each branch taken in isolation is itself an LSA, so that every segment automaton can be viewed as a combined set of parallel and overlapping looping segment automata. 
+
+As before, we can define the cost of each branch under each coupling stategy.
+
+\begin{defn}
+    Let $A(x)$ be a segment automaton. For a branch $B\in branches(A)$ of $A$, the coupling costs of $S^N, S^L$, and $S^G$ are, respectively,
+    \begin{align*}
+        d_N^{(B)} &= \sup_{\rho\in B} d_N^\rho\\
+        d_L^{(B)} &= \sup_{\rho\in B} d_L^\rho\\
+        d_G^{(B)} &= \sup_{\rho\in B} d_G^\rho
+    \end{align*}
+\end{defn}
+
+
+\begin{prop}
+    Consider an SA $A(x)$. If for all branches $B\in branches(A)$ there exists a coupling strategy $S_X^{(B)}$ with finite coupling cost $d_X^{(B)} <\infty$, then $A(x)$ is $d\varepsilon$-differentially private, where \[
+        d = \max_{B\in branches(A)} d_X^{(B)}   
+    \]
+\end{prop}
+\begin{proof}
+    For every output $\sigma$ and associated path $\rho_\sigma$, we have the lifting \[
+        A(x)(X)\{(a, b): a = \sigma \implies b=\sigma\}^{\#\min\{d_N^{(B)}, d_L^{(B)}, d_G^{(B)}\}\varepsilon}A(x)(X'),
+    \]
+    where $\rho_\sigma\in B\in branches(A)$. 
+
+    This means that for all outputs $\sigma$ and adjacent datasets $X\sim X'$,
+    \[\PP[A(X) = \sigma] \leq e^{d_X^{(B)}\varepsilon}\PP[A(X')=\sigma],\]
+    where again $\rho_\sigma \in B$ and $d_X^{(B)}=\min\{d_N^{(B)}, d_L^{(B)}, d_G^{(B)}\}$.
+
+    This means that for all outputs $\sigma$ and adjacent datasets $X\sim X'$,    
+    \[\PP[A(X) = \sigma] \leq e^{\max_{B\in branches(A)}\{d_X^{(B)}\}\varepsilon}\PP[A(X')=\sigma],\]
+    which completes the proof.
+\end{proof}
+
+For the exact same reason as LSAs, these coupling strategies indeed still completely characterize the privacy of SAs.
+
+\begin{prop}
+    An SA $A(x)$ is $d\varepsilon$-differentially private if and only if for all branches $B\in branches(A)$ there exists a coupling strategy with finite coupling cost $d_X^{(B)}$.
+\end{prop}
+
+\begin{proof}
+    Because each branch of a segment automaton is an LSA, this again follows directly from proposition \ref{LSAcouplingsvalid}, proposition \ref{LSAnotwellformed} (from \cite{chadhaLinearTimeDecidability2021} the same result holds for segment automata), and lemma \ref{LSAnocouplingsnotwellformed}.
+\end{proof}
+
+\section{DiPA}
+
+We now introduce the final extension to our program model. 
+
+\begin{defn}[\cite{chadhaLinearTimeDecidability2021}]
+    A DiP\footnote{\textbf{Di}fferentially \textbf{P}rivate} Automaton (DiPA) $A$ is a 7-tuple $(Q, \Sigma, C, \Gamma, q_{init}, X, P, \delta)$ where
+    \begin{itemize}
+        \item $Q$ is a finite set of states partitioned into input states $Q_{in}$ and non-input states $Q_{non}$. 
+        \item $\Sigma = \RR$ is the input alphabet
+        \item $C = \{\texttt{true}, \lguard, \gguard\}$ is a set of guard conditions
+        \item $\Gamma$ is a finite output alphabet
+        \item $q_{init}\in Q$ is the initial state
+        \item $X = \{\texttt{x}, \texttt{insample}, \texttt{insample}'\}$ is the set of variables
+        \item $P: Q\to \QQ\times \QQ^{\geq 0}\times \QQ\times  \QQ^{\geq 0}$ is a parameter function that assigns sampling parameters for the Laplace distribution for each state
+        \item $\delta:(Q\times C)\to (Q\times (\Gamma \cup \{\texttt{insample}, \texttt{insample}'\})\times \{\texttt{true}, \texttt{false}\})$ is a partial transition function. 
+    \end{itemize}
+    In addition, $\delta$ must satisfy some additional conditions:
+    
+    \begin{itemize}
+        \item \textbf{Determinism:} For any state $q\in Q$, if $\delta(q,\texttt{true})$ is defined, then $\delta(q,\lguard)$ and $\delta(q,\gguard)$ are not defined. 
+
+        \item \textbf{Output Distinction:} For any state $q\in Q$, if $\delta(q, \gguard) = (q_1, o_1, b_1)$ and $\delta(q, \lguard) = (q_2, o_2, b_2)$, then $o_1\neq o_2$ and at least one of $o_1\in \Gamma$ and $o_2\in \Gamma$ is true.
+
+        \item \textbf{Initialization:} The initial state $q_0$ has only one outgoing transition of the form $\delta(q_0, \texttt{true}) = (q, o, \texttt{true})$.
+
+        \item \textbf{Non-input transition:} From any $q\in Q_{non}$, if $\delta(q, c)$ is defined, then $c=\texttt{true}$.
+    \end{itemize}
+
+    A DiPA $A$ functions almost identically to the previous automata we have defined, except that instead of only the first transition of $A$ assigning into $\texttt{x}$, now any \textbf{assignment transition} can re-assign the value of $\texttt{x}$ to be $\texttt{insample}$. In addition, DiPAs are no longer dependent on an initial value for $\texttt{x}$, since the first transition must always be a $\texttt{true}$ guard assignment transition.
+\end{defn}
+
+Note that we can treat a DiPA $A$ as a (possibly infinite, if an assignment transition is in a cycle) set of segment automata by ``splitting'' at every assignment transition in $A$. 
+
+
+\begin{defn}
+    For a path $\rho$ in a DiPA $A$, let $segments(\rho)$ be the set of subpaths of $\rho$ created by splitting $\rho=r_0\to\ldots\to r_n$ at each assignment transition. 
+    
+    More precisely, let $I$ be the ordered set of indices such that $\trans(r_{I_i})$ for $i\in [|I|]$ is an assignment transition. Then $segments(\rho) = \{r_0\to\ldots\to r_{I_0}, \ldots, r_0\to\ldots\to r_{I_k}\}$.
+\end{defn}
+
+\begin{defn}
+    Let $A$ be a DiPA and let $P$ be the set of all paths through $A$. 
+    
+    Then $branches(A) = \bigcup_{\rho\in P}\bigcup_{\eta\in segments(\rho)} acyclic(\eta)$ be the set of branches in $A$.
+\end{defn}
+
+Note that every path in $A$ can be broken up into a sequence of branches, each from its own segment. 
+
+\subsection{Joining Coupling Strategies}
+
+Naively, the fact that we can separate a DiPA $A$ into a set of segment automata would suggest an approach of assigning a coupling strategy to each branch of $A$ as before and simply combining these coupling strategies in sequence. However, it is not always possible to arbitrarily join coupling strategies together. 
+
+This is primarily because we can no longer freely decide the initial value for $\texttt{x}$ at the beginning of each segment, as we could with segment automata. Recall that for a fixed path $\rho = r_0\to\ldots\to r_n$, it was important that the initial transition guard $\guard(r_0)$ is satisfied. 
+Notably, whether or not the initial guard is satisfied is dependent on the initialized value of $\texttt{x}$; since we had no additional restrictions on $\texttt{x}$, we were able to (for example) arbitrarily couple $x_0\brangle{1}+1(=)^{\#d_x\varepsilon}x_0\brangle{2}$.
+
+However, now that we have joined multiple segment automata together, the initial value $x_0$ for a segment automata is actually the assigned value $\texttt{x}$ from the \textit{previous} segment automata. 
+This means that $x_0\brangle{1}$ and $x_0\brangle{2}$ will already be coupled together, perhaps in a way such that coupling $\texttt{insample}_0\brangle{1}$ and $\texttt{insample}_0\brangle{2}$ will be impossible to both ensure the correct shift of $\texttt{x}$ for the new coupling strategy and so that the initial guard is satisfied.
+
+For example, consider two paths $\rho = r_0\to\ldots\to r_n$ and $\rho' = q_1\to \ldots \to q_m$ with the assignment transition $r_n\to q_1$ connecting them, where $\guard(r_n) = \gguard$. We are aiming to choose one coupling strategy for each of $\rho$ and $\rho'$. 
+
+If $S^L$ is chosen for $\rho$, then at the connecting assignment transition, $x_0$ is coupled such that $x_0\brangle{1}+1 =x_1\brangle{1}$. Further, we would like to couple $\texttt{insample}_0$ such that $\texttt{insample}_0\brangle{1} = \texttt{insample}_0\brangle{2}+1$. However, trying to create this lifting while also ensuring that the implication $\texttt{insample}_0\brangle{1} \geq x_0\brangle{1}\implies \texttt{insample}_0\brangle{2} \geq x_0\brangle{2}$ holds is impossible. 
+
+Thus, we cannot choose $S^G$ for a segment that follows a segment with coupling strategy $S^L$ if the connecting assignment transition has guard $\gguard$. There are a series of similar restrictions on how coupling strategies can be connected for adjacent segments, which along with previous restrictions on coupling strategies (e.g. we cannot choose $S^G$ or $S^L$ if the first transition of a segment outputs $\texttt{insample}$).
+
+\subsection{A Constraint System for Valid Couplings}
+
+Based on the restrictions on joining segments together, we can construct a set of constraints on coupling strategies for a DiPA $A$ that, if solved, will give us a valid proof of $d\varepsilon$-differential privacy.
+
+\begin{const}\label{constraintsystem}
+    Consider a DiPA~$A$.
+    
+    For each branch $s_i\in branches(A)$, we can assign one of three coupling strategies $S_i \in \{S^L, S^G, S^N\}$. We would like to find an assignment of coupling strategies for each segment of each variable, subject to the following constraints: 
+
+    \begin{enumerate}
+        \item Constraints for valid couplings\begin{enumerate}
+            \item For all $s_i$, if $\trans(s_i)$ outputs $\texttt{insample}$, then $S_i = S^N$.
+            \item For all $s_i, s_j$ such that $s_i$ is directly followed by $s_j$, \begin{enumerate}
+                \item If $\guard(s_j)=\lguard$ and $S_i = S^G$, then $S_j = S^G$. 
+                \item If $\guard(s_j) = \gguard$ and $S_i = S^L$, then $S_j = S^L$.
+                \item If $\guard(s_j) = \lguard$ and $S_i = S^N$, then $S_j\neq S^L$.
+                \item If $\guard(s_j) = \gguard$ and $S_i = S^N$, then $S_j\neq S^G$.
+            \end{enumerate}
+           
+        \end{enumerate}
+        \item Constraints for finite cost\begin{enumerate}
+            \item For all $s_i$, no cycle in $s_i$ has a transition that outputs $\texttt{insample}$ or $\texttt{insample}'$. 
+            \item For all $s_i$, if $s_i$ has an $\texttt{L}$-cycle, then $S_i = S^L$.
+            \item For all $s_i$, if $s_i$ has a $\texttt{G}$-cycle, then $S_i = S^G$. 
+            \item For all segments $s_i$, there is no transition $\trans(a_k)$ in $s_i$ that is \textit{faulty}, i.e.:\begin{enumerate}
+                \item If $s_i$ contains a $\lguard$ transition that outputs $\texttt{insample}$, then $S_i \neq S^G$.
+                \item If $s_i$ contains a $\gguard$ transition that outputs $\texttt{insample}$, then $S_i \neq S^L$.
+            \end{enumerate}
+        \end{enumerate}
+    \end{enumerate}
+\end{const}
+
+\begin{thm}\label{constraintsatisfiableprivatethm}
+    Let $A$ be a DiPA.\ If $|branches(A)|< \infty$ and for each branch $B\in branches(A)$, there exists an assignment of coupling strategies to each segment that satisfies the constraint system defined in \ref{constraintsystem}, then $A$ is $d\varepsilon$-differentially private for \[d=\sum_{s_i\in branches(A)}d_{s_i},\]
+    where $d_{s_i}$ is the cost of the satisfying assignment strategy $S_i$ for a branch $s_i$.  
+\end{thm}
+\begin{proof}
+    Let $\rho$ be a path through $A$ that is composed of branches $s_{x_1}\to \ldots\to s_{x_k}$ and let $S_{x_1}, \ldots, S_{x_k}$ be the associated coupling strategies from the satisfying assignment. 
+
+    Because of constraints (1a-1b), we can actually compose each coupling strategy in sequence to create a valid lifting $A(X)\{(a, b): a=\sigma \implies b=\sigma\}A(X')$ for all adjacent datasets $X\sim X'$ and possible outputs $\sigma$ of $\rho$. 
+
+    In addition, we claim that the cost of the satisfying assignments $d_{s_i}$ is bounded for all $s_i$. There are two ways for a branch cost $d_{s_i}$ to be unbounded: either a cycle transition has non-zero cost, or a transition has to be faulty with respect to the chosen coupling strategy. From constraint (2d), we know that no transitions can be faulty, and we know from constraints (2a-2c) that every cycle transition has to have zero cost. 
+
+    Finally, the fact that $|branches(A)|<\infty$ and every path can go through each branch at most one time gives us the bound on $d$. 
+\end{proof}
+
+
+\subsection{Well-formedness}
+
+Similar to before, \cite{chadhaLinearTimeDecidability2021} define four structures in the graphs of DiPAs that characterize privacy for DiPAs. Within DiPAs, these graph structures can be defined as follows:\begin{itemize}
+    \item \textbf{Leaking Cycles}: A cycle $C$ is a leaking cycle if one of the transitions in $C$ is an assignment transition.
+    \item \textbf{Leaking Pair}: A pair of cycles $C$, $C'$ are a leaking pair if $C$ is an \lcycle, $C'$ is a \gcycle, and there exists a path from $C$ to $C'$ such that every assignment transition on the path has guard $\gguard$; or, symmetrically, $C$ is an \gcycle, $C'$ is a \lcycle, and there exists a path from $C$ to $C'$ such that every assignment transition on the path has guard $\lguard$.
+    \item \textbf{Disclosing Cycle}: A cycle $C$ is a disclosing cycle if a transition in $C$ outputs either $\texttt{insample}$ or $\texttt{insample}'$. 
+    \item \textbf{Privacy Violating Path}: A path $\rho = q_0\to\ldots \to q_n$ is a privacy violating path if any of the following conditions hold:\begin{itemize}
+        \item $q_1\to\ldots q_n$ is a path whose assignment transitions all have guard $\gguard$ (resp.\ $\lguard$) such that $q_n$ is part of a \gcycle\ (resp.\ \lcycle) and $\trans(q_0)$ is an assignment transition that outputs $\texttt{insample}$. 
+        \item $\rho$ is a path whose assignment transitions all have guard $\gguard$ (resp.\ $\lguard$) such that $q_n$ is part of a \gcycle\ (resp.\ \lcycle), $\guard(q_0) = \lguard$ (resp.\ $\gguard$), and $\trans(q_0)$ outputs $\texttt{insample}$.
+        \item $\rho$ is a path whose assignment transitions all have guard $\gguard$ (resp.\ $\lguard$) such that $q_0$ is part of a \lcycle\ (resp.\ \gcycle), $\guard(q_{n-1}) = \gguard$ (resp.\ $\lguard$), and $\trans(q_{n-1})$ outputs $\texttt{insample}$.
+    \end{itemize}
+\end{itemize}
+
+
+
+\begin{defn}
+    A DiPA $A$ is \textbf{well-formed} if it does not have a leaking cycle, leaking pair, disclosing cycle, or privacy violating path. 
+\end{defn}
+
+Importantly, \cite{chadhaLinearTimeDecidability2021} have shown that the existence of these graph structures completely decides whether or not a DiPA is $d\varepsilon$-differentially private. 
+\begin{thm}[\cite{chadhaLinearTimeDecidability2021}]
+    A DiPA $A$ is $d\varepsilon$-differentially private for some $d > 0$ if and only if $A$ is well-formed. Further, the well-formedness of an automaton $A$ can be decided in linear time in the size of $A$. 
+\end{thm}
+
+We will leverage this result to show that the existence of valid coupling strategies is also a complete characterization of DiPAs.
+
+\begin{lemma}\label{leakingcyclesbrancheslemma}
+    For a DiPA $A$, $|branches(A)|< \infty$ if and only if $A$ has no leaking cycles. 
+\end{lemma}
+
+\begin{lemma}\label{unsatisfiablenoprivacylemma}
+    Suppose a DiPA $A$ has a finite number of branches. If constraint system \ref{constraintsystem} is not satisfiable, there must exist a leaking cycle, a leaking pair, a disclosing cycle, or a privacy violating path in the graph of $A$.
+\end{lemma}
+\begin{proof}
+    TBD, want to briefly discuss the best way to do this. 
+
+    high level overview: very similar to the previous, one-segment, version of this, but we can chain constraints across $\texttt{AG}-$ and $\texttt{AL}-$paths.
+
+    The reasoning gets a bit convoluted though, because there are a bunch of cases / you have to keep a bunch of assumptions hanging around.
+\end{proof}
+
+\begin{thm}
+    A DiPA $A$ is $d\varepsilon$-differentially private if and only if $A$ has a finite number of branches and there exists a valid assignment of coupling strategies over all branches of $A$. 
+\end{thm}
+\begin{proof}
+    Follows from theorem \ref{constraintsatisfiableprivatethm} and lemmas \ref{leakingcyclesbrancheslemma} and \ref{unsatisfiablenoprivacylemma}.
+\end{proof}
+
+\section{Bounds on Privacy}
+
+So far, we have focused on the binary question of whether a DiPA is private or not for \textit{any} finite $d>0$. An obvious question remaining thus is how tight of a privacy cost bound can we obtain using couplings?
+
+Recall that $S^G, S^L$, and $S^N$ are primarily characterized by \textbf{shifts}; that is, offseting variables from each other.
+
+Indeed, we can generalize our discrete set of coupling strategies to a continuous family of coupling strategies by treating the offsets of each variable as parameters. By rephrasing in this way, we can derive a linear system:
+
+[insert vishnu's linear program here]
+
+If solvable, this linear system will thus give the best possible privacy cost obtainable using this family of coupling strategies. 
+
+\begin{prop}
+    An optimal solution to the linear program provides the minimal cost coupling over all shift coupling strategies. If the linear program is infeasible, then the DiPA is not $d\varepsilon$-differentially private for any $\varepsilon$. 
+\end{prop}
+
+\begin{thm}[optimistically]
+    If a DiPA $A$ is $\varepsilon$-differentially private, then there exists some valid assignment of coupling strategies over all segments that has a total cost of $\varepsilon$ (i.e.\ coupling cost is tight). 
+\end{thm}
+
+\section{Multivariable DiPA}
+
+In this section, we explore a natural extension of the DiPA model to demonstrate the utility of using couplings as proof infrastructure. Specifically, we introduce Generalized DiPAs (GDiPAs), which allow for an arbitrary finite set of variables and an expanded alphabet where multiple variables can be compared to the input simultaneously to determine transitions. 
+This would, for example, allow for SVT-style algorithms that check for membership between or outside of two thresholds or indeed, membership within any finite union of intersections of halves\footnote{think there's a term for this I'm forgetting} of $\RR$. 
+
+\subsection{GDiPA}
+
+A GDiPA $A$ is a generalization of DiPA whose primary characteristics are that:
+\begin{itemize}
+	\item At every state, a (real-valued) input is read. Additionally, Laplace noise (with parameters set by the user) is added to the input. 
+	\item The automaton has a stored finite set of (real-valued) variables $\mathcal{X}$. At each transition, the value of each variable can be updated with the noisy input value read in. 
+	\item A transition can optionally assign the (noisy) input value read at the previous state into at most one program variable.
+	\item The automaton will take transitions based on a boolean combination of comparisons between the noisy input and a subset of the stored variables. Importantly, noise is added independently to the input for each separate variable comparison. Alternatively, there can be exactly one guaranteed (\texttt{true}) transition out of a state. 
+	\item At every transition, the automaton will output either \begin{enumerate}
+		\item A symbol from a pre-defined finite alphabet ($\Gamma$)
+		\item The noisy input value as compared to one of the input variables ($\texttt{insample}$)
+		\item The input value with fresh Laplace noise ($\texttt{insample}'$)
+	\end{enumerate}
+	As with DiPAs, the output sequence of any GDiPA must uniquely determine a path through the automaton.
+\end{itemize}
+
+\subsection{Combining Separate Variable Couplings}
+Consider a GDiPA $A$ with program variables $\mathcal{X}$. For each program variable $x\in \mathcal{X}$, we can define coupling strategies similar to with single variables. That is, for two runs of the automaton with adjacent inputs, we must ensure that if the first run takes a certain transition, the other run does as well. In particular, for real outputs, we must ensure that the outputs are equal. 
+
+For each variable in $A$, we can consider a ``shadow'' automaton in a single variable that only has a single program variable. Such a shadow automaton would have the same underlying graph structure as $A$, but would only contain the transition guards and assignments that pertained to a single variable. 
+For example, if we were considering such an automaton $A_x$ with respect to the variable $x$, a transition with guard ``$\lguard[x]$ and $\gguard[y]$'' would correspond to a transition with guard $\lguard[x]$ in $A_x$; a transition with guard ``$\gguard[y]$'' would correspond to a transition with guard $\texttt{true}$ in $A_x$.
+
+Note that these automata are not, strictly speaking, DiPAs, since it is possible for a state to have multiple transitions with guard $\texttt{true}$ leaving it. 
+
+Thus, each segment can be assigned a coupling strategy $S^N, S^L$, or $S^G$ as before based on these ``shadow'' automata, with similar constraints. 
+
+\begin{const}\label{generalizedconstraintsystem}
+    Consider a GDiPA $A$ with program variables $\mathcal{X}$. Let $\{s_i^{(x)}\}$ be the segments of $A$ for each variable $x\in \mathcal{X}$. 
+
+    For each $x\in \mathcal{X}$ and segment $s_i^{(x)}$ for $x$, we can assign one of three coupling strategies $S_i^{(x)} \in \{S^L, S^G, S^N\}$. We would like to find an assignment of coupling strategies for each segment of each variable, subject to the following constraints: 
+
+    \begin{enumerate}
+        \item Constraints for valid couplings\begin{enumerate}
+            \item For all $s_i^{(x)}$, if $\trans(s_i^{(x)})$ outputs $\texttt{insample}$, then $S_i^{(x)} = S^N$.
+            \item For all $s_i^{(x)}, s_j^{(x)}$ such that $s_i^{(x)}$ is immediately followed by $s_j^{(x)}$, \begin{enumerate}
+                \item If $\guard(s_j^{(x)})=\lguard$ and $S_i^{(x)} = S^G$, then $S_j^{(x)} = S^G$. 
+                \item If $\guard(s_j^{(x)}) = \gguard$ and $S_i^{(x)} = S^L$, then $S_j^{(x)} = S^L$.
+                \item If $\guard(s_j^{(x)}) = \lguard$ and $S_i^{(x)} = S^N$, then $S_j^{(x)}\neq S^L$.
+                \item If $\guard(s_j^{(x)}) = \gguard$ and $S_i^{(x)} = S^N$, then $S_j^{(x)}\neq S^G$.
+            \end{enumerate}
+            \item For all segments $s_i^{(x)}$, there is no transition $\trans(a_k)$ in $s_i^{(x)}$ that is \textit{faulty}, i.e.:\begin{enumerate}
+                \item If $s_i^{(x)}$ contains a $\lguard$ transition that outputs $\texttt{insample}$, then $S_i^{(x)} \neq S^G$.
+                \item If $s_i^{(x)}$ contains a $\gguard$ transition that outputs $\texttt{insample}$, then $S_i^{(x)} \neq S^L$.
+            \end{enumerate}
+            \item If any transition in $s_i^{(x)}$ outputs $x$, then $S_i^{(x)} = S^N$. 
+        \end{enumerate}
+        \item Constraints for finite cost\begin{enumerate}
+            \item For all $s_i^{(x)}$, no cycle in $s_i^{(x)}$ has a transition that outputs $\texttt{insample}$, $\texttt{insample}'$. 
+            \item For all $s_i^{(x)}$, if $s_i^{(x)}$ has an $\texttt{L}$-cycle with respect to $x$, then $S_i^{(x)} = S^L$.
+            \item For all $s_i^{(x)}$, if $s_i^{(x)}$ has a $\texttt{G}$-cycle with respect to $x$, then $S_i^{(x)} = S^G$. 
+        \end{enumerate}
+    \end{enumerate}
+
+    This constraint system is \textbf{satisfiable} for a GDiPA $A$ if, for all variables $x\in \mathcal{X}$, there exists an assignment of all $S_i^{(x)}$ such that all constraints are satisfied. 
+\end{const}
+
+In particular, we can independently resolve constraints for each variable and combine them together.
+\begin{thm}	
+	For a GDiPA $\mathcal{A}$, for all variables $x$, if there exist a finite number of segments $s_i$, and for all segments $s_i$, the constraint system \ref{constraintsystem} is satisfied by an assignment $S_x$, then all $S_x$ assignments together induce a valid coupling proof that $\mathcal{A}$ is $\varepsilon$-DP. 
+\end{thm}
+
+\begin{proof}
+	
+	Fix some variable $x\in \mathcal{X}$. From before, we know that if \ref{generalizedconstraintsystem} is satisfied with respect to $x$, then the coupling 
+	\[\mathcal{A}(X)(\mathcal{A}(X)\text{ takes transitions }T\text{ wrt }x\implies \mathcal{A}(X')\text{ takes transitions }T\text{ wrt }x)^{\#(\varepsilon_x, 0)}\mathcal{A}(X')\]
+	is valid for some finite $\varepsilon_x$. 
+		
+	Because the noises on $\texttt{insample}$ are independent, and $((a \implies c) \land (b \implies d)) \implies ((a \land b) \implies (c \land d))$ and $((a \implies c) \lor (b \implies d)) \implies ((a \lor b) \implies (c \lor d))$,for every combined guard, we can construct the lifting 
+	\[\mathcal{A}(X)(\mathcal{A}(X)\text{ takes transitions }T\implies \mathcal{A}(X')\text{ takes transitions }T)^{\#(\sum_{x\in\mathcal{X}}\varepsilon_x, 0)}\mathcal{A}(X')\]
+	which gives us the lifting
+	\[\mathcal{A}(X)(\mathcal{A}(X)=\sigma\implies \mathcal{A}(X')=\sigma)^{\#(\sum_{x\in\mathcal{X}}\varepsilon_x, 0)}\mathcal{A}(X')\]
+\end{proof}
+
+\begin{thm}[less optimistically]
+    If, for each variable $x$, there exists a valid assignment of coupling strategies over all segments of a DiPA $A$ with respect to $x$, then $A$ is $d\varepsilon$-differentially private. 
+\end{thm}
+
+\begin{thm}[optimistically]
+    A GDiPA $A$ is $d\varepsilon$-differentially private if and only if, for each variable $x$, there exists a valid assignment of coupling strategies over all segments of $A$ with respect to $x$. 
+\end{thm}
+
+\section{Conclusion}
+We have shown how to use coupling techniques to prove privacy for a class of SVT-like programs first defined in \cite{chadhaLinearTimeDecidability2021} and discovered that couplings additionally characterize this class. We additionally showed that this can be done tractably, and that couplings can help provide lower bounds on privacy costs of these algorithms. 
+
+Future work most naturally would focus on extensions of the program model. For the model, potential areas include removing the requirement for output to be deterministic of a path through the automaton, which would allow for algorithms such as Report Noisy Max to be captured by the model. Similarly, the alphabet of the automaton could be expanded to incorporate more than comparisons between two real numbers. 
+Such extensions would naturally also require extensions of the class of couplings we define here, which are limited to ``shifts''. 
+
+Additionally, we believe that couplings should completely characterize GDiPAs as well as DiPAs; proving this requires showing that a lack of well-formedness in any single variable generates a counterexample to privacy. 
+In this vein, we would like to explore using couplings to \textit{disprove} privacy; the fact that shift couplings completely characterize DiPAs hints at the possibility of ``anti-couplings'' to generate counterexamples.
+
+\section{Related Work}
+The DiPA model and counterexamples to privacy are drawn from \cite{chadhaLinearTimeDecidability2021}. Approximate liftings were developed in \cite{bartheKopfOlmedo2012ProbabilisticRelationalReasoningforDifferentialPriv,BartheOlmedo2013} and applied to algorithms such as SVT in \cite{BartheEtAl2016}.
+A full exploration of approximate liftings can be found in \cite{HsuThesis2017}. \cite{AlbarghouthiHsu2018} uses couplings; and in particular the ``shift'' couplings family we use, to create a heuristiccally successful program for proving the correctness of possible differentially private algorithms. 
+
+
+{\color{red} need to reformat some citations at some point}
+\bibliography{./dipalibrary}
+
+\end{document} 

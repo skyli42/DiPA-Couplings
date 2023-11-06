@@ -302,3 +302,7 @@ TSWLatexianTemp*
 
 # Mac files
 .DS_Store
+
+.vscode/*
+
+*/.idea/*

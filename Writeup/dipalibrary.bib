@@ -1,0 +1,171 @@
+@misc{chadhaLinearTimeDecidability2021,
+  title = {On {{Linear Time Decidability}} of {{Differential Privacy}} for {{Programs}} with {{Unbounded Inputs}}},
+  author = {Chadha, Rohit and Sistla, A. Prasad and Viswanathan, Mahesh},
+  year = {2021},
+  month = apr,
+  number = {arXiv:2104.14519},
+  eprint = {2104.14519},
+  eprinttype = {arxiv},
+  primaryclass = {cs},
+  publisher = {{arXiv}},
+  doi = {10.48550/arXiv.2104.14519},
+  abstract = {We introduce an automata model for describing interesting classes of differential privacy mechanisms/algorithms that include known mechanisms from the literature. These automata can model algorithms whose inputs can be an unbounded sequence of real-valued query answers. We consider the problem of checking whether there exists a constant \$d\$ such that the algorithm described by these automata are \$d\textbackslash epsilon\$-differentially private for all positive values of the privacy budget parameter \$\textbackslash epsilon\$. We show that this problem can be decided in time linear in the automaton's size by identifying a necessary and sufficient condition on the underlying graph of the automaton. This paper's results are the first decidability results known for algorithms with an unbounded number of query answers taking values from the set of reals.},
+  archiveprefix = {arXiv},
+  keywords = {Computer Science - Cryptography and Security,Computer Science - Formal Languages and Automata Theory,Computer Science - Logic in Computer Science,Computer Science - Programming Languages},
+  file = {C\:\\Users\\skyli\\Zotero\\storage\\UM84JN67\\Chadha et al. - 2021 - On Linear Time Decidability of Differential Privac.pdf;C\:\\Users\\skyli\\Zotero\\storage\\N73FKGWD\\2104.html}
+}
+@article{10.14778/3055330.3055331,
+author = {Lyu, Min and Su, Dong and Li, Ninghui},
+title = {Understanding the Sparse Vector Technique for Differential Privacy},
+year = {2017},
+issue_date = {February 2017},
+publisher = {VLDB Endowment},
+volume = {10},
+number = {6},
+issn = {2150-8097},
+url = {https://doi-org.myaccess.library.utoronto.ca/10.14778/3055330.3055331},
+doi = {10.14778/3055330.3055331},
+abstract = {The Sparse Vector Technique (SVT) is a fundamental technique for satisfying differential privacy and has the unique quality that one can output some query answers without apparently paying any privacy cost. SVT has been used in both the interactive setting, where one tries to answer a sequence of queries that are not known ahead of the time, and in the non-interactive setting, where all queries are known. Because of the potential savings on privacy budget, many variants for SVT have been proposed and employed in privacy-preserving data mining and publishing. However, most variants of SVT are actually not private. In this paper, we analyze these errors and identify the misunderstandings that likely contribute to them. We also propose a new version of SVT that provides better utility, and introduce an effective technique to improve the performance of SVT. These enhancements can be applied to improve utility in the interactive setting. Through both analytical and experimental comparisons, we show that, in the non-interactive setting (but not the interactive setting), the SVT technique is unnecessary, as it can be replaced by the Exponential Mechanism (EM) with better accuracy.},
+journal = {Proc. VLDB Endow.},
+month = {feb},
+pages = {637–648},
+numpages = {12}
+}
+@article{BartheOlmedo2013,
+   abstract = {f-divergences form a class of measures of distance between probability distributions; they are widely used in areas such as information theory and signal processing. In this paper, we unveil a new connection between f-divergences and differential privacy, a confidentiality policy that provides strong privacy guarantees for private data-mining; specifically, we observe that the notion of α-distance used to characterize approximate differential privacy is an instance of the family of f-divergences. Building on this observation, we generalize to arbitrary f-divergences the sequential composition theorem of differential privacy. Then, we propose a relational program logic to prove upper bounds for the f-divergence between two probabilistic programs. Our results allow us to revisit the foundations of differential privacy under a new light, and to pave the way for applications that use different instances of f-divergences. © 2013 Springer-Verlag.},
+   author = {Gilles Barthe and Federico Olmedo},
+   doi = {10.1007/978-3-642-39212-2_8/COVER},
+   isbn = {9783642392115},
+   issn = {03029743},
+   issue = {PART 2},
+   journal = {Lecture Notes in Computer Science (including subseries Lecture Notes in Artificial Intelligence and Lecture Notes in Bioinformatics)},
+   pages = {49-60},
+   publisher = {Springer, Berlin, Heidelberg},
+   title = {Beyond differential privacy: Composition theorems and relational logic for f-divergences between probabilistic programs},
+   volume = {7966 LNCS},
+   url = {https://link.springer.com/chapter/10.1007/978-3-642-39212-2_8},
+   year = {2013},
+}
+
+
+@article{BartheEtAl2016,
+   abstract = {In this paper, we develop compositional methods for formally verifying differential privacy for algorithms whose analysis goes beyond the composition theorem. Our methods are based on the observation that differential privacy has deep connections with a generalization of probabilistic couplings, an established mathematical tool for reasoning about stochastic processes. Even when the composition theorem is not helpful, we can often prove privacy by a coupling argument. We demonstrate our methods on two algorithms: the Exponential mechanism and the Above Threshold algorithm, the critical component of the famous Sparse Vector algorithm. We verify these examples in a relational program logic apRHL+, which can construct approximate couplings. This logic extends the existing apRHL logic with more general rules for the Laplace mechanism and the one-sided Laplace mechanism, and new structural rules enabling pointwise reasoning about privacy; all the rules are inspired by the connection with coupling. While our paper is presented from a formal verification perspective, we believe that its main insight is of independent interest for the differential privacy community.},
+   author = {Gilles Barthe and Marco Gaboardi and Benjamin Grégoire and Justin Hsu and Pierre-Yves Strub},
+   doi = {10.1145/2933575.2934554},
+   journal = {Proceedings - Symposium on Logic in Computer Science},
+   keywords = {probabilistic couplings},
+   month = {1},
+   pages = {749-758},
+   publisher = {Institute of Electrical and Electronics Engineers Inc.},
+   title = {Proving Differential Privacy via Probabilistic Couplings},
+   volume = {05-08-July-2016},
+   url = {http://arxiv.org/abs/1601.05047 http://dx.doi.org/10.1145/2933575.2934554},
+   year = {2016},
+}
+
+
+@article{HsuThesis2017,
+  author       = {Justin Hsu},
+  title        = {Probabilistic Couplings for Probabilistic Reasoning},
+  journal      = {CoRR},
+  volume       = {abs/1710.09951},
+  year         = {2017},
+  url          = {http://arxiv.org/abs/1710.09951},
+  eprinttype    = {arXiv},
+  eprint       = {1710.09951},
+  timestamp    = {Sat, 23 Jan 2021 01:20:51 +0100},
+  biburl       = {https://dblp.org/rec/journals/corr/abs-1710-09951.bib},
+  bibsource    = {dblp computer science bibliography, https://dblp.org}
+}
+
+
+@article{bartheKopfOlmedo2012ProbabilisticRelationalReasoningforDifferentialPriv,
+   abstract = {Differential privacy is a notion of confidentiality that allows useful computations on sensible data while protecting the privacy of individuals. Proving differential privacy is a difficult and error-prone task that calls for principled approaches and tool support. Approaches based on linear types and static analysis have recently emerged; however, an increasing number of programs achieve privacy using techniques that fall out of their scope. Examples include programs that aim for weaker, approximate differential privacy guarantees, and programs that achieve differential privacy without using any standard mechanisms. Providing support for reasoning about the privacy of such programs has been an open problem. We report on CertiPriv, a machine-checked framework for reasoning about differential privacy built on top of the Coq proof assistant. The central component of CertiPriv is a quantitative extension of probabilistic relational Hoare logic that enables one to derive differential privacy guarantees for programs from first principles. We demonstrate the applicability of CertiPriv on a number of examples whose formal analysis is out of the reach of previous techniques. In particular, we provide the first machine-checked proofs of correctness of the Laplacian, Gaussian and Exponential mechanisms and of the privacy of randomized and streaming algorithms from the literature.},
+   author = {Gilles Barthe and Boris K ¨ Opf and Federico Olmedo and Santiago Zanella-B ´ Eguelin},
+   doi = {10.1145/0000000.0000000},
+   keywords = {D31 [Programming Languages]: Formal Definitions and Theory,F31 [Logics and Meanings of Programs]: Specifying and Verifying and Reasoning about Programs,F32 [Logics and Meanings of Programs]: Semantics of Programming Languages-Program analysis General Terms: Languages, Security, Theory, Verification Additional Key Words and Phrases: Coq proof assistant, differential privacy, relational Hoare logic},
+   title = {N Probabilistic Relational Reasoning for Differential Privacy},
+   url = {http://doi.acm.org/10.1145/0000000.0000000},
+}
+
+
+@article{dworkrothmonograph,
+author = {Dwork, Cynthia and Roth, Aaron},
+title = {The Algorithmic Foundations of Differential Privacy},
+year = {2014},
+issue_date = {August 2014},
+publisher = {Now Publishers Inc.},
+address = {Hanover, MA, USA},
+volume = {9},
+number = {3–4},
+issn = {1551-305X},
+url = {https://doi.org/10.1561/0400000042},
+doi = {10.1561/0400000042},
+abstract = {The problem of privacy-preserving data analysis has a long history spanning multiple disciplines. As electronic data about individuals becomes increasingly detailed, and as technology enables ever more powerful collection and curation of these data, the need increases for a robust, meaningful, and mathematically rigorous definition of privacy, together with a computationally rich class of algorithms that satisfy this definition. Differential Privacy is such a definition.After motivating and discussing the meaning of differential privacy, the preponderance of this monograph is devoted to fundamental techniques for achieving differential privacy, and application of these techniques in creative combinations, using the query-release problem as an ongoing example. A key point is that, by rethinking the computational goal, one can often obtain far better results than would be achieved by methodically replacing each step of a non-private computation with a differentially private implementation. Despite some astonishingly powerful computational results, there are still fundamental limitations — not just on what can be achieved with differential privacy but on what can be achieved with any method that protects against a complete breakdown in privacy. Virtually all the algorithms discussed herein maintain differential privacy against adversaries of arbitrary computational power. Certain algorithms are computationally intensive, others are efficient. Computational complexity for the adversary and the algorithm are both discussed.We then turn from fundamentals to applications other than queryrelease, discussing differentially private methods for mechanism design and machine learning. The vast majority of the literature on differentially private algorithms considers a single, static, database that is subject to many analyses. Differential privacy in other models, including distributed databases and computations on data streams is discussed.Finally, we note that this work is meant as a thorough introduction to the problems and techniques of differential privacy, but is not intended to be an exhaustive survey — there is by now a vast amount of work in differential privacy, and we can cover only a small portion of it.},
+journal = {Found. Trends Theor. Comput. Sci.},
+month = {aug},
+pages = {211–407},
+numpages = {197}
+}
+@inproceedings{barthe.etal2020decidingdp,
+author = {Barthe, Gilles and Chadha, Rohit and Jagannath, Vishal and Sistla, A. Prasad and Viswanathan, Mahesh},
+title = {Deciding Differential Privacy for Programs with Finite Inputs and Outputs},
+year = {2020},
+isbn = {9781450371049},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+url = {https://doi.org/10.1145/3373718.3394796},
+doi = {10.1145/3373718.3394796},
+abstract = {Differential privacy is a de facto standard for statistical computations over databases that contain private data. Its main and rather surprising strength is to guarantee individual privacy and yet allow for accurate statistical results. Thanks to its mathematical definition, differential privacy is also a natural target for formal analysis. A broad line of work develops and uses logical methods for proving privacy. A more recent and complementary line of work uses statistical methods for finding privacy violations. Although both lines of work are practically successful, they elide the fundamental question of decidability.This paper studies the decidability of differential privacy. We first establish that checking differential privacy is undecidable even if one restricts to programs having a single Boolean input and a single Boolean output. Then, we define a non-trivial class of programs and provide a decision procedure for checking the differential privacy of a program in this class. Our procedure takes as input a program P parametrized by a privacy budget ϵ and either establishes the differential privacy for all possible values of ϵ or generates a counter-example. In addition, our procedure works for both to ϵ-differential privacy and (ϵ, δ)-differential privacy. Technically, the decision procedure is based on a novel and judicious encoding of the semantics of programs in our class into a decidable fragment of the first-order theory of the reals with exponentiation. We implement our procedure and use it for (dis)proving privacy bounds for many well-known examples, including randomized response, histogram, report noisy max and sparse vector.},
+booktitle = {Proceedings of the 35th Annual ACM/IEEE Symposium on Logic in Computer Science},
+pages = {141–154},
+numpages = {14},
+keywords = {differential privacy, decision procedure, sparse vector},
+location = {Saarbr\"{u}cken, Germany},
+series = {LICS '20}
+}
+@InProceedings{DP2006,
+author="Dwork, Cynthia
+and McSherry, Frank
+and Nissim, Kobbi
+and Smith, Adam",
+editor="Halevi, Shai
+and Rabin, Tal",
+title="Calibrating Noise to Sensitivity in Private Data Analysis",
+booktitle="Theory of Cryptography",
+year="2006",
+publisher="Springer Berlin Heidelberg",
+address="Berlin, Heidelberg",
+pages="265--284",
+abstract="We continue a line of research initiated in [10,11]on privacy-preserving statistical databases. Consider a trusted server that holds a database of sensitive information. Given a query function f mapping databases to reals, the so-called true answer is the result of applying f to the database. To protect privacy, the true answer is perturbed by the addition of random noise generated according to a carefully chosen distribution, and this response, the true answer plus noise, is returned to the user.",
+isbn="978-3-540-32732-5"
+}
+
+@article{appleleakprivacy,
+  added-at = {2018-08-13T00:00:00.000+0200},
+  author = {Tang, Jun and Korolova, Aleksandra and Bai, Xiaolong and Wang, Xueqiang and Wang, XiaoFeng},
+  biburl = {https://www.bibsonomy.org/bibtex/248eab4e1c025a55ae0763129795680ec/dblp},
+  ee = {http://arxiv.org/abs/1709.02753},
+  interhash = {603333ad262389d7c3b7caa105d3cd9f},
+  intrahash = {48eab4e1c025a55ae0763129795680ec},
+  journal = {CoRR},
+  keywords = {dblp},
+  timestamp = {2018-08-14T14:43:45.000+0200},
+  title = {Privacy Loss in Apple's Implementation of Differential Privacy on MacOS 10.12.},
+  url = {http://dblp.uni-trier.de/db/journals/corr/corr1709.html#abs-1709-02753},
+  volume = {abs/1709.02753},
+  year = 2017
+}
+
+@article{AlbarghouthiHsu2018,
+   abstract = {Differential privacy has emerged as a promising probabilistic formulation of privacy, generating intense interest within academia and industry. We present a pushbutton , automated technique for verifying ε-differential privacy of sophisticated randomized algorithms. We make several conceptual, algorithmic, and practical contributions: (i) Inspired by the recent advances on approximate couplings and randomness alignment, we present a new proof technique called coupling strategies, which casts differential privacy proofs as a winning strategy in a game where we have finite privacy resources to expend. (ii) To discover a winning strategy, we present a constraint-based formulation of the problem as a set of Horn modulo couplings (hmc) constraints, a novel combination of first-order Horn clauses and probabilistic constraints. (iii) We present a technique for solving hmc constraints by transforming probabilistic constraints into logical constraints with uninterpreted functions. (iv) Finally, we implement our technique in the FairSquare verifier and provide the first automated privacy proofs for a number of challenging algorithms from the differential privacy literature, including Report Noisy Max, the Exponential Mechanism, and the Sparse Vector Mechanism.},
+   author = {Aws Albarghouthi and Justin Hsu},
+   doi = {10.1145/3158146},
+   keywords = {Additional Key Words and Phrases: Differential Privacy, Synthesis ACM Reference Format:,CCS Concepts: · Security and privacy → Logic and verification,· Theory of computation → Pro-gramming logic},
+   pages = {30},
+   title = {Synthesizing Coupling Proofs of Differential Privacy},
+   volume = {58},
+   url = {https://doi.org/10.1145/3158146},
+   year = {2018},
+}
+
