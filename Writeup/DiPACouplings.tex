@@ -176,7 +176,7 @@ The similarities between the third condition and the definition of differential 
 If we are solely aiming to show that a program is private, we can instead work with the following relaxation: 
 
 \begin{thm}\label{implicationcouplingthm}
-    If for all adjacent input sequences $X\sim X'$, $A(X)\{(a, b): a=\sigma\implies b=\sigma\}^{\#\varepsilon}A(X')$, then $A(X)$ is $\varepsilon-$differentially private.
+    If for all adjacent input sequences $X\sim X'$ and outputs $\sigma$ of $A$, $A(X)\{(a, b): a=\sigma\implies b=\sigma\}^{\#\varepsilon}A(X')$, then $A(X)$ is $\varepsilon-$differentially private.
 \end{thm}
 
 As expected, the foundational results of differential privacy can be restated in terms of liftings:
@@ -261,16 +261,122 @@ We will model programs as finite state automata, with each state representing a 
 
 At each program state, we will store one persistent real-valued variable called $\texttt{x}$. Additionally, each state $q$ has real-valued Laplace noise parameters $(d_q, d'_q)$ associated with it. 
 
-At each state, a real valued input $\texttt{in}$ is read in and Laplace noise sampled from the distribution $\Lap(0, \frac{1}{d\varepsilon})$ is added to it and stored in a temporary variable $\texttt{insample}$. Another temporary variable $\texttt{insample}'$ stores the sum of Laplace noise sampled from the distribution $\Lap(0, \frac{1}{d'\varepsilon})$ and $\texttt{in}$. 
+At each state, a real valued input $\texttt{in}$ is read in and Laplace noise $z$ sampled from the distribution $z\sim \Lap(0, \frac{1}{d\varepsilon})$ is added to it and stored in a temporary variable $\texttt{insample}$. Another temporary variable $\texttt{insample}'$ stores the sum of Laplace noise $z'$ sampled from the distribution $z'\sim \Lap(0, \frac{1}{d'\varepsilon})$ and $\texttt{in}$. 
 
-Fundamentally, our program will transition between states based on a comparison between $\texttt{insample}$ and $\texttt{x}$ at each state. Additionally, our program will also output either some finite symbol from an alphabet $\Gamma$, $\texttt{insample}$, or $\texttt{insample}'$ at such a transition. 
+Fundamentally, our program will transition between states based on a comparison between $\texttt{insample}$ and $\texttt{x}$ at each state. Additionally, our program will also output either some symbol from a finite alphabet $\Gamma$, $\texttt{insample}$, or $\texttt{insample}'$ at each transition. 
 
 More formally, we define a set of \textbf{guards} $\mathcal{C}=\{\texttt{true}, \lguard[\texttt{x}], \gguard[\texttt{x}]\}$. 
 
-Then, given two states $q, q'$, a transition $t$ between them can be defined as $t = (q, q', c, \sigma)$ where $c\in \mathcal{C}$ and $\sigma\in \Gamma\cup\{\texttt{insample}, \texttt{insample}'\}$. 
+For measurability reasons, whenever either $\texttt{insample}$ or $\texttt{insample}'$ are output, we must define an interval $(a, b)$ that contains the output. Thus, when a transition outputs $\texttt{insample}$ or $\texttt{insample}'$, we say that $\sigma$ is of the form $(\texttt{insample}, c, d)$ or $(\texttt{insample}', c, d)$ for $c, d\in R_\infty$ to indicate that a real number in the interval $(c, d)$ was output by a transition. 
+
+
+Then, given two states $q, q'$, a transition $t$ between them can be defined as $t = (q, q', c, \sigma, b)$ where $c\in \mathcal{C}$, $\sigma\in \Gamma\cup\{\texttt{insample}, \texttt{insample}'\}$, and $b$ is a boolean value denoting whether or not the stored value of $\texttt{x}$ will be updated. 
+
+Given an initial value for $\texttt{x}$ at state $q$, the program will take a transition $t=(q, q', c, \sigma, b)$ to state $q'$ if the guard $c$ is satisfied (i.e. has a value of true). Additionally, the program will output $\sigma$ and, if $b=\texttt{true}$, re-assign $\texttt{x}=\texttt{insample}$. 
+
+In general, we will assume that at all states $q$, $\texttt{x}$ has been sampled from some Laplace distribution $\Lap(\mu_q, \frac{1}{\hat{d_{q}}\varepsilon})$, where $\hat{d_{q}}$ is the spread parameter for $\texttt{insample}$ at some previous state. 
 
 \subsection{Privacy}
 
+\begin{defn}
+    Consider a single transition $t=(q, q', c, \sigma, b)$ between states $q$ and $q'$. Additionally, let $\texttt{x}_0\sim \Lap(\mu_q, \frac{1}{\hat{d_q}\varepsilon})$ be the stored value of $\texttt{x}$ at $q$. 
+    
+    Additionally, let $(u, v), (u', v')\in \RR_{\infty}$ be defined as follows:
+    \begin{align*}
+        (u, v) &= \begin{cases}
+        (-\infty, \infty) & c=\texttt{true}\land \sigma_0 \neq \texttt{insample}\\
+        (c, d) &c=\texttt{true}\land \sigma_0 = \texttt{insample}\\
+        (-\infty, \texttt{x}_0) & c=\lguard\land \sigma_0 \neq \texttt{insample}\\
+        (c, \min(\texttt{x}_0, d)) &c=\lguard\land \sigma_0 = \texttt{insample}\\
+        (\texttt{x}_0, \infty) & c=\gguard\land \sigma_0 \neq \texttt{insample}\\
+        (\max(\texttt{x}_0, c), d) &c=\gguard\land \sigma_0 = \texttt{insample}\\
+    \end{cases}\\
+    (u', v')& = (c', d')\end{align*}
+
+    Then, given an input $\texttt{in}$ at $q$, the \textbf{probability} that $t$ is taken with output $\sigma$ is defined as \[
+        \PP[\texttt{x}_0, t, \texttt{in}, \sigma] = \begin{cases}
+            \int_u^v \Lap_{\mu+a, b}(z)dz & \sigma_0 \neq \texttt{insample}' \\
+            \int_{u'}^{v'}\Lap_{\mu'+a, b'}(z')dz'\int_u^v \Lap_{\mu+a, b}(z)dz& \sigma_0 = \texttt{insample}'
+        \end{cases}
+    \]
+    where $\Lap_{\mu, b}(x)$ is the PDF of a Laplace distribution with mean $\mu$ and spread parameter $b$.
+\end{defn}
+
+
+Recall that $\texttt{in}$, in reality, represents a \textbf{function} of some underlying dataset. This means that `closeness' in this context is defined as follows:
+
+\begin{defn}
+    Two inputs $\texttt{in}\sim_{\Delta} \texttt{in}'$ are $\Delta$-adjacent if $|\texttt{in}-\texttt{in}'|\leq \Delta$. If $\Delta$ is not specified, we assume that $\Delta = 1$. 
+\end{defn}
+
+We can now define what it means  to be \textbf{differentially private}.
+
+\begin{defn}
+    A transition $t=(q, q', c, \sigma, b)$ with initial value $\texttt{x}_0$ is $d\varepsilon$-differentially private if there exists some $d>0$ such that $\forall \varepsilon> 0$, and for all adjacent inputs $\texttt{in}\sim \texttt{in}'$, $\PP[\texttt{x}_0, t, \texttt{in}, \sigma]\leq e^{d\varepsilon}\PP[\texttt{x}_0, t, \texttt{in}', \sigma]$. 
+
+    Recall that $\texttt{x}_0$ is treated as a random variable drawn from a Laplace distribution. 
+\end{defn}
+
+Note that we slightly redefine $\varepsilon$-differential privacy as $d\varepsilon$-differential privacy, treating $\varepsilon$ as a universal scaling parameter that can be fine-tuned by users for their own purposes. 
+In particular, we argue that this definition is functionally equivalent\footnote{\cite{chadhaLinearTimeDecidability2021} notes that it is not entirely clear how this differs from standard differential privacy, but that the known decidability result does not apply here - {\color{red} maybe something to investigate}}, since if we are targeting $\varepsilon^*$-differential privacy, we can always take $\varepsilon = \frac{\varepsilon^*}{d}$.
+
+\subsubsection{Couplings}
+
+For every transition $t$ between two states $q$ and $q'$, we can show that $t$ is differentially private using a series of liftings. 
+
+As a preliminary step, we fix $\varepsilon>0$ as a generic privacy scale parameter, as described previously.
+
+Consider two arbitrary adjacent inputs $\texttt{in}\sim \texttt{in}'$. We will analyze the behaviour of two different \textbf{runs} of $t$, one with input $\texttt{in}$ and one with input $\texttt{in}'$. 
+
+At a high level, for every Laplace-distributed variable, we will couple the value of the variable in one run with its value in the other \textbf{shifted} by some amount. 
+
+We differentiate between the values of variables in the first and second run by using angle brackets $\brangle{k}$, so, for example, we will take $\texttt{x}_0\brangle{1}$ to be the value of $\texttt{x}$ at state $q$ in the run of $t$ with input $\texttt{in}$ and $\texttt{x}_0\brangle{2}$ to be the same value in the run of $t$ with input $\texttt{in}'$. 
+
+For convenience, we will also take $\texttt{in}\brangle{1} = \texttt{in}$ and $\texttt{in}\brangle{2} =\texttt{in}'$. 
+
+We thus want to create the lifting $\sigma\brangle{1}\{(a, b): a=\sigma\implies b=\sigma\}\sigma\brangle{2}$. We must guarantee two things: that if the first transition is taken, then the second is also taken and that both runs output the same value $\sigma$ when taking the transition. Note that if $c = \texttt{true}$, the first condition is trivially satisfied and when $\sigma\in \Gamma$, the second condition is trivially satisfied. 
+
+
+
+As mentioned, we will assume that $\texttt{x}_0$ is sampled from a Laplace distribution, so $\texttt{x}_0\brangle{1}\sim \Lap(\mu\brangle{1}, \frac{1}{\hat{d_q}\varepsilon})$ and $\texttt{x}_0\brangle{1}\sim \Lap(\mu\brangle{2}, \frac{1}{\hat{d_q}\varepsilon})$.
+
+Then we can first create the lifting $\texttt{x}_0\brangle{1}+\gamma_x (=)^{\#(|\mu\brangle{1}-\mu\brangle{2}+\gamma_x|)\hat{d_q}\varepsilon}\texttt{x}_0\brangle{2}$ for some \textbf{shift} $\gamma_x\in[-1, 1]$. 
+
+Additionally, create the lifting $z\brangle{1} (=)^{\#(|-\texttt{in}\brangle{1}+\texttt{in}\brangle{2}-\gamma_q|)d_q\varepsilon}z\brangle{2} - \texttt{in}\brangle{1}+\texttt{in}\brangle{2}-\gamma_q$ for some shift $\gamma_q\in [-1, 1]$. 
+
+This is equivalent to creating the lifting $\texttt{insample}\brangle{1} +\gamma_q{(=)}^{\#(|-\texttt{in}\brangle{1}+\texttt{in}\brangle{2}-\gamma_q|)d_q\varepsilon}\texttt{insample}\brangle{2}$.
+
+Finally, create the lifting $z'\brangle{1} (=)^{\#(|-\texttt{in}\brangle{1}+\texttt{in}\brangle{2}-\gamma_q'|)d_q'\varepsilon}z'\brangle{2} - \texttt{in}\brangle{1}+\texttt{in}\brangle{2}-\gamma_q'$ for some shift $\gamma_q'\in [-1, 1]$. As before, this is equivalent to creating the lifting $\texttt{insample}'\brangle{1} +\gamma_q'{(=)}^{\#(|-\texttt{in}\brangle{1}+\texttt{in}\brangle{2}-\gamma_q'|)d_q'\varepsilon}\texttt{insample}'\brangle{2}$.
+
+If $c=\lguard[\texttt{x}]$ and $\gamma_q\leq \gamma_x$, then \begin{align*}
+    \texttt{insample}\brangle{1}<\texttt{x}_0\brangle{1}&\implies \texttt{in}\brangle{1}+z\brangle{1}<\texttt{x}_0\brangle{1}\\
+    &\implies \texttt{in}\brangle{1}+z\brangle{2}-\texttt{in}\brangle{1}+\texttt{in}\brangle{2}+\gamma_q<\texttt{x}_0\brangle{2}-\gamma_x\\
+    &\implies \texttt{insample}\brangle{2}<\texttt{x}_0\brangle{2}
+\end{align*}
+
+Similarly, if $c=\gguard[\texttt{x}]$ and $\gamma_q\geq \gamma_x$, then \begin{align*}
+    \texttt{insample}\brangle{1}\geq \texttt{x}_0\brangle{1}&\implies \texttt{in}\brangle{1}+z\brangle{1}\geq \texttt{x}_0\brangle{1}\\
+    &\implies \texttt{in}\brangle{1}+z\brangle{2}-\texttt{in}\brangle{1}+\texttt{in}\brangle{2}+\gamma_q\geq \texttt{x}_0\brangle{2}-\gamma_x\\
+    &\implies \texttt{insample}\brangle{2}\geq \texttt{x}_0\brangle{2}
+\end{align*}
+
+With these liftings, we have ensured that if the first run takes transition $t$, then the second run does as well. 
+
+Now, if $t$ outputs $\texttt{insample}$ and $\gamma_q=0$, then clearly we have that $\texttt{insample}\brangle{1}=\texttt{insample}\brangle{2}$, so $\sigma\brangle{1} = (\texttt{insample}, a, b)\implies \sigma\brangle{2}=(\texttt{insample}, a, b)$.
+
+Similarly, if $\gamma_q'=0$, we have that $\sigma\brangle{1} = (\texttt{insample}', a, b)\implies \sigma\brangle{2}=(\texttt{insample}', a, b)$. 
+
+Thus, if $t$ outputs a real number in the interval $(a, b)$ in the first run, it must also output a real number in the same interval in the second run. 
+
+Thus, given the constraints \[
+  \begin{cases}
+    \gamma_q\leq\gamma_x & c = \lguard[\texttt{x}]\\
+    \gamma_q\geq\gamma_x & c = \gguard[\texttt{x}]\\
+    \gamma_q=0 & \sigma = \texttt{insample}\\
+    \gamma_q'=0 & \sigma = \texttt{insample}'
+  \end{cases},
+\]
+this is sufficient to create the lifting $\sigma\brangle{1}\{(a, b): a=\sigma\implies b=\sigma\}^{\#d\varepsilon}\sigma\brangle{2}$, where the cost $d = (|\mu\brangle{1}-\mu\brangle{2}+\gamma_x|)\hat{d_q}+(|-\texttt{in}\brangle{1}+\texttt{in}\brangle{2}-\gamma_q|)d_q+(|-\texttt{in}\brangle{1}+\texttt{in}\brangle{2}-\gamma_q'|)d_q'$. 
 \subsection{A Program Model}
 
 
