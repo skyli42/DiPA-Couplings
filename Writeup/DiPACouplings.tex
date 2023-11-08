@@ -231,7 +231,9 @@ However, re-analyzing SVT using approximate liftings can be relatively simple.
 \begin{proof}
     Consider two runs of SVT with adjacent inputs $\mathcal{X}\sim\mathcal{X}'$, respectively. We are aiming to show that $SVT(\mathcal{X}, T, Q, c)\{(a, b): a=\sigma \implies b=\sigma\}^{\#\varepsilon}SVT(\mathcal{X}', T, Q, c)$ is a valid lifting. 
 
-    Fix some output $\sigma \in \{\bot, \top\}^n$. Let $A = \{i:\sigma_i = \top\}$ be the indices of queries that are measured to be above the threshold. Note that $|A| = c$. For every program variable $x$, let $x\brangle{1}$ and $x\brangle{2}$ represent the value of $x$ in $SVT(\mathcal{X}, T, Q, c)$ and $SVT(\mathcal{X}', T, Q, c)$, respectively, so, for example, $q_i(\mathcal{X})\brangle{1} = q_i(\mathcal{X})$ and $q_i(\mathcal{X})\brangle{2} = q_i(\mathcal{X}')$. 
+    Fix some output $\sigma \in \{\bot, \top\}^n$. Let $A = \{i:\sigma_i = \top\}$ be the indices of queries that are measured to be above the threshold. Note that $|A| = c$. 
+    
+    For every program variable $x$, let $x\brangle{1}$ and $x\brangle{2}$ represent the value of $x$ in $SVT(\mathcal{X}, T, Q, c)$ and $SVT(\mathcal{X}', T, Q, c)$, respectively, so, for example, $q_i(\mathcal{X})\brangle{1} = q_i(\mathcal{X})$ and $q_i(\mathcal{X})\brangle{2} = q_i(\mathcal{X}')$. 
 
     Let $\tilde{T}=T + \rho$. Then $\tilde{T} \sim \Lap(T, \frac{\Delta}{\varepsilon_1})$, so $\tilde{T}\brangle{1} +\Delta (=)^{\#\varepsilon_1}\tilde{T}\brangle{2}$. 
 
@@ -252,9 +254,25 @@ However, re-analyzing SVT using approximate liftings can be relatively simple.
 
 \section{Segments}
 
+We begin by building up a program model for SVT-style algorithms. There are three major components of SVT: taking in a threshold value and adding Laplace noise to it, taking in input and adding Laplace noise to it, and comparing the noisy threshold to the noisy input. 
+
+\subsection{Individual Transitions}
+We will model programs as finite state automata, with each state representing a Under this paradigm, we begin with the simplest possible program: a single transition between program states. 
+
+At each program state, we will store one persistent real-valued variable called $\texttt{x}$. Additionally, each state $q$ has real-valued Laplace noise parameters $(d_q, d'_q)$ associated with it. 
+
+At each state, a real valued input $\texttt{in}$ is read in and Laplace noise sampled from the distribution $\Lap(0, \frac{1}{d\varepsilon})$ is added to it and stored in a temporary variable $\texttt{insample}$. Another temporary variable $\texttt{insample}'$ stores the sum of Laplace noise sampled from the distribution $\Lap(0, \frac{1}{d'\varepsilon})$ and $\texttt{in}$. 
+
+Fundamentally, our program will transition between states based on a comparison between $\texttt{insample}$ and $\texttt{x}$ at each state. Additionally, our program will also output either some finite symbol from an alphabet $\Gamma$, $\texttt{insample}$, or $\texttt{insample}'$ at such a transition. 
+
+More formally, we define a set of \textbf{guards} $\mathcal{C}=\{\texttt{true}, \lguard[\texttt{x}], \gguard[\texttt{x}]\}$. 
+
+Then, given two states $q, q'$, a transition $t$ between them can be defined as $t = (q, q', c, \sigma)$ where $c\in \mathcal{C}$ and $\sigma\in \Gamma\cup\{\texttt{insample}, \texttt{insample}'\}$. 
+
+\subsection{Privacy}
+
 \subsection{A Program Model}
 
-We begin by building up a program model for SVT-style algorithms. There are three major components of SVT: taking in a threshold value and adding Laplace noise to it, taking in input and adding Laplace noise to it, and comparing the noisy threshold to the noisy input. 
 
 We start with a basic, ``straight-line'' program model. 
 
