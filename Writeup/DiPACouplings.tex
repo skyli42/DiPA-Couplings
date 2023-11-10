@@ -280,26 +280,28 @@ In general, we will assume that at all states $q$, $\texttt{x}$ has been sampled
 
 \begin{defn}
     Consider a single transition $t=(q, q', c, \sigma, b)$ between states $q$ and $q'$. Additionally, let $\texttt{x}_0\sim \Lap(\mu_q, \frac{1}{\hat{d_q}\varepsilon})$ be the stored value of $\texttt{x}$ at $q$. 
+
+    If $\sigma_0 \in \{\texttt{insample}, \texttt{insample}'\}$, then let $\sigma_0 = (\texttt{insample}, a, b)$ or $\sigma_0 = (\texttt{insample}', a', b')$ as appropriate. 
     
-    Additionally, let $(u, v), (u', v')\in \RR_{\infty}$ be defined as follows:
+    Then let $(u, v), (u', v')\in \RR_{\infty}$ be defined as follows:
     \begin{align*}
         (u, v) &= \begin{cases}
-        (-\infty, \infty) & c=\texttt{true}\land \sigma_0 \neq \texttt{insample}\\
-        (c, d) &c=\texttt{true}\land \sigma_0 = \texttt{insample}\\
-        (-\infty, \texttt{x}_0) & c=\lguard\land \sigma_0 \neq \texttt{insample}\\
-        (c, \min(\texttt{x}_0, d)) &c=\lguard\land \sigma_0 = \texttt{insample}\\
-        (\texttt{x}_0, \infty) & c=\gguard\land \sigma_0 \neq \texttt{insample}\\
-        (\max(\texttt{x}_0, c), d) &c=\gguard\land \sigma_0 = \texttt{insample}\\
+        (-\infty, \infty) & c=\texttt{true}\land \sigma \neq (\texttt{insample}, a, b)\\
+        (a, b) &c=\texttt{true}\land \sigma = (\texttt{insample}, a, b)\\
+        (-\infty, \texttt{x}_0) & a=\lguard\land \sigma \neq (\texttt{insample}, a, b)\\
+        (a, \min(\texttt{x}_0, b)) &c=\lguard\land \sigma = (\texttt{insample}, a, b)\\
+        (\texttt{x}_0, \infty) & c=\gguard\land \sigma \neq (\texttt{insample}, a, b)\\
+        (\max(\texttt{x}_0, a),b) &c=\gguard\land \sigma = (\texttt{insample}, a, b)\\
     \end{cases}\\
-    (u', v')& = (c', d')\end{align*}
+    (u', v')& = (a', b')\end{align*}
 
     Then, given an input $\texttt{in}$ at $q$, the \textbf{probability} that $t$ is taken with output $\sigma$ is defined as \[
         \PP[\texttt{x}_0, t, \texttt{in}, \sigma] = \begin{cases}
-            \int_u^v \Lap_{\mu+a, b}(z)dz & \sigma_0 \neq \texttt{insample}' \\
-            \int_{u'}^{v'}\Lap_{\mu'+a, b'}(z')dz'\int_u^v \Lap_{\mu+a, b}(z)dz& \sigma_0 = \texttt{insample}'
+            \int_u^v \Lap_{\texttt{in}, \frac{1}{d_q\varepsilon}}(z)dz & \sigma_0 \neq \texttt{insample}' \\
+            \int_{u'}^{v'}\Lap_{\texttt{in}, \frac{1}{d'_q\varepsilon}}(z')dz'\int_u^v \Lap_{\texttt{in}, \frac{1}{d_q\varepsilon}}(z)dz& \sigma_0 = \texttt{insample}'
         \end{cases}
     \]
-    where $\Lap_{\mu, b}(x)$ is the PDF of a Laplace distribution with mean $\mu$ and spread parameter $b$.
+    where $\Lap_{\mu, s}(x)$ is the PDF of a Laplace distribution with mean $\mu$ and spread parameter $s$.
 \end{defn}
 
 
@@ -312,7 +314,7 @@ Recall that $\texttt{in}$, in reality, represents a \textbf{function} of some un
 We can now define what it means  to be \textbf{differentially private}.
 
 \begin{defn}
-    A transition $t=(q, q', c, \sigma, b)$ with initial value $\texttt{x}_0$ is $d\varepsilon$-differentially private if there exists some $d>0$ such that $\forall \varepsilon> 0$, and for all adjacent inputs $\texttt{in}\sim \texttt{in}'$, $\PP[\texttt{x}_0, t, \texttt{in}, \sigma]\leq e^{d\varepsilon}\PP[\texttt{x}_0, t, \texttt{in}', \sigma]$. 
+    A transition $t=(q, q', c, \sigma, b)$ with initial value $\texttt{x}_0$ is $d\varepsilon$-differentially private if there exists some $d>0$ such that $\forall \varepsilon> 0$, for all adjacent inputs $\texttt{in}\sim \texttt{in}'$ and possible outputs $\sigma\in \Gamma\cup\RR$, $\PP[\texttt{x}_0, t, \texttt{in}, \sigma]\leq e^{d\varepsilon}\PP[\texttt{x}_0, t, \texttt{in}', \sigma]$. 
 
     Recall that $\texttt{x}_0$ is treated as a random variable drawn from a Laplace distribution. 
 \end{defn}
@@ -377,6 +379,102 @@ Thus, given the constraints \[
   \end{cases},
 \]
 this is sufficient to create the lifting $\sigma\brangle{1}\{(a, b): a=\sigma\implies b=\sigma\}^{\#d\varepsilon}\sigma\brangle{2}$, where the cost $d = (|\mu\brangle{1}-\mu\brangle{2}+\gamma_x|)\hat{d_q}+(|-\texttt{in}\brangle{1}+\texttt{in}\brangle{2}-\gamma_q|)d_q+(|-\texttt{in}\brangle{1}+\texttt{in}\brangle{2}-\gamma_q'|)d_q'$. 
+
+We can thus think of this coupling as being parameterized by $\gamma_q$, $\gamma_q'$, and $\gamma_x$. 
+
+\subsection{Multiple Transitions}
+
+Of course, in practice we would like to analyze the behaviour of programs with more than two program states.
+
+We start with programs that are \textit{paths} of program states. 
+
+Consider a path $\rho = q_0\to q_1\to \ldots \to q_n$, where each $q_i$ is a program state. We will denote the transition between states $q_i$ and $q_{i+1}$ in $\rho$ as $t_i = (q_i, q_{i+1}, c_i, \sigma_i, b_i)$.
+Like before, at each state $q_i$, the program will transition to $q_{i+1}$ and output $\sigma_i$ if the guard $c_i$ is satisfied. Additionally, if $b_i=\texttt{true}$, the program will update the stored value $\texttt{x}$ with $\texttt{insample}$. 
+
+Let $z_i \sim \Lap(0, \frac{1}{d_i\varepsilon})$ and $z'_i \sim \Lap(0, \frac{1}{d'_i\varepsilon})$ be the Laplace noise variables added to the input $\texttt{in}_i$ at each state for $\texttt{insample}$ and $\texttt{insample}'$, respectively. 
+
+Given a possible output $\sigma\in (\Gamma\cup\RR)^n$ of the program, we are concerned with the probability that a program will take the path $\rho$ and output $\sigma$. We can naturally  extend the definition of probability on a single transition to an entire path recursively.
+
+\begin{defn}
+    Given a path $\rho = q_0\to q_1\to \ldots \to q_n$, the \textbf{tail} of $\rho$ is defined as $tail(\rho) = q_1\to q_2 \to \ldots\to q_n$. 
+
+    We may additionally use the notation $\rho_{i:j}$ to represent the subpath $q_i\to q_{i+1}\to \ldots \to q_j$ of $\rho$. Using this notation, $tail(\rho) = \rho_{i:} = \rho_{i:n}$.
+\end{defn}
+
+\begin{defn}
+    Consider a path $\rho = q_0\to q_1\to \ldots \to q_n$ of length $n$. Let $t_0=(q_0, q_1, c_0, \sigma_0, b_0)$ between states $q$ and $q'$. Additionally, let $\texttt{x}_0$ be the initial value of $\texttt{x}$ at $q_0$. 
+    
+    If $\sigma_0 \in \{\texttt{insample}, \texttt{insample}'\}$, then let $\sigma_0 = (\texttt{insample}, a, b)$ or $\sigma_0 = (\texttt{insample}', a', b')$ as appropriate. 
+
+    Additionally, let $(u, v), (u', v')\in \RR_{\infty}$ be defined as follows:
+    \begin{align*}
+        (u, v) &= \begin{cases}
+        (-\infty, \infty) & c_0=\texttt{true}\land \sigma_0 \neq (\texttt{insample}, a, b)\\
+        (a, b) &c_0=\texttt{true}\land \sigma_0 = (\texttt{insample}, a, b)\\
+        (-\infty, \texttt{x}_0) & c_0=\lguard\land \sigma_0 \neq (\texttt{insample}, a, b)\\
+        (c, \min(\texttt{x}_0, d)) &c_0=\lguard\land \sigma_0 = (\texttt{insample}, a, b)\\
+        (\texttt{x}_0, \infty) & c_0=\gguard\land \sigma_0 \neq (\texttt{insample}, a, b)\\
+        (\max(\texttt{x}_0, c), d) &c_0=\gguard\land \sigma_0 = (\texttt{insample}, a, b)\\
+    \end{cases}\\
+    (u', v')& = (a', b')\end{align*}
+
+    Then, given an initial $\texttt{x}$-value $\texttt{x}_0$, an input sequence $\texttt{in}\in \RR^n$, and an output sequence $\sigma\in (\Gamma\cup\RR)^n$, the probability of $\rho$ is defined as \[
+        \PP[\texttt{x}_0, \rho, \texttt{in}, \sigma] = \begin{cases}
+            1 & n = 0\\
+            \int_u^v \Lap_{\texttt{in}_0, \frac{1}{d_0\varepsilon}}(z)dz\PP[\texttt{x}_0, \rho_{1:}, \texttt{in}_{1:}, \sigma_{1:}] & \sigma_0 \neq \texttt{insample}' \land b_0 = \texttt{false}\\
+            \int_u^v \Lap_{\texttt{in}_0, \frac{1}{d_0\varepsilon}}(z)\PP[z, \rho_{1:}, \texttt{in}_{1:}, \sigma_{1:}]dz  & \sigma_0 \neq \texttt{insample}'\land b_0=\texttt{true} \\
+            \int_{u'}^{v'}\Lap_{\texttt{in}_0, \frac{1}{d'_0\varepsilon}}(z')dz'\int_u^v \Lap_{\texttt{in}_0, \frac{1}{d_0\varepsilon}}(z)dz\PP[\texttt{x}_0, \rho_{1:}, \texttt{in}_{1:}, \sigma_{1:}]& \sigma_0 = \texttt{insample}'\land b_0 = \texttt{false}\\
+            \int_{u'}^{v'}\Lap_{\texttt{in}_0, \frac{1}{d'_0\varepsilon}}(z')dz'\int_u^v \Lap_{\texttt{in}_0, \frac{1}{d_0\varepsilon}}(z)\PP[z, \rho_{1:}, \texttt{in}_{1:}, \sigma_{1:}]dz& \sigma_0 = \texttt{insample}'\land b_0 = \texttt{false}
+        \end{cases}
+    \]
+    where $\Lap_{\mu, s}(x)$ is the PDF of a Laplace distribution with mean $\mu$ and spread parameter $s$.
+\end{defn}
+
+Note that we now read in a \textit{sequence} of real-valued inputs; adjacency can be naturally generalized to this case.
+
+\begin{defn}
+    Two input sequences $\{\alpha_i\}_{i=1}^n, \{\beta_i\}_{i=1}^n$ of length $n$ are $\Delta$-adjacent if, for all $i\in [1\ldots n]$, $|\alpha_i-\beta_i|\leq \Delta$. 
+
+    If $\Delta$ is not specified, we assume that $\Delta = 1$. 
+\end{defn}
+
+Thus, we get the following definition of privacy:
+
+\begin{defn}
+    Given two initial $\texttt{x}$-values $\texttt{x}_\alpha, \texttt{x}_\beta$, a program path $\rho$ of length $n$ is $d\varepsilon$-differentially private if $\exists d>0$ such that $\forall \varepsilon>0$, for all adjacent input sequences $\alpha\sim \beta$ of length $n$ and all possible output sequences $\sigma$ of length $n$, $\PP[\texttt{x}_\alpha, \rho, \alpha, \sigma]\leq e^{d\varepsilon}\PP[\texttt{x}_\beta, \rho, \beta, \sigma]$.
+\end{defn}
+
+\subsubsection{Joining Couplings Together}
+
+Let $\rho[\texttt{in}]$ be a random variable representing the output of $\rho$ given input sequence $\texttt{in}$. 
+
+In order to show that a program path $\rho$ is differentially private, for all adjacent inputs $\alpha\sim\beta$ and all possible outputs $\sigma$, we want to create the coupling $\rho[\alpha]\{(a, b): a=\sigma\implies b=\sigma\}^{\#d\varepsilon}\rho[\beta]$ for some $d>0$. 
+
+Ideally, we would like to simply create couplings for each individual transition in $\rho$ as before and compose them together to create this overall coupling. Indeed, this approach is almost sufficient; the constraints imposed upon shifts for a coupling for transition $t_i$ depend solely on the shift at the most recent \textbf{assignment transition} in $\rho$ (i.e. the most recent transition $t_j$ such that $b_j = \texttt{true}$). 
+The coupling shifts for \textit{non-assignment transitions} can thus never impact each other. 
+
+\begin{defn}
+    Let $A_\rho = \{t_i=(q_i, q_{i+1}, c_i, \sigma_i, b_i): b_i = \texttt{true}\}$ be the set of \textbf{assignment transitions} in a path $\rho$. 
+
+    For every transition $t_i$ in $\rho$, let $t_{at(i)}$ be the most recent assignment transition in $\rho$; i.e., $at(i) = \max\{j<i: t_j\in A_\rho\}$. If such a $j$ does not exist, we set $at(i)=-1$. 
+\end{defn}
+
+Consider an individual transition $t_i$ of $\rho$. Like before, we can create couplings with shifts $\gamma_x, \gamma_i$ such that $\rho[\alpha]_i \{(a, b): a=\sigma\implies b=\sigma\}^{\#d_i\varepsilon}\rho[\beta]_i$ where $d_i$ is a function of $\gamma_x, \gamma_i, \alpha_i$, and $\beta_i$. 
+
+In particular, note that for transition $t_i$, $\gamma_x = \gamma_{at(i)}$, where $\gamma_{-1}$ is the shift applied to the initial $\texttt{x}$-values $\texttt{x}_0\brangle{1}$ and $\texttt{x}_0\brangle{2}$.
+
+Thus, if for all $-1\leq i<n$, if we can find shifts $\gamma_i$ and $\gamma_i'$ subject to the constraints \[
+    \begin{cases}
+        \gamma_i \leq \gamma_{at(i)} & c_i = \lguard[\texttt{x}]\\
+        \gamma_i\geq \gamma_{at(i)} & c_i = \gguard[\texttt{x}]\\
+        \gamma_i = 0 & \sigma_i = \texttt{insample}\\
+        \gamma_i' = 0 & \sigma_i = \texttt{insample}'
+    \end{cases},
+\]
+then we have a proof by couplings that $\rho$ is $(\sum_{i\in [n]}d_i)\varepsilon-$differentially private, where $d_i$ is defined as previously. 
+
+Notably, if all $\gamma_i = \gamma_i' = 0$, then these constraints will be trivially satisfied. However, for an arbitrarily long path $\rho$ the overall privacy cost can correspondingly arbitrarily large. A more clever choice of $\gamma_i$'s satisfying these constraints can provide better bounds.  
+
 \subsection{A Program Model}
 
 
