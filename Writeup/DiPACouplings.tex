@@ -257,48 +257,51 @@ However, re-analyzing SVT using approximate liftings can be relatively simple.
 We begin by building up a program model for SVT-style algorithms. There are three major components of SVT: taking in a threshold value and adding Laplace noise to it, taking in input and adding Laplace noise to it, and comparing the noisy threshold to the noisy input. 
 
 \subsection{Individual Transitions}
-We will model programs as finite state automata, with each state representing a Under this paradigm, we begin with the simplest possible program: a single transition between program states. 
+We will model programs as finite state automata, with each state of the automaton representing a possible program state. Under this paradigm, we begin with the simplest possible program: a single transition between two program states. 
 
-At each program state, we will store one persistent real-valued variable called $\texttt{x}$. Additionally, each state $q$ has real-valued Laplace noise parameters $(d_q, d'_q)$ associated with it. 
+\begin{defn}
+    Let $\mathcal{C}=\{\texttt{true}, \lguard[\texttt{x}], \gguard[\texttt{x}]\}$ be a set of \textbf{transition guards}. Let $Q$ be a set of states with each state $q\in Q$ having an associated real value for a variable $\texttt{x}$. Additionally, let $P(q): Q\to \RR^{\geq 0}\times \RR^{\geq 0}$ be a function that associates each state state with two \textbf{noise parameters} $P(q) = (d_q, d_q')$. Finally, let $\Gamma$ be a finite alphabet of \textbf{output symbols}. 
 
-At each state, a real valued input $\texttt{in}$ is read in and Laplace noise $z$ sampled from the distribution $z\sim \Lap(0, \frac{1}{d\varepsilon})$ is added to it and stored in a temporary variable $\texttt{insample}$. Another temporary variable $\texttt{insample}'$ stores the sum of Laplace noise $z'$ sampled from the distribution $z'\sim \Lap(0, \frac{1}{d'\varepsilon})$ and $\texttt{in}$. 
+    Then given two states $q, q'\in Q$, a \textbf{transition} from $q$ to $q'$ is defined as the tuple $t = (q, q', c, \sigma,\tau)$ where $c\in \mathcal{C}$, $\sigma\in \Gamma\cup\{\texttt{insample}, \texttt{insample}'\}$, and $\tau$ is a boolean value denoting whether or not the stored value of $\texttt{x}$ will be updated. At all times, we will assume that there exists most one transition from $q\in Q$ to $q'\in Q$. 
+\end{defn}
 
-Fundamentally, our program will transition between states based on a comparison between $\texttt{insample}$ and $\texttt{x}$ at each state. Additionally, our program will also output either some symbol from a finite alphabet $\Gamma$, $\texttt{insample}$, or $\texttt{insample}'$ at each transition. 
+\begin{defn}
+    Fix some $\varepsilon>0$, which we will treat as a program parameter.
 
-More formally, we define a set of \textbf{guards} $\mathcal{C}=\{\texttt{true}, \lguard[\texttt{x}], \gguard[\texttt{x}]\}$. 
+    Consider some program state $q\in Q$ with noise parameters $P(q) = (d_q, d_q')$. Let $z\sim \Lap(0, \frac{1}{d_q\varepsilon})$ and $z'\sim\Lap(0, \frac{1}{d_q'\varepsilon})$ be independent random noises sampled from Laplace distributions with spread parameters $\frac{1}{d_q\varepsilon}$ and $\frac{1}{d_q'\varepsilon}$, respectively.
 
-For measurability reasons, whenever either $\texttt{insample}$ or $\texttt{insample}'$ are output, we must define an interval $(a, b)$ that contains the output. Thus, when a transition outputs $\texttt{insample}$ or $\texttt{insample}'$, we say that $\sigma$ is of the form $(\texttt{insample}, c, d)$ or $(\texttt{insample}', c, d)$ for $c, d\in R_\infty$ to indicate that a real number in the interval $(c, d)$ was output by a transition. 
+    For a state $q\in Q$ and input value $\texttt{in}\in \RR$ read at $q$, let $\texttt{insample} = \texttt{in}+z$ and $\texttt{insample}' = \texttt{in}+z'$ be noisy versions of the input read at $q$. 
 
+    Let $\sigma\in \Gamma\cup\{(\texttt{insample}, a, b), (\texttt{insample}', a, b)\}$ be a potential output of a transition. For measurability reasons, note that we must associate real-valued outputs with an interval $(a, b)$. Intuitively, $\sigma = (\texttt{insample}, a, b)$ represents the possibility that $\texttt{insample}$ was output with a value in the interval $(a, b)$. 
 
-Then, given two states $q, q'$, a transition $t$ between them can be defined as $t = (q, q', c, \sigma, b)$ where $c\in \mathcal{C}$, $\sigma\in \Gamma\cup\{\texttt{insample}, \texttt{insample}'\}$, and $b$ is a boolean value denoting whether or not the stored value of $\texttt{x}$ will be updated. 
+    Then given a initial value $x_q\in \RR$ for $\texttt{x}$, a possible transition $t=(q, q', c, \sigma, \tau)$ from $q$ to another state $q'\in Q$ is \textbf{taken} if $c$ is true and, if $\sigma\in \{(\texttt{insample}, a, b), (\texttt{insample}', a', b')\}$, $t$ outputs $\texttt{insample}$ or $\texttt{insample}'$ as appropriate with a value in the interval $(a, b)$ or $(a', b')$, respectively. 
+\end{defn}
 
-Given an initial value for $\texttt{x}$ at state $q$, the program will take a transition $t=(q, q', c, \sigma, b)$ to state $q'$ if the guard $c$ is satisfied (i.e. has a value of true). Additionally, the program will output $\sigma$ and, if $b=\texttt{true}$, re-assign $\texttt{x}=\texttt{insample}$. 
-
-In general, we will assume that at all states $q$, $\texttt{x}$ has been sampled from some Laplace distribution $\Lap(\mu_q, \frac{1}{\hat{d_{q}}\varepsilon})$, where $\hat{d_{q}}$ is the spread parameter for $\texttt{insample}$ at some previous state. 
+In general, we will assume that at all states $q$, $x_q$ has been sampled from some Laplace distribution $\Lap(\hat{\mu_q}, \frac{1}{\hat{d_{q}}\varepsilon})$, where $\hat{d_{q}}$ is the spread parameter for $\texttt{insample}$ at some previous state. 
 
 \subsection{Privacy}
 
 \begin{defn}
-    Consider a single transition $t=(q, q', c, \sigma, b)$ between states $q$ and $q'$. Additionally, let $\texttt{x}_0\sim \Lap(\mu_q, \frac{1}{\hat{d_q}\varepsilon})$ be the stored value of $\texttt{x}$ at $q$. 
+    Consider a single transition $t=(q, q', c, \sigma, b)$ from state $q\in Q$ to $q'\in Q$. Additionally, let $x_q\sim \Lap(\hat{\mu_q}, \frac{1}{\hat{d_q}\varepsilon})$ be the initial stored value of $\texttt{x}$ at $q$. 
 
-    If $\sigma_0 \in \{\texttt{insample}, \texttt{insample}'\}$, then let $\sigma_0 = (\texttt{insample}, a, b)$ or $\sigma_0 = (\texttt{insample}', a', b')$ as appropriate. 
+    Let $\sigma_0$ be a \textit{potential} output of $t$. In particular, if $\sigma\in \{\texttt{insample}, \texttt{insample}'\}$, then let $\sigma_0 = (\texttt{insample}, a, b)$ or $\sigma_0 = (\texttt{insample}', a', b')$ as appropriate. Otherwise, $\sigma_0 = \sigma\in \Gamma$. 
     
     Then let $(u, v), (u', v')\in \RR_{\infty}$ be defined as follows:
     \begin{align*}
         (u, v) &= \begin{cases}
-        (-\infty, \infty) & c=\texttt{true}\land \sigma \neq (\texttt{insample}, a, b)\\
-        (a, b) &c=\texttt{true}\land \sigma = (\texttt{insample}, a, b)\\
-        (-\infty, \texttt{x}_0) & a=\lguard\land \sigma \neq (\texttt{insample}, a, b)\\
-        (a, \min(\texttt{x}_0, b)) &c=\lguard\land \sigma = (\texttt{insample}, a, b)\\
-        (\texttt{x}_0, \infty) & c=\gguard\land \sigma \neq (\texttt{insample}, a, b)\\
-        (\max(\texttt{x}_0, a),b) &c=\gguard\land \sigma = (\texttt{insample}, a, b)\\
+        (-\infty, \infty) & c=\texttt{true}\land \sigma_0 \neq (\texttt{insample}, a, b)\\
+        (a, b) &c=\texttt{true}\land \sigma_0 = (\texttt{insample}, a, b)\\
+        (-\infty, \texttt{x}_0) & a=\lguard\land \sigma_0 \neq (\texttt{insample}, a, b)\\
+        (a, \min(\texttt{x}_0, b)) &c=\lguard\land \sigma_0 = (\texttt{insample}, a, b)\\
+        (\texttt{x}_0, \infty) & c=\gguard\land \sigma_0 \neq (\texttt{insample}, a, b)\\
+        (\max(\texttt{x}_0, a),b) &c=\gguard\land \sigma_0 = (\texttt{insample}, a, b)\\
     \end{cases}\\
     (u', v')& = (a', b')\end{align*}
 
-    Then, given an input $\texttt{in}$ at $q$, the \textbf{probability} that $t$ is taken with output $\sigma$ is defined as \[
-        \PP[\texttt{x}_0, t, \texttt{in}, \sigma] = \begin{cases}
-            \int_u^v \Lap_{\texttt{in}, \frac{1}{d_q\varepsilon}}(z)dz & \sigma_0 \neq \texttt{insample}' \\
-            \int_{u'}^{v'}\Lap_{\texttt{in}, \frac{1}{d'_q\varepsilon}}(z')dz'\int_u^v \Lap_{\texttt{in}, \frac{1}{d_q\varepsilon}}(z)dz& \sigma_0 = \texttt{insample}'
+    Then, given an input $\texttt{in}$ at $q$, the \textbf{probability} that $t$ is taken with output $\sigma_0$ is defined as \[
+        \PP[x_q, t, \texttt{in}, \sigma_0] = \begin{cases}
+            \int_u^v \Lap_{\texttt{in}, \frac{1}{d_q\varepsilon}}(z)dz & \sigma_0 \neq (\texttt{insample}', a', b') \\
+            \int_{u'}^{v'}\Lap_{\texttt{in}, \frac{1}{d'_q\varepsilon}}(z')dz'\int_u^v \Lap_{\texttt{in}, \frac{1}{d_q\varepsilon}}(z)dz& \sigma_0 = (\texttt{insample}', a', b')
         \end{cases}
     \]
     where $\Lap_{\mu, s}(x)$ is the PDF of a Laplace distribution with mean $\mu$ and spread parameter $s$.
@@ -314,9 +317,9 @@ Recall that $\texttt{in}$, in reality, represents a \textbf{function} of some un
 We can now define what it means  to be \textbf{differentially private}.
 
 \begin{defn}
-    A transition $t=(q, q', c, \sigma, b)$ with initial value $\texttt{x}_0$ is $d\varepsilon$-differentially private if there exists some $d>0$ such that $\forall \varepsilon> 0$, for all adjacent inputs $\texttt{in}\sim \texttt{in}'$ and possible outputs $\sigma\in \Gamma\cup\RR$, $\PP[\texttt{x}_0, t, \texttt{in}, \sigma]\leq e^{d\varepsilon}\PP[\texttt{x}_0, t, \texttt{in}', \sigma]$. 
+    Given two initial values $x_q, x_q'$, a transition $t=(q, q', c, \sigma, b)$ is \textbf{$d\varepsilon$-differentially private} for some $d>0$ if $\forall \varepsilon> 0$, for all adjacent inputs $\texttt{in}\sim \texttt{in}'$ and possible outputs $\sigma\in \Gamma\cup\{(\texttt{insample}, a, b), (\texttt{insample}', a', b')\}$, $\PP[x_q, t, \texttt{in}, \sigma]\leq e^{d\varepsilon}\PP[x_q', t, \texttt{in}', \sigma]$. 
 
-    Recall that $\texttt{x}_0$ is treated as a random variable drawn from a Laplace distribution. 
+    Recall that $x_q$ and $x_q'$ are treated as random variables drawn from a Laplace distribution. 
 \end{defn}
 
 Note that we slightly redefine $\varepsilon$-differential privacy as $d\varepsilon$-differential privacy, treating $\varepsilon$ as a universal scaling parameter that can be fine-tuned by users for their own purposes. 
@@ -326,40 +329,57 @@ In particular, we argue that this definition is functionally equivalent\footnote
 
 For every transition $t$ between two states $q$ and $q'$, we can show that $t$ is differentially private using a series of liftings. 
 
-As a preliminary step, we fix $\varepsilon>0$ as a generic privacy scale parameter, as described previously.
+\begin{lemma}
+    Suppose that $x_q\brangle{1}\sim \Lap(\hat{\mu_q}\brangle{1}, \frac{1}{\hat{d_q}\varepsilon}), x_q\brangle{2}\sim\Lap(\hat{\mu_q}\brangle{2}, \frac{1}{\hat{d_q}\varepsilon})$ are two initial values of $\texttt{x}$ at state $q\in Q$. 
 
-Consider two arbitrary adjacent inputs $\texttt{in}\sim \texttt{in}'$. We will analyze the behaviour of two different \textbf{runs} of $t$, one with input $\texttt{in}$ and one with input $\texttt{in}'$. 
+    Consider some transition $t = (q, q', c, \sigma, b)$ from $q$ to $q'\in Q$. Let $P(q) = (d_q, d_q')$.
+
+    Let $\texttt{in}\brangle{1}\sim \texttt{in}\brangle{2}$ be arbitrary and let $\sigma\brangle{1}$, $\sigma\brangle{2}$ be random variables representing possible outputs of $t$ given inputs $\texttt{in}\brangle{1}$ and $\texttt{in}\brangle{2}$, respectively. 
+
+    $\forall \varepsilon>0$ and for all $\gamma_x, \gamma_q, \gamma_q'\in [-1, 1]$ that satisfy the constraints \[
+        \begin{cases}
+          \gamma_q\leq\gamma_x & c = \lguard[\texttt{x}]\\
+          \gamma_q\geq\gamma_x & c = \gguard[\texttt{x}]\\
+          \gamma_q=0 & \sigma = \texttt{insample}\\
+          \gamma_q'=0 & \sigma = \texttt{insample}'
+        \end{cases},
+      \]
+      the lifting $\sigma\brangle{1}\{(a, b): a=\sigma\implies b=\sigma\}^{\#d\varepsilon}\sigma\brangle{2}$ is valid for $d = (|\mu\brangle{1}-\mu\brangle{2}+\gamma_x|)\hat{d_q}+(|-\texttt{in}\brangle{1}+\texttt{in}\brangle{2}-\gamma_q|)d_q+(|-\texttt{in}\brangle{1}+\texttt{in}\brangle{2}-\gamma_q'|)d_q'$, and therefore $t$ is $d\varepsilon$-differentially private. 
+\end{lemma}
+
+\begin{proof}
+Fix $\varepsilon>0$.
+
+We will analyze the behaviour of two different \textbf{runs} of $t$, one with input $\texttt{in}$ and one with input $\texttt{in}'$. 
 
 At a high level, for every Laplace-distributed variable, we will couple the value of the variable in one run with its value in the other \textbf{shifted} by some amount. 
 
-We differentiate between the values of variables in the first and second run by using angle brackets $\brangle{k}$, so, for example, we will take $\texttt{x}_0\brangle{1}$ to be the value of $\texttt{x}$ at state $q$ in the run of $t$ with input $\texttt{in}$ and $\texttt{x}_0\brangle{2}$ to be the same value in the run of $t$ with input $\texttt{in}'$. 
-
-For convenience, we will also take $\texttt{in}\brangle{1} = \texttt{in}$ and $\texttt{in}\brangle{2} =\texttt{in}'$. 
+We differentiate between the values of variables in the first and second run by using angle brackets $\brangle{k}$, so, for example, we will take $x_q\brangle{1}$ to be the value of $\texttt{x}$ at state $q$ in the run of $t$ with input $\texttt{in}\brangle{1}$ and $x_q\brangle{2}$ to be the value of $\texttt{x}$ in the run of $t$ with input $\texttt{in}\brangle{2}$. 
 
 We thus want to create the lifting $\sigma\brangle{1}\{(a, b): a=\sigma\implies b=\sigma\}\sigma\brangle{2}$. We must guarantee two things: that if the first transition is taken, then the second is also taken and that both runs output the same value $\sigma$ when taking the transition. Note that if $c = \texttt{true}$, the first condition is trivially satisfied and when $\sigma\in \Gamma$, the second condition is trivially satisfied. 
 
 
 
-As mentioned, we will assume that $\texttt{x}_0$ is sampled from a Laplace distribution, so $\texttt{x}_0\brangle{1}\sim \Lap(\mu\brangle{1}, \frac{1}{\hat{d_q}\varepsilon})$ and $\texttt{x}_0\brangle{1}\sim \Lap(\mu\brangle{2}, \frac{1}{\hat{d_q}\varepsilon})$.
+Recall that that $x_q$ is sampled from a Laplace distribution, so $x_q\brangle{1}\sim \Lap(\hat{\mu_q}\brangle{1}, \frac{1}{\hat{d_q}\varepsilon})$ and $x_q\brangle{1}\sim \Lap(\hat{\mu_q}\brangle{2}, \frac{1}{\hat{d_q}\varepsilon})$.
 
-Then we can first create the lifting $\texttt{x}_0\brangle{1}+\gamma_x (=)^{\#(|\mu\brangle{1}-\mu\brangle{2}+\gamma_x|)\hat{d_q}\varepsilon}\texttt{x}_0\brangle{2}$ for some \textbf{shift} $\gamma_x\in[-1, 1]$. 
+Then we can first create the lifting $x_q\brangle{1}+\gamma_x (=)^{\#(|\mu\brangle{1}-\mu\brangle{2}+\gamma_x|)\hat{d_q}\varepsilon}x_q\brangle{2}$.
 
-Additionally, create the lifting $z\brangle{1} (=)^{\#(|-\texttt{in}\brangle{1}+\texttt{in}\brangle{2}-\gamma_q|)d_q\varepsilon}z\brangle{2} - \texttt{in}\brangle{1}+\texttt{in}\brangle{2}-\gamma_q$ for some shift $\gamma_q\in [-1, 1]$. 
+Additionally, create the lifting $z\brangle{1} (=)^{\#(|-\texttt{in}\brangle{1}+\texttt{in}\brangle{2}-\gamma_q|)d_q\varepsilon}z\brangle{2} - \texttt{in}\brangle{1}+\texttt{in}\brangle{2}-\gamma_q$. 
 
 This is equivalent to creating the lifting $\texttt{insample}\brangle{1} +\gamma_q{(=)}^{\#(|-\texttt{in}\brangle{1}+\texttt{in}\brangle{2}-\gamma_q|)d_q\varepsilon}\texttt{insample}\brangle{2}$.
 
-Finally, create the lifting $z'\brangle{1} (=)^{\#(|-\texttt{in}\brangle{1}+\texttt{in}\brangle{2}-\gamma_q'|)d_q'\varepsilon}z'\brangle{2} - \texttt{in}\brangle{1}+\texttt{in}\brangle{2}-\gamma_q'$ for some shift $\gamma_q'\in [-1, 1]$. As before, this is equivalent to creating the lifting $\texttt{insample}'\brangle{1} +\gamma_q'{(=)}^{\#(|-\texttt{in}\brangle{1}+\texttt{in}\brangle{2}-\gamma_q'|)d_q'\varepsilon}\texttt{insample}'\brangle{2}$.
+Finally, create the lifting $z'\brangle{1} (=)^{\#(|-\texttt{in}\brangle{1}+\texttt{in}\brangle{2}-\gamma_q'|)d_q'\varepsilon}z'\brangle{2} - \texttt{in}\brangle{1}+\texttt{in}\brangle{2}-\gamma_q'$. As before, this is equivalent to creating the lifting $\texttt{insample}'\brangle{1} +\gamma_q'{(=)}^{\#(|-\texttt{in}\brangle{1}+\texttt{in}\brangle{2}-\gamma_q'|)d_q'\varepsilon}\texttt{insample}'\brangle{2}$.
 
 If $c=\lguard[\texttt{x}]$ and $\gamma_q\leq \gamma_x$, then \begin{align*}
-    \texttt{insample}\brangle{1}<\texttt{x}_0\brangle{1}&\implies \texttt{in}\brangle{1}+z\brangle{1}<\texttt{x}_0\brangle{1}\\
-    &\implies \texttt{in}\brangle{1}+z\brangle{2}-\texttt{in}\brangle{1}+\texttt{in}\brangle{2}+\gamma_q<\texttt{x}_0\brangle{2}-\gamma_x\\
-    &\implies \texttt{insample}\brangle{2}<\texttt{x}_0\brangle{2}
+    \texttt{insample}\brangle{1}<x_q\brangle{1}&\implies \texttt{in}\brangle{1}+z\brangle{1}<x_q\brangle{1}\\
+    &\implies \texttt{in}\brangle{1}+z\brangle{2}-\texttt{in}\brangle{1}+\texttt{in}\brangle{2}+\gamma_q<x_q\brangle{2}-\gamma_x\\
+    &\implies \texttt{insample}\brangle{2}<x_q\brangle{2}
 \end{align*}
 
 Similarly, if $c=\gguard[\texttt{x}]$ and $\gamma_q\geq \gamma_x$, then \begin{align*}
-    \texttt{insample}\brangle{1}\geq \texttt{x}_0\brangle{1}&\implies \texttt{in}\brangle{1}+z\brangle{1}\geq \texttt{x}_0\brangle{1}\\
-    &\implies \texttt{in}\brangle{1}+z\brangle{2}-\texttt{in}\brangle{1}+\texttt{in}\brangle{2}+\gamma_q\geq \texttt{x}_0\brangle{2}-\gamma_x\\
-    &\implies \texttt{insample}\brangle{2}\geq \texttt{x}_0\brangle{2}
+    \texttt{insample}\brangle{1}\geq x_q\brangle{1}&\implies \texttt{in}\brangle{1}+z\brangle{1}\geq x_q\brangle{1}\\
+    &\implies \texttt{in}\brangle{1}+z\brangle{2}-\texttt{in}\brangle{1}+\texttt{in}\brangle{2}+\gamma_q\geq x_q\brangle{2}-\gamma_x\\
+    &\implies \texttt{insample}\brangle{2}\geq x_q\brangle{2}
 \end{align*}
 
 With these liftings, we have ensured that if the first run takes transition $t$, then the second run does as well. 
@@ -380,7 +400,10 @@ Thus, given the constraints \[
 \]
 this is sufficient to create the lifting $\sigma\brangle{1}\{(a, b): a=\sigma\implies b=\sigma\}^{\#d\varepsilon}\sigma\brangle{2}$, where the cost $d = (|\mu\brangle{1}-\mu\brangle{2}+\gamma_x|)\hat{d_q}+(|-\texttt{in}\brangle{1}+\texttt{in}\brangle{2}-\gamma_q|)d_q+(|-\texttt{in}\brangle{1}+\texttt{in}\brangle{2}-\gamma_q'|)d_q'$. 
 
-We can thus think of this coupling as being parameterized by $\gamma_q$, $\gamma_q'$, and $\gamma_x$. 
+By an application of theorem \ref{implicationcouplingthm}, $\PP[x_q\brangle{1}, t, \texttt{in}\brangle{1}, \sigma]\leq e^{d\varepsilon}\PP[x_q\brangle{2}, t, \texttt{in}\brangle{2}, \sigma]$. Because $\texttt{in}\brangle{1}\sim\texttt{in}\brangle{2}$ are arbitrary adjacent inputs and $\sigma$ is an arbitrary possible output of $t$, this implies that $t$ is $d\varepsilon$-differentially private. 
+\end{proof}
+
+We can thus think of couplings for a transition as being parameterized by $\gamma_q$, $\gamma_q'$, and $\gamma_x$. 
 
 \subsection{Multiple Transitions}
 
