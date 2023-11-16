@@ -252,7 +252,7 @@ However, re-analyzing SVT using approximate liftings can be relatively simple.
     By Theorem \ref{implicationcouplingthm}, SVT is $\varepsilon$-differentially private. 
 \end{proof}
 
-\section{Segments}
+\section{Automatically Proving Privacy using Couplings}
 
 We begin by building up a program model for SVT-style algorithms. There are three major components of SVT: taking in a threshold value and adding Laplace noise to it, taking in input and adding Laplace noise to it, and comparing the noisy threshold to the noisy input. 
 
@@ -282,7 +282,7 @@ In general, we will assume that at all states $q$, $x_q$ has been sampled from s
 \subsection{Privacy}
 
 \begin{defn}
-    Consider a single transition $t=(q, q', c, \sigma, b)$ from state $q\in Q$ to $q'\in Q$. Additionally, let $x_q\sim \Lap(\hat{\mu_q}, \frac{1}{\hat{d_q}\varepsilon})$ be the initial stored value of $\texttt{x}$ at $q$. 
+    Consider a single transition $t=(q, q', c, \sigma, \tau)$ from state $q\in Q$ to $q'\in Q$. Additionally, let $x_q\sim \Lap(\hat{\mu_q}, \frac{1}{\hat{d_q}\varepsilon})$ be the initial stored value of $\texttt{x}$ at $q$. 
 
     Let $\sigma_0$ be a \textit{potential} output of $t$. In particular, if $\sigma\in \{\texttt{insample}, \texttt{insample}'\}$, then let $\sigma_0 = (\texttt{insample}, a, b)$ or $\sigma_0 = (\texttt{insample}', a', b')$ as appropriate. Otherwise, $\sigma_0 = \sigma\in \Gamma$. 
     
@@ -317,7 +317,7 @@ Recall that $\texttt{in}$, in reality, represents a \textbf{function} of some un
 We can now define what it means  to be \textbf{differentially private}.
 
 \begin{defn}
-    Given two initial values $x_q, x_q'$, a transition $t=(q, q', c, \sigma, b)$ is \textbf{$d\varepsilon$-differentially private} for some $d>0$ if $\forall \varepsilon> 0$, for all adjacent inputs $\texttt{in}\sim \texttt{in}'$ and possible outputs $\sigma\in \Gamma\cup\{(\texttt{insample}, a, b), (\texttt{insample}', a', b')\}$, $\PP[x_q, t, \texttt{in}, \sigma]\leq e^{d\varepsilon}\PP[x_q', t, \texttt{in}', \sigma]$. 
+    Given two initial values $x_q, x_q'$, a transition $t=(q, q', c, \sigma, \tau)$ is \textbf{$d\varepsilon$-differentially private} for some $d>0$ if $\forall \varepsilon> 0$, for all adjacent inputs $\texttt{in}\sim \texttt{in}'$ and possible outputs $\sigma\in \Gamma\cup\{(\texttt{insample}, a, b), (\texttt{insample}', a', b')\}$, $\PP[x_q, t, \texttt{in}, \sigma]\leq e^{d\varepsilon}\PP[x_q', t, \texttt{in}', \sigma]$. 
 
     Recall that $x_q$ and $x_q'$ are treated as random variables drawn from a Laplace distribution. 
 \end{defn}
@@ -329,14 +329,14 @@ In particular, we argue that this definition is functionally equivalent\footnote
 
 For every transition $t$ between two states $q$ and $q'$, we can show that $t$ is differentially private using a series of liftings. 
 
-\begin{lemma}
+\begin{lemma}\label{indTransitionCoupling}
     Suppose that $x_q\brangle{1}\sim \Lap(\hat{\mu_q}\brangle{1}, \frac{1}{\hat{d_q}\varepsilon}), x_q\brangle{2}\sim\Lap(\hat{\mu_q}\brangle{2}, \frac{1}{\hat{d_q}\varepsilon})$ are two initial values of $\texttt{x}$ at state $q\in Q$. 
 
-    Consider some transition $t = (q, q', c, \sigma, b)$ from $q$ to $q'\in Q$. Let $P(q) = (d_q, d_q')$.
+    Consider some transition $t = (q, q', c, \sigma, \tau)$ from $q$ to $q'\in Q$. Let $P(q) = (d_q, d_q')$.
 
     Let $\texttt{in}\brangle{1}\sim \texttt{in}\brangle{2}$ be arbitrary and let $\sigma\brangle{1}$, $\sigma\brangle{2}$ be random variables representing possible outputs of $t$ given inputs $\texttt{in}\brangle{1}$ and $\texttt{in}\brangle{2}$, respectively. 
 
-    $\forall \varepsilon>0$ and for all $\gamma_x, \gamma_q, \gamma_q'\in [-1, 1]$ that satisfy the constraints \[
+    Then $\forall \varepsilon>0$ and for all $\gamma_x, \gamma_q, \gamma_q'\in [-1, 1]$ that satisfy the constraints \[
         \begin{cases}
           \gamma_q\leq\gamma_x & c = \lguard[\texttt{x}]\\
           \gamma_q\geq\gamma_x & c = \gguard[\texttt{x}]\\
@@ -344,7 +344,7 @@ For every transition $t$ between two states $q$ and $q'$, we can show that $t$ i
           \gamma_q'=0 & \sigma = \texttt{insample}'
         \end{cases},
       \]
-      the lifting $\sigma\brangle{1}\{(a, b): a=\sigma\implies b=\sigma\}^{\#d\varepsilon}\sigma\brangle{2}$ is valid for $d = (|\mu\brangle{1}-\mu\brangle{2}+\gamma_x|)\hat{d_q}+(|-\texttt{in}\brangle{1}+\texttt{in}\brangle{2}-\gamma_q|)d_q+(|-\texttt{in}\brangle{1}+\texttt{in}\brangle{2}-\gamma_q'|)d_q'$, and therefore $t$ is $d\varepsilon$-differentially private. 
+      the lifting $\sigma\brangle{1}\{(a, b): a=\sigma\implies b=\sigma\}^{\#d\varepsilon}\sigma\brangle{2}$ is valid for $d = (|\hat{\mu_q}\brangle{1}-\hat{\mu_q}\brangle{2}+\gamma_x|)\hat{d_q}+(|-\texttt{in}\brangle{1}+\texttt{in}\brangle{2}-\gamma_q|)d_q+(|-\texttt{in}\brangle{1}+\texttt{in}\brangle{2}-\gamma_q'|)d_q'$, and therefore $t$ is $d\varepsilon$-differentially private. 
 \end{lemma}
 
 \begin{proof}
@@ -362,7 +362,7 @@ We thus want to create the lifting $\sigma\brangle{1}\{(a, b): a=\sigma\implies 
 
 Recall that that $x_q$ is sampled from a Laplace distribution, so $x_q\brangle{1}\sim \Lap(\hat{\mu_q}\brangle{1}, \frac{1}{\hat{d_q}\varepsilon})$ and $x_q\brangle{1}\sim \Lap(\hat{\mu_q}\brangle{2}, \frac{1}{\hat{d_q}\varepsilon})$.
 
-Then we can first create the lifting $x_q\brangle{1}+\gamma_x (=)^{\#(|\mu\brangle{1}-\mu\brangle{2}+\gamma_x|)\hat{d_q}\varepsilon}x_q\brangle{2}$.
+Then we can first create the lifting $x_q\brangle{1}+\gamma_x (=)^{\#(|\hat{\mu_q}\brangle{1}-\hat{\mu_q}\brangle{2}+\gamma_x|)\hat{d_q}\varepsilon}x_q\brangle{2}$.
 
 Additionally, create the lifting $z\brangle{1} (=)^{\#(|-\texttt{in}\brangle{1}+\texttt{in}\brangle{2}-\gamma_q|)d_q\varepsilon}z\brangle{2} - \texttt{in}\brangle{1}+\texttt{in}\brangle{2}-\gamma_q$. 
 
@@ -398,25 +398,60 @@ Thus, given the constraints \[
     \gamma_q'=0 & \sigma = \texttt{insample}'
   \end{cases},
 \]
-this is sufficient to create the lifting $\sigma\brangle{1}\{(a, b): a=\sigma\implies b=\sigma\}^{\#d\varepsilon}\sigma\brangle{2}$, where the cost $d = (|\mu\brangle{1}-\mu\brangle{2}+\gamma_x|)\hat{d_q}+(|-\texttt{in}\brangle{1}+\texttt{in}\brangle{2}-\gamma_q|)d_q+(|-\texttt{in}\brangle{1}+\texttt{in}\brangle{2}-\gamma_q'|)d_q'$. 
+this is sufficient to create the lifting $\sigma\brangle{1}\{(a, b): a=\sigma\implies b=\sigma\}^{\#d\varepsilon}\sigma\brangle{2}$, where the cost $d = (|\hat{\mu_q}\brangle{1}-\hat{\mu_q}\brangle{2}+\gamma_x|)\hat{d_q}+(|-\texttt{in}\brangle{1}+\texttt{in}\brangle{2}-\gamma_q|)d_q+(|-\texttt{in}\brangle{1}+\texttt{in}\brangle{2}-\gamma_q'|)d_q'$. 
 
 By an application of theorem \ref{implicationcouplingthm}, $\PP[x_q\brangle{1}, t, \texttt{in}\brangle{1}, \sigma]\leq e^{d\varepsilon}\PP[x_q\brangle{2}, t, \texttt{in}\brangle{2}, \sigma]$. Because $\texttt{in}\brangle{1}\sim\texttt{in}\brangle{2}$ are arbitrary adjacent inputs and $\sigma$ is an arbitrary possible output of $t$, this implies that $t$ is $d\varepsilon$-differentially private. 
 \end{proof}
 
-We can thus think of couplings for a transition as being parameterized by $\gamma_q$, $\gamma_q'$, and $\gamma_x$. 
+We can thus think of couplings for a transition as being parameterized by $\gamma_x$, $\gamma_q$, and $\gamma_q$. 
+
+\begin{defn}
+    For a transition $t_i = (q_i, q_{i+1}, c_i, \sigma_i, \tau_i)$, let $C_i(\gamma_x, \gamma_q, \gamma_q')$ be a \textbf{coupling strategy} for $t_i$, consisting of the set of couplings defined in the proof of the previous lemma parametrized by $\gamma_x$, $\gamma_q$, and $\gamma_q'$. 
+
+    In particular, we call $C_i(\gamma_x, \gamma_q, \gamma_q')$ \textbf{valid} for transition $t_i$ if the constraints \[
+        \begin{cases}
+          \gamma_q\leq\gamma_x & c_i = \lguard[\texttt{x}]\\
+          \gamma_q\geq\gamma_x & c_i = \gguard[\texttt{x}]\\
+          \gamma_q=0 & \sigma_i = \texttt{insample}\\
+          \gamma_q'=0 & \sigma_i = \texttt{insample}'
+        \end{cases},
+      \]
+      are all satisfied. 
+\end{defn}
+
+In particular, a valid coupling proof gives an upper bound on the privacy cost of any individual transition. 
+\begin{prop}\label{indivTransitionCouplingProp}
+    For a transition $t_i$, if there exists a valid coupling strategy $C_i(\gamma_x, \gamma_q, \gamma_q')$ given initial $\texttt{x}$ values centred at $\hat{\mu_q}\brangle{1}$ and $\hat{\mu_q}\brangle{2}$, then $t_i$ is $d\varepsilon$-differentially private for some 
+    \[d\leq \max_{\texttt{in}\brangle{1}\sim\texttt{in}\brangle{2}} (|\hat{\mu_q}\brangle{1}-\hat{\mu_q}\brangle{2}+\gamma_x|)\hat{d_q}+(|-\texttt{in}\brangle{1}+\texttt{in}\brangle{2}-\gamma_q|)d_q+(|-\texttt{in}\brangle{1}+\texttt{in}\brangle{2}-\gamma_q'|)d_q'.\]
+\end{prop}
+\begin{proof}
+    Follows immediately from lemma \ref{indTransitionCoupling}.
+\end{proof}
 
 \subsection{Multiple Transitions}
 
 Of course, in practice we would like to analyze the behaviour of programs with more than two program states.
 
-We start with programs that are \textit{paths} of program states. 
+We start with \textit{paths} of program states. 
 
-Consider a path $\rho = q_0\to q_1\to \ldots \to q_n$, where each $q_i$ is a program state. We will denote the transition between states $q_i$ and $q_{i+1}$ in $\rho$ as $t_i = (q_i, q_{i+1}, c_i, \sigma_i, b_i)$.
-Like before, at each state $q_i$, the program will transition to $q_{i+1}$ and output $\sigma_i$ if the guard $c_i$ is satisfied. Additionally, if $b_i=\texttt{true}$, the program will update the stored value $\texttt{x}$ with $\texttt{insample}$. 
+\begin{defn}
+    Consider some set of program states $Q$. A program \textbf{path} is a sequence of states $q_0, q_1, \ldots, q_n\in Q$ and a sequence of transitions $t_0, t_1, \ldots, t_{n-1}$ such that for all $i\in 0\ldots n-1$, $t_i = (q_i, q_{i+1}, c_i, \sigma_i, \tau_i)$ for some $c_i, \sigma_i, \tau_i$. We will often notate a path $\rho$ as $\rho = q_0\to q_1\to \ldots \to q_n$. 
+    
+    Additionally, if $\tau_0 = \texttt{true}$ and $c_0 = \texttt{true}$ (i.e.\ the first transition in any path must always assign its noised input value into $\texttt{x}$), then $\rho$ is a \textbf{complete path}. We call this condition the \textbf{initialization} condition.
+\end{defn}
+\begin{defn}
+    Consider some complete path $\rho = q_0\to \ldots \to q_n$ and let $\texttt{x}_i$ for all $i\in 1\ldots n$ be the value of $\texttt{x}$ at each program state $q_i$. Note that we can safely ignore $\texttt{x}_0$ because of the initialization condition. As before, for a program state $q_i\in Q$ with noise parameters $P({q_i}) = (d_{q_i}, d_{q_i}')$, let $z_i\sim \Lap(0, \frac{1}{d_{q_i}\varepsilon})$ and $z_i'\sim\Lap(0, \frac{1}{d_{q_i}'\varepsilon})$. 
+    Further, given an input $\texttt{in}\in \RR^n$ and possible output $\sigma \in (\Gamma\cup\{(\texttt{insample}, a, b), (\texttt{insample}', a, b)\})^n$, let $\texttt{insample}_i = \texttt{in}_i+z_i$ and $\texttt{insample}_i' = \texttt{in}_i+z_i'$. $\texttt{x}$ will be updated with $\texttt{insample}$ at a transition $t_i$ if and only if $\tau_i = \texttt{true}$. In other words, $\texttt{x}_i = \begin{cases}
+        \texttt{x}_{i-1} & \tau_{i-1} =\texttt{false}\\
+        \texttt{insample}_{i-1} &\tau_{i-1}=\texttt{true}
+    \end{cases}$. 
 
-Let $z_i \sim \Lap(0, \frac{1}{d_i\varepsilon})$ and $z'_i \sim \Lap(0, \frac{1}{d'_i\varepsilon})$ be the Laplace noise variables added to the input $\texttt{in}_i$ at each state for $\texttt{insample}$ and $\texttt{insample}'$, respectively. 
+    Then $\rho$ is \textbf{taken} if, $\forall i\in 0\ldots n-1$, $c_i$ is satisfied for $\texttt{insample}_i$ and $\texttt{x}_i$ and, if $t_i$ outputs a real value, it is of the form $(\texttt{insample}_i, a, b)$ or $(\texttt{insample}_i', a', b')$, as appropriate. 
+\end{defn}
 
-Given a possible output $\sigma\in (\Gamma\cup\RR)^n$ of the program, we are concerned with the probability that a program will take the path $\rho$ and output $\sigma$. We can naturally  extend the definition of probability on a single transition to an entire path recursively.
+\subsubsection{Privacy}
+
+We can naturally  extend the definition of probability on a single transition to an entire path recursively.
 
 \begin{defn}
     Given a path $\rho = q_0\to q_1\to \ldots \to q_n$, the \textbf{tail} of $\rho$ is defined as $tail(\rho) = q_1\to q_2 \to \ldots\to q_n$. 
@@ -425,7 +460,7 @@ Given a possible output $\sigma\in (\Gamma\cup\RR)^n$ of the program, we are con
 \end{defn}
 
 \begin{defn}
-    Consider a path $\rho = q_0\to q_1\to \ldots \to q_n$ of length $n$. Let $t_0=(q_0, q_1, c_0, \sigma_0, b_0)$ between states $q$ and $q'$. Additionally, let $\texttt{x}_0$ be the initial value of $\texttt{x}$ at $q_0$. 
+    Consider a path $\rho = q_0\to q_1\to \ldots \to q_n$ of length $n$. Let $t_0=(q_0, q_1, c_0, \sigma_0, \tau_0)$ between states $q$ and $q'$. Additionally, let $\texttt{x}_0$ be the initial value of $\texttt{x}$ at $q_0$. 
     
     If $\sigma_0 \in \{\texttt{insample}, \texttt{insample}'\}$, then let $\sigma_0 = (\texttt{insample}, a, b)$ or $\sigma_0 = (\texttt{insample}', a', b')$ as appropriate. 
 
@@ -444,19 +479,21 @@ Given a possible output $\sigma\in (\Gamma\cup\RR)^n$ of the program, we are con
     Then, given an initial $\texttt{x}$-value $\texttt{x}_0$, an input sequence $\texttt{in}\in \RR^n$, and an output sequence $\sigma\in (\Gamma\cup\RR)^n$, the probability of $\rho$ is defined as \[
         \PP[\texttt{x}_0, \rho, \texttt{in}, \sigma] = \begin{cases}
             1 & n = 0\\
-            \int_u^v \Lap_{\texttt{in}_0, \frac{1}{d_0\varepsilon}}(z)dz\PP[\texttt{x}_0, \rho_{1:}, \texttt{in}_{1:}, \sigma_{1:}] & \sigma_0 \neq \texttt{insample}' \land b_0 = \texttt{false}\\
-            \int_u^v \Lap_{\texttt{in}_0, \frac{1}{d_0\varepsilon}}(z)\PP[z, \rho_{1:}, \texttt{in}_{1:}, \sigma_{1:}]dz  & \sigma_0 \neq \texttt{insample}'\land b_0=\texttt{true} \\
-            \int_{u'}^{v'}\Lap_{\texttt{in}_0, \frac{1}{d'_0\varepsilon}}(z')dz'\int_u^v \Lap_{\texttt{in}_0, \frac{1}{d_0\varepsilon}}(z)dz\PP[\texttt{x}_0, \rho_{1:}, \texttt{in}_{1:}, \sigma_{1:}]& \sigma_0 = \texttt{insample}'\land b_0 = \texttt{false}\\
-            \int_{u'}^{v'}\Lap_{\texttt{in}_0, \frac{1}{d'_0\varepsilon}}(z')dz'\int_u^v \Lap_{\texttt{in}_0, \frac{1}{d_0\varepsilon}}(z)\PP[z, \rho_{1:}, \texttt{in}_{1:}, \sigma_{1:}]dz& \sigma_0 = \texttt{insample}'\land b_0 = \texttt{false}
+            \int_u^v \Lap_{\texttt{in}_0, \frac{1}{d_0\varepsilon}}(z)dz\PP[\texttt{x}_0, \rho_{1:}, \texttt{in}_{1:}, \sigma_{1:}] & \sigma_0 \neq \texttt{insample}' \land \tau_0 = \texttt{false}\\
+            \int_u^v \Lap_{\texttt{in}_0, \frac{1}{d_0\varepsilon}}(z)\PP[z, \rho_{1:}, \texttt{in}_{1:}, \sigma_{1:}]dz  & \sigma_0 \neq \texttt{insample}'\land \tau_0=\texttt{true} \\
+            \int_{u'}^{v'}\Lap_{\texttt{in}_0, \frac{1}{d'_0\varepsilon}}(z')dz'\int_u^v \Lap_{\texttt{in}_0, \frac{1}{d_0\varepsilon}}(z)dz\PP[\texttt{x}_0, \rho_{1:}, \texttt{in}_{1:}, \sigma_{1:}]& \sigma_0 = \texttt{insample}'\land \tau_0 = \texttt{false}\\
+            \int_{u'}^{v'}\Lap_{\texttt{in}_0, \frac{1}{d'_0\varepsilon}}(z')dz'\int_u^v \Lap_{\texttt{in}_0, \frac{1}{d_0\varepsilon}}(z)\PP[z, \rho_{1:}, \texttt{in}_{1:}, \sigma_{1:}]dz& \sigma_0 = \texttt{insample}'\land \tau_0 = \texttt{true}
         \end{cases}
     \]
     where $\Lap_{\mu, s}(x)$ is the PDF of a Laplace distribution with mean $\mu$ and spread parameter $s$.
 \end{defn}
 
-Note that we now read in a \textit{sequence} of real-valued inputs; adjacency can be naturally generalized to this case.
+For a complete path $\rho$, note that the initial value of $\texttt{x}$ is irrelevant, so we will shorthand $\PP[\texttt{x}_0, \rho, \texttt{in}, \sigma]$ to $\PP[\rho, \texttt{in}, \sigma]$.
+
+Additionally, because we now read in a \textit{sequence} of real-valued inputs, we need to slightly modify our definition of adjacency.
 
 \begin{defn}
-    Two input sequences $\{\alpha_i\}_{i=1}^n, \{\beta_i\}_{i=1}^n$ of length $n$ are $\Delta$-adjacent if, for all $i\in [1\ldots n]$, $|\alpha_i-\beta_i|\leq \Delta$. 
+    Two input sequences $\{\alpha_i\}_{i=1}^n, \{\beta_i\}_{i=1}^n$ of length $n$ are $\Delta$-adjacent (notated $\alpha \sim_{\Delta}\beta$) if, for all $i\in [1\ldots n]$, $|\alpha_i-\beta_i|\leq \Delta$. 
 
     If $\Delta$ is not specified, we assume that $\Delta = 1$. 
 \end{defn}
@@ -464,7 +501,7 @@ Note that we now read in a \textit{sequence} of real-valued inputs; adjacency ca
 Thus, we get the following definition of privacy:
 
 \begin{defn}
-    Given two initial $\texttt{x}$-values $\texttt{x}_\alpha, \texttt{x}_\beta$, a program path $\rho$ of length $n$ is $d\varepsilon$-differentially private if $\exists d>0$ such that $\forall \varepsilon>0$, for all adjacent input sequences $\alpha\sim \beta$ of length $n$ and all possible output sequences $\sigma$ of length $n$, $\PP[\texttt{x}_\alpha, \rho, \alpha, \sigma]\leq e^{d\varepsilon}\PP[\texttt{x}_\beta, \rho, \beta, \sigma]$.
+    A complete path $\rho$ of length $n$ is $d\varepsilon$-differentially private for some $d>0$ if $\forall \varepsilon>0$, for all adjacent input sequences $\alpha\sim \beta$ of length $n$ and all possible output sequences $\sigma$ of length $n$, $\PP[\rho, \alpha, \sigma]\leq e^{d\varepsilon}\PP[\rho, \beta, \sigma]$.
 \end{defn}
 
 \subsubsection{Joining Couplings Together}
@@ -473,33 +510,137 @@ Let $\rho[\texttt{in}]$ be a random variable representing the output of $\rho$ g
 
 In order to show that a program path $\rho$ is differentially private, for all adjacent inputs $\alpha\sim\beta$ and all possible outputs $\sigma$, we want to create the coupling $\rho[\alpha]\{(a, b): a=\sigma\implies b=\sigma\}^{\#d\varepsilon}\rho[\beta]$ for some $d>0$. 
 
-Ideally, we would like to simply create couplings for each individual transition in $\rho$ as before and compose them together to create this overall coupling. Indeed, this approach is almost sufficient; the constraints imposed upon shifts for a coupling for transition $t_i$ depend solely on the shift at the most recent \textbf{assignment transition} in $\rho$ (i.e. the most recent transition $t_j$ such that $b_j = \texttt{true}$). 
+Ideally, we would like to simply create couplings for each individual transition in $\rho$ as before and compose them together to create this overall coupling. Indeed, this approach is almost sufficient; the constraints imposed upon shifts for a coupling for transition $t_i$ depend solely on the shift at the most recent \textbf{assignment transition} in $\rho$ (i.e. the most recent transition $t_j$ such that $\tau_j = \texttt{true}$). 
 The coupling shifts for \textit{non-assignment transitions} can thus never impact each other. 
 
 \begin{defn}
-    Let $A_\rho = \{t_i=(q_i, q_{i+1}, c_i, \sigma_i, b_i): b_i = \texttt{true}\}$ be the set of \textbf{assignment transitions} in a path $\rho$. 
+    Let $A_\rho = \{t_i=(q_i, q_{i+1}, c_i, \sigma_i, \tau_i): \tau_i = \texttt{true}\}$ be the set of \textbf{assignment transitions} in a path $\rho$. 
 
     For every transition $t_i$ in $\rho$, let $t_{at(i)}$ be the most recent assignment transition in $\rho$; i.e., $at(i) = \max\{j<i: t_j\in A_\rho\}$. If such a $j$ does not exist, we set $at(i)=-1$. 
 \end{defn}
 
-Consider an individual transition $t_i$ of $\rho$. Like before, we can create couplings with shifts $\gamma_x, \gamma_i$ such that $\rho[\alpha]_i \{(a, b): a=\sigma\implies b=\sigma\}^{\#d_i\varepsilon}\rho[\beta]_i$ where $d_i$ is a function of $\gamma_x, \gamma_i, \alpha_i$, and $\beta_i$. 
-
 In particular, note that for transition $t_i$, $\gamma_x = \gamma_{at(i)}$, where $\gamma_{-1}$ is the shift applied to the initial $\texttt{x}$-values $\texttt{x}_0\brangle{1}$ and $\texttt{x}_0\brangle{2}$.
 
-Thus, if for all $-1\leq i<n$, if we can find shifts $\gamma_i$ and $\gamma_i'$ subject to the constraints \[
-    \begin{cases}
-        \gamma_i \leq \gamma_{at(i)} & c_i = \lguard[\texttt{x}]\\
-        \gamma_i\geq \gamma_{at(i)} & c_i = \gguard[\texttt{x}]\\
-        \gamma_i = 0 & \sigma_i = \texttt{insample}\\
-        \gamma_i' = 0 & \sigma_i = \texttt{insample}'
-    \end{cases},
-\]
-then we have a proof by couplings that $\rho$ is $(\sum_{i\in [n]}d_i)\varepsilon-$differentially private, where $d_i$ is defined as previously. 
+Thus, for an individual transition $t_i$ of $\rho$. From proposition \ref{indivTransitionCouplingProp}, we have a family of valid coupling strategies $C_i(\gamma_{at(i)}, \gamma_i, \gamma_i')$. 
 
-Notably, if all $\gamma_i = \gamma_i' = 0$, then these constraints will be trivially satisfied. However, for an arbitrarily long path $\rho$ the overall privacy cost can correspondingly arbitrarily large. A more clever choice of $\gamma_i$'s satisfying these constraints can provide better bounds.  
+We can merge these coupling strategies together to create a proof of privacy for the entire path: 
 
+\begin{lemma}\label{multTransitionsCouplingProof}
+    Let $\rho = q_0\to \ldots \to q_n$ be a complete path of length $n$. Let $\texttt{in}\brangle{1}\sim \texttt{in}\brangle{2}$ be arbitrary adjacent input sequences of length $n$. Additionally, fix some potential output $\sigma$ of $\rho$ of length $n$ and let $\sigma\brangle{1}$, $\sigma\brangle{2}$ be random variables representing possible outputs of $\rho$ given inputs $\texttt{in}\brangle{1}$ and $\texttt{in}\brangle{2}$, respectively. Additionally, for all $q_i$, let $P(q_i) = (d_i, d_i')$.
+
+    Then $\forall \varepsilon>0$ and for all $\{\gamma_i, \gamma_i'\}_{i=0}^{n-1}$ that, for all $i$, satisfy the constraints \[
+        \begin{cases}
+          \gamma_i\leq\gamma_{at(i)} & c_i = \lguard[\texttt{x}]\\
+          \gamma_i\geq\gamma_{at(i)} & c_i = \gguard[\texttt{x}]\\
+          \gamma_i=0 & \sigma_i = \texttt{insample}\\
+          \gamma_i'=0 & \sigma_i = \texttt{insample}'
+        \end{cases},
+      \]
+      the lifting $\sigma\brangle{1}\{(a, b): a=\sigma\implies b=\sigma\}^{\#d\varepsilon}\sigma\brangle{2}$ is valid for $d = \sum_{i=0}^{n-1}(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i|)d_i+(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i'|)d_i'$, and therefore $t$ is $d\varepsilon$-differentially private. 
+\end{lemma}
+\begin{proof}
+    From the proof of lemma \ref{indTransitionCoupling}, we know that we can create the couplings $\texttt{insample}_i\brangle{1} +\gamma_i{(=)}^{\#(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i|)d_i\varepsilon}\texttt{insample}_i\brangle{2}$ and $\texttt{insample}_i'\brangle{1} +\gamma_i'{(=)}^{\#(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i'|)d_i'\varepsilon}\texttt{insample}_i'\brangle{2}$ for all $q_i$ in $\rho$. 
+
+    Additionally, for some fixed $q_i$ in $\rho$, if we have the coupling $\texttt{x}_i\brangle{1}+\gamma_x (=)^{\#(|\hat{\mu_i}\brangle{1}-\hat{\mu_i}\brangle{2}+\gamma_x|)\hat{d_i}\varepsilon}x_i\brangle{2}$, where $\texttt{x}_i\brangle{1}\sim \Lap(\hat{\mu_i}\brangle{1}, \frac{1}{\hat{d_i}\varepsilon})$ and $\texttt{x}_i\brangle{2}\sim \Lap(\hat{\mu_i}\brangle{2}, \frac{1}{\hat{d_i}\varepsilon})$, then subject to the constraints \[
+        \begin{cases}
+          \gamma_i\leq\gamma_x & c_i = \lguard[\texttt{x}]\\
+          \gamma_i\geq\gamma_x & c_i = \gguard[\texttt{x}]\\
+          \gamma_i=0 & \sigma_i = \texttt{insample}_i\\
+          \gamma_i'=0 & \sigma_i = \texttt{insample}_i'
+        \end{cases},
+      \]
+    the coupling $\sigma_i\brangle{1}\{(a, b): a=\sigma_i\implies b=\sigma_i\}^{\#d\varepsilon}\sigma_i\brangle{2}$ is valid for some $d$. 
+
+    Indeed, note that for all $i$, $\texttt{x}_i = \texttt{insample}_{at(i)}$ by definition. Thus, we have that $\texttt{x}_i\brangle{1}+\gamma_x (=)^{\#(|-\texttt{in}_{at(i)}\brangle{1}+\texttt{in}_{at(i)}\brangle{2}+\gamma_{at(i)}|)d_{at(i)}\varepsilon}x_i\brangle{2}$, and we must satisfy the constraints \[
+        \begin{cases}
+          \gamma_i\leq\gamma_{at(i)} & c_i = \lguard[\texttt{x}]\\
+          \gamma_i\geq\gamma_{at(i)} & c_i = \gguard[\texttt{x}]\\
+          \gamma_i=0 & \sigma_i = \texttt{insample}_i\\
+          \gamma_i'=0 & \sigma_i = \texttt{insample}_i'
+        \end{cases}
+      \]
+      for all $i$.
+
+    Thus, we can put all of these couplings together to show that the coupling $\sigma_i\brangle{1}\{(a, b): a=\sigma_i\implies b=\sigma_i\}^{\#d\varepsilon}\sigma_i\brangle{2}$ is valid for some $d>0$.
+
+    In particular, note that we have created at most one pair of couplings (for $\texttt{insample}$ and $\texttt{insample}$) for each $q_i$. Thus, the total coupling cost associated with each $q_i$ is at most $(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i|)d_i+(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i'|)d_i'$, 
+    which gives us an overall coupling cost of $d = \sum_{i=0}^{n-1}(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i|)d_i+(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i'|)d_i'$.
+\end{proof}
+\begin{defn}
+    For a complete path $\rho$ of length $n$, a \textbf{coupling strategy} is a vector $\bm{\gamma}\in [-1, 1]^n$. For clarity, we will notate a coupling strategy for a path $\rho$ as $C_\rho(\bm{\gamma})$.
+\end{defn}
+
+\begin{defn}
+    For a complete path $\rho$ of length $n$, a coupling strategy $C_\rho(\bm{\gamma})$ is \textbf{valid} if all $\gamma_i$ statisfy the constraints \[
+        \begin{cases}
+          \gamma_i\leq\gamma_{at(i)} & c_i = \lguard[\texttt{x}]\\
+          \gamma_i\geq\gamma_{at(i)} & c_i = \gguard[\texttt{x}]\\
+          \gamma_i=0 & \sigma_i = \texttt{insample}\\
+          \gamma_i'=0 & \sigma_i = \texttt{insample}'
+        \end{cases}.
+      \]
+\end{defn}
+
+\begin{defn}
+    For a complete path $\rho$ of length $n$, the \textbf{cost} of a coupling strategy $S := C_\rho(\bm{\gamma})$ is \[cost(S) = \max_{\texttt{in}\brangle{1}\sim\texttt{in}\brangle{2}}\sum_{i=0}^{n-1}(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i|)d_i+(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i'|)d_i'.\]
+
+    Additionally, let $G$ be the set of all valid coupling strategies $C_\rho(\bm{\gamma})$ for $\rho$. Then the \textbf{coupling cost} of $\rho$ is 
+    \[cost(S) = \min_{C_\rho(\bm{\gamma})\in G}cost(C_\rho(\bm{\gamma})).\]
+\end{defn}
+
+\begin{prop}
+    If $C_\rho(\bm{\gamma})$ is valid, then $\rho$ is $cost(C_\rho(\bm{\gamma}))\varepsilon$-differentially private.
+\end{prop}
+
+\begin{proof}
+    Follows immediately from lemma \ref{multTransitionsCouplingProof}.
+\end{proof}
+
+\begin{cor}
+    Any complete path $\rho$ is $cost(\rho)\varepsilon$-differentially private. Further, for all complete paths $\rho$, $cost(\rho)<\infty$. 
+\end{cor}
+
+\begin{proof}
+    The first claim follows immediately from definitions. The second claim follows by considering a coupling strategy $C_\rho(\bm{0})$, where $\bm{0}$ is the 0-vector. Since $\texttt{in}\brangle{1}\sim\texttt{in}\brangle{2}$, $cost(\rho)\leq cost(C_\rho(\bm{0}))\leq \sum_{i=0}^{n-1}(d_i+d_i')$, which is finite for all fixed $\rho$. 
+\end{proof}
+
+\subsubsection{Segments}
+
+Observe that the constraints imposed on valid coupling strategies for a complete path $\rho$ only depend on the shifts associated with \textit{assignment transitions} in $\rho$. 
+
+In particular, this lends itself to conceptualizing complete paths by splitting them up based on assignment transitions. 
+
+\begin{defn}
+    A \textbf{segment} of a (complete) path $\rho = q_0\to\ldots\to q_n$ is a subpath $q_i \to q_{i+1}\to \ldots \to q_j$ of $\rho$ such that $t_i \in A_\rho$; for all $i<k<j$, $t_k \notin A_\rho$; and either $j=n$ or $t_j \in A_\rho$.
+\end{defn}
+
+In other words, a segment is a subpath of $\rho$ between two consecutive assignment transitions (or between the last assignment transition and the end of the path). Splitting up a path into segments thus allows us to think about a single value of $\texttt{x}$ at a time. 
+
+\subsection{Cycles}
+
+\begin{defn}
+    Consider a complete path $\rho = q_0\to\ldots \to q_n$ such that, for some $i\neq j$, $q_i = q_j$. 
+\end{defn}
+
+{\color{red} Unclear how to define a program model for cycles that makes sense / isn't just DiPA. Assume we have something for now.}
+
+\begin{defn}
+    A cyclic automata $A$ is $d\varepsilon$-differentially private for some $d>0$ if for all complete paths $\rho$ in $A$, for all possible outputs $\sigma_\rho$ of $\rho$ and input sequences $\texttt{in}\brangle{1}\sim \texttt{in}\brangle{2}$, $\forall \varepsilon>0, \PP[\rho, \sigma, \texttt{in}\brangle{1}]\leq e^{d\varepsilon}\PP[\rho, \sigma, \texttt{in}\brangle{2}]$.
+\end{defn}
+
+\begin{defn}
+    A \textbf{coupling strategy} for a cyclic automata $A$ is [...]
+\end{defn}
+
+\begin{lemma}
+    
+\end{lemma}
+
+
+\noindent\hrulefill
+
+\section{TBD: Older Writing}
 \subsection{A Program Model}
-
 
 We start with a basic, ``straight-line'' program model. 
 
