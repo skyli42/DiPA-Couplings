@@ -610,6 +610,8 @@ We can merge these coupling strategies together to create a proof of privacy for
     The second claim follows by considering a coupling strategy $(\bm{\gamma}, \bm{\gamma}')$ where $\forall \texttt{in}\brangle{1}\sim\texttt{in}\brangle{2}\bm{\gamma} = \bm{\gamma}' = \bm{0}$. Note that $(\bm{\gamma}, \bm{\gamma}')$ is trivially valid. Since $\texttt{in}\brangle{1}\sim\texttt{in}\brangle{2}$, $cost(\rho)\leq cost(C_\rho(\bm{0}))\leq \sum_{i=0}^{n-1}(d_i+d_i')$, which is finite for all fixed $\rho$. 
 \end{proof}
 
+{\color{red} frame as a linear program?}
+
 \subsubsection{Segments}
 
 Observe that the constraints imposed on valid coupling strategies for a complete path $\rho$ only depend on the shifts associated with \textit{assignment transitions} in $\rho$. 
@@ -638,21 +640,124 @@ In other words, a segment is a subpath of $\rho$ between two consecutive assignm
     A \textbf{coupling strategy} for a cyclic automata $A$ is [...]
 \end{defn}
 
-\begin{lemma}
-    A coupling strategy $C_A=(\bm{\gamma}, \bm{\gamma}')$ for a cyclic automata $A$ is \textbf{valid} if and only if the following constraints apply:
+\begin{defn}
+    A coupling strategy $C_A=(\bm{\gamma}, \bm{\gamma}')$ for a cyclic automata $A$ is \textbf{valid} if, for all paths $\rho$ of $A$, the following constraints hold for all adjacent input sequences $\alpha\sim\beta$ and for all $i$:
     \begin{itemize}
         \item If $c_i = \lguard[\texttt{x}]$, then $\gamma_i\leq\gamma_{at(i)}$
         \item If $c_i = \gguard[\texttt{x}]$, then $\gamma_i\geq\gamma_{at(i)}$
         \item If $\sigma_i = \texttt{insample}$, then $\gamma_i=0$
         \item If $\sigma_i = \texttt{insample}'$, then $\gamma_i'=0$
     \end{itemize}
-    Further, given adjacent input sequences $\alpha\sim \beta$, such a valid coupling strategy $C_A$ has finite cost $d<\infty$ if and only if the following constraints apply for all $i$:
+\end{defn}
+
+Note that given a complete path $\rho$ in a cyclic automaton $A$, a coupling strategy $C_A$ induces a coupling strategy $C_\rho$ for $\rho$.
+
+\begin{defn}
+    The \textbf{cost} of a coupling strategy $C_A = (\bm{\gamma}, \bm{\gamma}')$ for a cyclic automata $A$ is \begin{align*}
+    cost(C_A) &= \sup_{\rho\in A}\max_{\texttt{in}\brangle{1}\sim \texttt{in}\brangle{2}} \sum_{i=0}^{n-1}(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i|)d_i+(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i'|)d_i'\\
+    &=\sup_{\rho\in A}cost(C_\rho)
+\end{align*}
+    Further, let $G_A$ be the set of all valid coupling strategies for $A$. Then the \textbf{coupling cost} of $A$ is \[
+        cost(A) = \min_{C_A\in G_A}cost(C_A)
+    \]
+\end{defn}
+
+\begin{prop}
+    Given a valid coupling strategy $C_A$ for a cyclic automaton $A$, $A$ is $cost(C_A)\varepsilon$-differentially private. 
+\end{prop}
+\begin{proof}
+    Let $\rho$ be a complete path in $A$ and let $C_\rho$ be the coupling strategy for $\rho$ derived from $C_A$. We know from lemma \ref{multTransitionsCouplingProof} that, if $C_A$ is valid, then the lifting $\sigma\brangle{1}\{(a, b): a=\sigma\implies b=\sigma\}^{\#cost(C_\rho)\varepsilon}\sigma\brangle{2}$ is valid, 
+    and therefore for all possible outputs $\sigma$ of $\rho$ and adjacent inputs $\texttt{in}\brangle{1}\sim\texttt{in}\brangle{2}$, $\forall \varepsilon>0, \PP[\rho, \sigma, \texttt{in}\brangle{1}]\leq e^{cost(C_\rho)\varepsilon}\PP[\rho, \sigma, \texttt{in}\brangle{2}]\leq e^{cost(C_A)\varepsilon}\PP[\rho, \sigma, \texttt{in}\brangle{2}]$.
+\end{proof}
+\begin{cor}
+    A cyclic automaton $A$ is $cost(A)\varepsilon$-differentially private. 
+\end{cor}
+
+\begin{prop}
+    \begin{align*}
+        \max_{\texttt{in}\brangle{1}\sim \texttt{in}\brangle{2}} \sum_{i=0}^{n-1}(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i|)d_i+(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i'|)d_i' \\
+        = \max_{\texttt{in}\brangle{1}-\texttt{in}\brangle{2}\in \{-1, 1\}} \sum_{i=0}^{n-1}(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i|)d_i+(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i'|)d_i'
+    \end{align*}
+\end{prop}
+\begin{proof}
+    Vishnu has something for this?
+\end{proof}
+
+\begin{lemma}
+    For a cyclic automaton $A$, given adjacent input sequences $\texttt{in}\brangle{1}\sim \texttt{in}\brangle{2}$, a valid coupling strategy $C_A$ has finite cost $cost(C_A)<\infty$ if and only if the following constraint applies for all $i$:
     \begin{itemize}
-        \item If $t_i$ is in a cycle, then $\gamma_i = -\alpha_i+\beta_i$. 
-        \item If $t_i$ is in a cycle, then $\sigma_i \in \Gamma$. 
+        \item If $t_i$ is in a cycle and $c_i\neq \texttt{true}$, then $\gamma_i = -\texttt{in}\brangle{1}_i+\texttt{in}\brangle{2}_i$ and $\gamma_i' = -\texttt{in}\brangle{1}_i+\texttt{in}\brangle{2}_i$.
     \end{itemize}
 \end{lemma}
 
+\begin{proof}
+    ($\impliedby$)
+
+    Let $T$ be the set of transitions $t_i$ in $A$ such that $t_i$ is \textbf{not} in a cycle. Note that $T$ is independent of any choice of path(s) through $A$. 
+
+    Fix a complete path $\rho$ in $A$ and let $C_\rho$ be the coupling strategy for $\rho$ induced by $C_A$. 
+
+    Let $D_\rho$ be the set of transitions $t_i$ in $\rho$ such that $t_i$ is in a cycle in $A$, i.e., $t_i\notin T$.  
+
+    If the given constraint holds, then we know that $\max_{\texttt{in}\brangle{1}\sim\texttt{in}\brangle{2}}\sum_{i: t_i\in D_\rho}(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i|)d_i+(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i'|)d_i' = 0$
+
+    So \begin{align*}
+        cost(C_\rho) = \max_{\texttt{in}\brangle{1}\sim\texttt{in}\brangle{2}}&\sum_{i: t_i\in D_\rho}(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i|)d_i+(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i'|)d_i'\\
+        &+\sum_{i: t_i\notin D_\rho}(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i|)d_i+(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i'|)d_i'\\
+        = \max_{\texttt{in}\brangle{1}\sim\texttt{in}\brangle{2}}&\sum_{i: t_i\in T}(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i|)d_i+(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i'|)d_i'\\
+        \leq \sum_{i:t_i\in T}(2d_i& + 2d_i')\\
+        \leq |T|\max_{i:t_i\in T}&(2d_i + 2d_i')
+    \end{align*}
+
+    ($\implies$)
+
+    Suppose that some transition $t_i$ is in a cycle $C$ in $A$ and $\gamma_i\neq -\texttt{in}\brangle{1}_i+\texttt{in}\brangle{2}_i$ or $\gamma_i'\neq  -\texttt{in}\brangle{1}_i+\texttt{in}\brangle{2}_i$. Then $\exists \texttt{in}\brangle{1}\sim \texttt{in}\brangle{2}$ such that $(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i|)d_i+(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i'|)d_i'>0$.
+
+    Fix such a $\texttt{in}\brangle{1}\sim \texttt{in}\brangle{2}$. 
+
+    Let $\rho_k$ be a complete path in $A$ with $C$ iterated $k$ times. Then for all $k\in \NN$, \begin{align*}
+        cost(\rho_k) \geq k((|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i|)d_i+(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i'|)d_i'),
+    \end{align*}
+    so for all $M\in \RR$, $\exists \rho_k$ such that $cost(\rho_k) > M$.
+\end{proof}
+
+\begin{lemma}
+    If a cycle in $A$ contains an assignment transition, then there is no valid coupling strategy for $A$ such that the constraint holds. 
+\end{lemma}
+
+\begin{lemma}
+    If [leaking pair], then there is no valid coupling strategy etc. 
+\end{lemma}
+
+\begin{lemma}
+    If a cycle in $A$ contains a transition that outputs either $\texttt{insample}$ or $\texttt{insample}'$, then there is no valid coupling strategy for $A$ such that the constraint holds. 
+\end{lemma}
+
+\begin{lemma}
+    If [privacy violating path], then there is no valid coupling strategy etc.
+\end{lemma}
+
+\begin{lemma}
+    If there is no valid coupling strategy for $A$ such that the constraint holds, then [one of the four graph structures] must be present in $A$. 
+\end{lemma}
+
+\begin{thm}
+    There is no valid coupling strategy with finite cost for $A$ if and only if [at least one of the four graph structures] are present in $A$.
+\end{thm}
+
+\subsubsection{Optimizing an Upper Bound}
+
+- Solve the linear program subject to the constraints: 
+
+\subsection{DiPA}
+
+\subsubsection{Definition}
+
+\subsubsection{Privacy}
+
+\begin{thm}
+    A DiPA $A$ is $d\varepsilon$-differentially private for some $d>0$ if and only if there exists some valid coupling strategy $S$ for $A$ such that $cost(S) = d$. 
+\end{thm}
 
 \noindent\hrulefill
 
