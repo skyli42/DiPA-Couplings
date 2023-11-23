@@ -632,14 +632,25 @@ Note then, that the process of finding the optimal coupling cost of a path $\rho
 \subsection{Branching}
 
 \begin{defn}[Branching program]
-    Given a set of program states $Q$, a branching program $B$ is a finite set of complete paths $\rho$ over $Q$. 
+    Given a set of program states $Q$, a branching program $B$ is a finite set of complete paths over $Q$ such that for all $\rho=q_0\to\ldots\to q_n, \rho'=q'_0\to\ldots\to q'_m\in B$, $q_0=q'_0$. $B$ must also satisfy the following properties: \begin{enumerate}
+        \item If any transition $t$ in any path $\rho\in B$ is of the form $(q, q', c, \sigma, \tau)$, then no other transitions of the form $(q, q^*, c, \sigma', \tau')$ for $q, q', q^*\in Q$ exist in any path of $B$. Additionally, if any transition $t$ in any path $\rho\in B$ is of the form $(q, q', \texttt{true}, \sigma, \tau)$, then transitions of the form $(q, q^*, \lguard[\texttt{x}], \sigma', \tau')$ or $(q, q^*, \lguard[\texttt{x}], \sigma', \tau')$ do not exist in any path of $B$.
+        \item If a transition of the form $(q, q', \lguard[\texttt{x}], \sigma, \tau)$ exists in any path in $B$ and a transition of the form $(q, q^*, \gguard[\texttt{x}], \sigma', \tau')$ exists in any (potentially different) path in $B$, then $\sigma \neq \sigma'$. Additionally, at least one of $\sigma\in \Gamma$, $\sigma'\in \Gamma$ is true.
+    \end{enumerate} 
+    We will refer to the first condition as \textbf{determinism} and the second condition as \textbf{output distinction}.
 \end{defn}
 
 \subsubsection{Privacy}
 
 \begin{defn}[DP for branching programs]
-    A branching program is DP if all paths in the program are dp 
+    A branching program is DP if [standard def]
 \end{defn}
+
+\begin{prop}
+    A branching program $B$ is DP if and only if for every complete path in $B$, etc.
+\end{prop}
+\begin{proof}
+    Each potential output of $B$ uniquely determines a path in $B$ by output distinction and determinism.
+\end{proof}
 
 
 We can do no better than assigning coupling strategies for each path independently. 
@@ -655,13 +666,16 @@ We can do no better than assigning coupling strategies for each path independent
 
 \begin{defn}[Looping path]
     Consider a complete path $\rho = q_0\to\ldots \to q_n$ such that for some $i<n$, $q_i = q_n$. WLOG suppose also that $\forall j\neq i$, $q_j \neq q_n$. A looping path $L_\rho$ is the infinite set of paths $\{q_0\to\ldots\to q_{i-1}\to (q_i\to\ldots\to q_{n-1})^k\to q_n| k\in \NN\}$, where $(q_i\to\ldots\to q_{n-1})^k$ means that the subpath $(q_i\to\ldots\to q_{n-1})^k$ is iterated $k$ times. 
+    Additionally, $L_\rho$ must satisfy the properties of \textbf{determinism} and \textbf{output distinction} as with branching programs.
 \end{defn}
 
 \begin{defn}[Looping path privacy]
     A looping path $L_\rho$ is $d\varepsilon$-differentially private for $d>0$ if for all complete paths $\rho'$ in $L_\rho$, for all possible outputs $\sigma_{\rho'}$ of $\rho'$ and input sequences $\texttt{in}\brangle{1}\sim \texttt{in}\brangle{2}$, $\forall \varepsilon>0, \PP[\rho', \sigma_{\rho'}, \texttt{in}\brangle{1}]\leq e^{d\varepsilon}\PP[\rho', \sigma_{\rho'}, \texttt{in}\brangle{2}]$.
-
-    Equivalently, a looping path $L_\rho$ is $d\varepsilon$-differentially private for $d>0$ if, for all complete paths $\rho'$ in $L_\rho$, $\rho'$ is $d\varepsilon$-differentially private. 
 \end{defn}
+
+\begin{prop}
+    A looping path $L_\rho$ is $d\varepsilon$-differentially private for $d>0$ if and only if for all complete paths $\rho'$ in $L_\rho$, $\rho'$ is $d\varepsilon$-differentially private. 
+\end{prop}
 
 \begin{defn}[Coupling strategies]
     A \textbf{coupling strategy} for a looping path $L_\rho$, where $\rho=q_0\to\ldots \to q_n$ is an assignment of shifts $\gamma_i, \gamma_i'$ for each transition in $\rho$ as a function of the input differences. 
@@ -766,7 +780,7 @@ Note that given a complete path $\rho'$ in a looping path $L_\rho$, a coupling s
 \subsection{Programs}
 
 \begin{defn}[Program]
-    Given a fixed set of program states $Q$, A [come up with a good name] program $P$ is a set of complete paths on $Q$ with the closure property that, for every complete path $\rho = q_0\to \ldots \to q_n$ in $P$, if, $q_i = q_j$ and $i\neq j$, then the complete path $\rho_k = q_0\to \ldots \to (q_i \to \ldots \to q_j)^k \to \ldots \to q_n\in P$ for all $k\in \NN$. 
+    Given a fixed set of program states $Q$, A [come up with a good name] program $P$ is a set of complete paths on $Q$ with the closure property that, for every complete path $\rho = q_0\to \ldots \to q_n$ in $P$, if, $q_i = q_j$ and $i\neq j$, then the complete path $\rho_k = q_0\to \ldots \to (q_i \to \ldots \to q_j)^k \to \ldots \to q_n\in P$ for all $k\in \NN$. Additionally, $P$ must satisfy the determinism and output distinction conditions of 
 \end{defn}
 
 \begin{defn}[Path Classes]
@@ -780,13 +794,11 @@ Note that given a complete path $\rho'$ in a looping path $L_\rho$, a coupling s
     For each path class of a program $P$, a coupling strategy [...]
 \end{defn}
 
-\begin{lemma}
-    If valid coupling + constraint holds, then program is differentially private. 
-\end{lemma}
+\begin{prop}
+    If valid coupling + constraint holds for every path class, then program is differentially private. 
+\end{prop}
 
 \subsection{DiPA}
-
-\subsubsection{Definition}
 
 \begin{defn}[DiPA]
     A DiPA $A$ is a tuple (...) [copy this def]
@@ -839,21 +851,47 @@ If all constraints are statisfied, then $A$ is private.
     If there does not exist a valid coupling strategy for a DiPA $A$ with finite cost, then $A$ is not differentially private. 
 \end{lemma}
 \begin{proof}
-    Consider a ``maximially'' satisfied coupling strategy $C=(\mathbf{\gamma}, \mathbf{\gamma}')$; i.e. there is no other coupling strategy $C'$ for $A$ such that $C'$ satisfies more constraints than $C$. By lemma [tbd], we allowed to only consider coupling strategies $C=(\gamma, \gamma')$ such that, for all $i\in AT(A)$, $\gamma_i \in \{-1, 0, 1\}$. 
+    Consider a ``maximially'' satisfied coupling strategy $C=(\mathbf{\gamma}, \mathbf{\gamma}')$; i.e. there is no other coupling strategy $C'$ for $A$ such that $C'$ satisfies more constraints than $C$. By lemma [tbd], we are allowed to only consider coupling strategies $C=(\gamma, \gamma')$ such that, for all $i\in AT(A)$, $\gamma_i \in \{-1, 0, 1\}$. 
 
     Fix some looping path $\rho$ in $A$ such that at least one constraint is not satisfied by $C$ as applied to $\rho$.
 
-    By assumption, at least one constraint is unsatisfied by $C$.
+    By assumption, at least one constraint is unsatisfied by $C$. We will show that in every case, $A$ must contain at least one of a leaking cycle, leaking pair, disclosing cycle, or privacy violating path. By theorem \ref{DiPACounterexamplesThm}, this is sufficient to show that $A$ is not $d\varepsilon$-differentially private for any $d>0$.
 
-    \textbf{Case 1: (1) is unsatisfied}
+    \textbf{Case 1: (1) is unsatisfied for $\gamma_i$}
 
-    \textbf{Case 2: (2) is unsatisfied}
+    \textbf{Case 2: (2) is unsatisfied for $\gamma_i$}
 
-    \textbf{Case 3: (3) is unsatisfied}
+    This case is exactly symmetric to case (1).
 
-    \textbf{Case 4: (4) is unsatisfied}
+    \textbf{Case 3: (3) is unsatisfied for $\gamma_i$}
+
+    First note that if $t_i$ is in a cycle, then that cycle will be a disclosing cycle because $t_i$ outputs $\texttt{insample}$. Thus, we will assume that $t_i$ is not in a cycle.
+
+    Because $C$ is maximal, setting $\gamma_i=0$ must violate at least one of constraints (1) or (2) for $\gamma_i$ or (1) for some $\gamma_l$ such that $at(l) = i$.
+
+    \textbf{Case 3a: Satisfying (3) for $\gamma_i$ would violate (1) for $\gamma_i$}
+
+    This means that $\gamma_{at(i)}<0$. 
+
+    \textbf{Case 3b: Satisfying (3) for $\gamma_i$ would violate (1) for $\gamma_i$}
+
+    This case is exactly symmetric to case (3a).
+
+    \textbf{Case 3c: Satisfying (3) for $\gamma_i$ would violate (1) for some $\gamma_l$ where $at(l) = i$}
+
+    Note that $t_i$ must be an assignment transition. Further, we know that $\gamma_l>0$ and $c_l = \lguard[\texttt{x}]$. 
     
+    Because $C$ is maximal, setting $\gamma_l=0$ would now violate either constraint (1) for some $\gamma_{l'}$ where $at(l') = l$ or constraint (5) for $\gamma_l$. Note that because $\gamma_l>0$, constraint (2) cannot be newly violated for some $\gamma_{l'}$ where $at(l') = l$.
+
+    If setting $\gamma_l = 0$ would violate constraint (1) for some $\gamma_{l'}$ where $at(l')=l$, then. 
+
+    \textbf{Case 4: (4) is unsatisfied for $\gamma_i'$}
+    
+    Because $C$ is maximal, setting $\gamma_i'=0$ must violate some other constraint. In particular, this must mean that constraint (6) is now violated. However, this would imply that $t_i$ is in a cycle, and so the cycle containing $t_i$ would be a disclosing cycle.
+
     \textbf{Case 5: (5) is unsatisfied for $t_i$:} Because $C$ is maximal, we know that if $\gamma_i = -\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}$ then another constraint must be violated. In particular, at least one of constraints (1), (2), or (3) must be violated for $\gamma_i$. 
+    
+    \textbf{Case 5a: Satisfying (5) for $t_i$ would violate (1)}
 
     If (1) is now violated, then either $t_i$ is an assignment transition or $c_i = \lguard[\texttt{x}]$ and $\gamma_{at(i)}<1$. If $t_i$ is an assignment transition, then the cycle containing $t_i$ has a transition with a non-$\texttt{true}$ guard ($t_i$) and an assignment transition, so it must be a leaking cycle. 
 
@@ -861,11 +899,31 @@ If all constraints are statisfied, then $A$ is private.
     
     Consider all assignment transitions in $\rho$ before $t_i$. Note that if any such assignment transition is in a cycle, then that cycle must be a leaking cycle since either the assignment transition is in the same cycle as $t_i$ or there must be some non-$\texttt{true}$ transition in the cycle because otherwise $t_i$ is unreachable. {\color{red} make sure to add a condition to programs so that this is bad}
 
-    So assume that all assignment transitions in $\rho$ before $t_i$ are not in a cycle. Then let $t_{at(j)}$ be the latest assignment transition before $t_i$ such that either $c_{at(j)} \neq \lguard[\texttt{x}]$ or $\gamma_{at(j)} = 1$ (including possibly $at(j)=at(i)$). Note that because $\rho$ is a complete path, such an $t_{at(j)}$ must exist. Then there must exist an $\texttt{AL}-$path from $t_{aj(j)}$ to $t_i$. 
+    So assume that all assignment transitions in $\rho$ before $t_i$ are not in a cycle. Then if $c_{at(i)} \neq \lguard[\texttt{x}]$, because $C$ is maximal, this must mean that $t_{at(i)}$ outputs $\texttt{insample}$. Note that the path from $t_{at(i)+1}$ to $t_i$ is an $\texttt{AL}$-path (since there are no assignment transitions on it) and $t_i$ is in an $\texttt{L}$-cycle since $t_i$ is in a cycle and $c_i = \lguard[\texttt{x}]$. 
+    Then the path from $t_{at(i)}$ (an assignment transition that outputs $\texttt{insample}$) to $t_i$ is a privacy violating path. 
+
+    If $c_{at(i)} = \lguard[\texttt{x}]$, then let $c_{at(j)}$ be the earliest assignment transition such that $c_{at(j)} = \lguard[\texttt{x}]$ and $\gamma_{at(j)} < 1$ and, for all assignment transitions $t_{at(k)}$ between $t_{at(j)}$ and $t_i$, $c_{at(k)} = \lguard[\texttt{x}]$ and $\gamma_{at(k)} < 1$. Note that such an $t_{at(j)}$ must exist. 
+
+    If $t_{at(j)} = t_{at(i)}$, then setting $\gamma_{at(i)} =1$ must violate either constraint (2) for some other $\gamma_l$ such that $at(l)=at(i)$, or constraint (3) for $\gamma_{at(i)}$. Without loss of generality, we will assume that $l\neq i$. If constraint (3) would be violated, then as before, there exists a privacy violating path from $t_{at(j)}$ to $t_i$. 
+    If constraint (2) would be violated for some $\gamma_l$ such that $at(l)=at(i)$, then either $t_l$ must output $\texttt{insample}$ or $t_l$ must be in a cycle. 
+    
+    Suppose that $i<l$; then that the path from $t_i$ to $t_l$ is both an $\texttt{AG}$-path and an $\texttt{AL}$-path (since there are no assignment transitions on it). Thus, if $t_l$ outputs $\texttt{insample}$, there exists a privacy violating path from $t_i$ to $t_l$ and if $t_l$ is in a cycle, then the cycle containing $t_i$ and the cycle containing $t_l$ together make up a leaking pair, since the cycle containing $t_l$ is a $\texttt{G}$-cycle by definition. 
+    Symmetrically, if $l>i$, then either the path from $t_l$ to $t_i$ is a privacy violating path or the cycle containing $t_l$ and the cycle containing $t_i$ make up a leaking pair.
+    
+    Otherwise, note that the path from $t_{at(j)}$ to $t_i$ is an $\texttt{AL}-$path. Since $C$ is maximal, we cannot set $\gamma_{at(k)}=1$ for $\gamma_{at(j)}$ or for any of the other assignment transitions $t_{at(k)}$ between $t_{at(j)}$ and $t_i$ without violating another constraint. In particular, either constraint (2) for some $\gamma_l$ such that $at(l) = at(j)$ or constraint (3) would be violated for $\gamma_{at(j)}$. 
+    If constraint (3) would be violated for $\gamma_{at(j)}$ then $t_{at(j)}$ outputs $\texttt{insample}$, so as before, there is a privacy violating path from $t_{at(j)}$ to $t_i$. Otherwise if constraint (2) would be violated for some $\gamma_l$ such that $at(l) = at(j)$, then as before, $\gamma_l$ must either output $\texttt{insample}$ or $t_l$ is in a cycle. 
+    Just like before, this means that there must be either a privacy violating path from $t_l$ to $t_i$ or the cycle containing $t_l$ and the cycle containing $t_i$ together make up a leaking pair. 
+
+    \textbf{Case 5b: Satisfying (5) for $t_i$ would violate (2)}
+
+    This case is exactly symmetric to case (5a).
+
+    \textbf{Case 5c: Satisfying (5) for $t_i$ would violate (3)}
+
+    If (3) would be violated, then $t_i$ must output $\texttt{insample}$. Then the cycle containing $t_i$ must be a disclosing cycle. 
     
     \textbf{Case 6: (6) is unsatisfied for $t_i$:} Because $C$ is maximal, we know that if $\gamma_i' = -\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}$ then another constraint must be violated for $\gamma_i'$. In particular, constraint (4) must be violated, since no other constraint involves $\gamma_i'$. 
-    Then $t_i$ is a transition in a cycle that outputs $\texttt{insample}'$, so $A$ has a disclosing cycle. By theorem \ref{DiPACounterexamplesThm}, $A$ is not differentially private. 
-
+    Then $t_i$ is a transition in a cycle that outputs $\texttt{insample}'$, so $A$ has a disclosing cycle.
 \end{proof}
 
 
