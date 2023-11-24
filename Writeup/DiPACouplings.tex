@@ -859,6 +859,8 @@ If all constraints are statisfied, then $A$ is private.
 
     \textbf{Case 1: (1) is unsatisfied for $\gamma_i$}
 
+    
+
     \textbf{Case 2: (2) is unsatisfied for $\gamma_i$}
 
     This case is exactly symmetric to case (1).
@@ -873,7 +875,7 @@ If all constraints are statisfied, then $A$ is private.
 
     This means that $\gamma_{at(i)}<0$. 
 
-    \textbf{Case 3b: Satisfying (3) for $\gamma_i$ would violate (1) for $\gamma_i$}
+    \textbf{Case 3b: Satisfying (3) for $\gamma_i$ would violate (2) for $\gamma_i$}
 
     This case is exactly symmetric to case (3a).
 
@@ -883,7 +885,18 @@ If all constraints are statisfied, then $A$ is private.
     
     Because $C$ is maximal, setting $\gamma_l=0$ would now violate either constraint (1) for some $\gamma_{l'}$ where $at(l') = l$ or constraint (5) for $\gamma_l$. Note that because $\gamma_l>0$, constraint (2) cannot be newly violated for some $\gamma_{l'}$ where $at(l') = l$.
 
-    If setting $\gamma_l = 0$ would violate constraint (1) for some $\gamma_{l'}$ where $at(l')=l$, then. 
+    If constraint (5) would be newly violated for $\gamma_l$, then $\gamma_l$ is in an $\texttt{L}$-cycle. Additionally, note that the path from $t_{i+1}$ to $t_l$ is an $\texttt{AL}$-path, so there is a privacy violating path from $t_i$ to $t_l$. 
+
+    Otherwise, if setting $\gamma_l = 0$ would violate constraint (1) for some $\gamma_{l'}$ where $at(l')=l$, let $t_{at(j)}$ be the latest assignment transition such that $c_{at(j)} = \lguard[\texttt{x}]$ and $\gamma_{at(j)}<1$ and, for all assignment transitions $t_{at(k)}$ between $t_{at(j)}$, $c_{at(k)} = \lguard[\texttt{x}]$ and $\gamma_{at(k)}<1$. 
+
+    If $at(j) = l$, then $l'$ is not an assignment transition. Then, setting $\gamma_{l'} = 0$ could only violate constraint (5). In this case, as before, there is a privacy violating path from $t_i$ to $t_l$. 
+
+    Otherwise, since $C$ is maximal, we cannot set $\gamma_{at(k)}=0$ for any $l<at(k)\leq at(j)$ without violating another constraint. In particular, there must be some $at(k)$ such that setting $\gamma_{at(k)} = 0$ would violate constraint (1) for some $\gamma_{k'}$ such that $at(k') = at(k)$. Note that there must be an \texttt{AL}-path from $t_i$ to $t_{k'}$. Then, as before, there must be a privacy violating path from $t_i$ to $t_{k'}$. 
+
+
+    \textbf{Case 3d: Satisfying (3) for $\gamma_i$ would violate (2) for some $\gamma_l$ where $at(l) = i$} 
+
+    This case is exactly symmetric to case (3c).
 
     \textbf{Case 4: (4) is unsatisfied for $\gamma_i'$}
     
@@ -910,8 +923,9 @@ If all constraints are statisfied, then $A$ is private.
     Suppose that $i<l$; then that the path from $t_i$ to $t_l$ is both an $\texttt{AG}$-path and an $\texttt{AL}$-path (since there are no assignment transitions on it). Thus, if $t_l$ outputs $\texttt{insample}$, there exists a privacy violating path from $t_i$ to $t_l$ and if $t_l$ is in a cycle, then the cycle containing $t_i$ and the cycle containing $t_l$ together make up a leaking pair, since the cycle containing $t_l$ is a $\texttt{G}$-cycle by definition. 
     Symmetrically, if $l>i$, then either the path from $t_l$ to $t_i$ is a privacy violating path or the cycle containing $t_l$ and the cycle containing $t_i$ make up a leaking pair.
     
-    Otherwise, note that the path from $t_{at(j)}$ to $t_i$ is an $\texttt{AL}-$path. Since $C$ is maximal, we cannot set $\gamma_{at(k)}=1$ for $\gamma_{at(j)}$ or for any of the other assignment transitions $t_{at(k)}$ between $t_{at(j)}$ and $t_i$ without violating another constraint. In particular, either constraint (2) for some $\gamma_l$ such that $at(l) = at(j)$ or constraint (3) would be violated for $\gamma_{at(j)}$. 
-    If constraint (3) would be violated for $\gamma_{at(j)}$ then $t_{at(j)}$ outputs $\texttt{insample}$, so as before, there is a privacy violating path from $t_{at(j)}$ to $t_i$. Otherwise if constraint (2) would be violated for some $\gamma_l$ such that $at(l) = at(j)$, then as before, $\gamma_l$ must either output $\texttt{insample}$ or $t_l$ is in a cycle. 
+    Otherwise, note that the path from $t_{at(j)}$ to $t_i$ is an $\texttt{AL}-$path. Since $C$ is maximal, we cannot set $\gamma_{at(k)}=1$ for $\gamma_{at(j)}$ or for any of the other assignment transitions $t_{at(k)}$ between $t_{at(j)}$ and $t_i$ without violating another constraint. 
+    In particular, there must be some $t_{at(k)}$ where $at(j)\leq at(k)<i$ such that setting $\gamma_{at(k)} = 1$ would mean that either constraint (2) for some $\gamma_l$ such that $at(l) = at(k)$ or constraint (3) would be violated for $\gamma_{at(k)}$. 
+    If constraint (3) would be violated for $\gamma_{at(k)}$ then $t_{at(k)}$ outputs $\texttt{insample}$, so as before, there is a privacy violating path from $t_{at(k)}$ to $t_i$. Otherwise if constraint (2) would be violated for some $\gamma_l$ such that $at(l) = at(k)$, then as before, $\gamma_l$ must either output $\texttt{insample}$ or $t_l$ is in a cycle. 
     Just like before, this means that there must be either a privacy violating path from $t_l$ to $t_i$ or the cycle containing $t_l$ and the cycle containing $t_i$ together make up a leaking pair. 
 
     \textbf{Case 5b: Satisfying (5) for $t_i$ would violate (2)}
@@ -979,426 +993,6 @@ If we have a differentially private program, we'd also like to optimize its priv
     Optimal coupling cost = ``true'' optimal privacy cost
 \end{conj}
 
-\noindent\hrulefill
-
-\section{TBD: Older Writing}
-\subsection{A Program Model}
-
-We start with a basic, ``straight-line'' program model. 
-
-\begin{defn}\label{SSADefn}
-    A simple segment automaton (SSA) $A(x)$ with initial value $x\in \RR$ is a tuple $(Q, \Sigma, C, \Gamma, q_{init}, X, P, \delta)$ where\begin{itemize}
-        \item $Q$ is a finite set of states
-        \item $\Sigma = \RR$ is the input alphabet
-        \item $C = \{\texttt{true}, \lguard, \gguard\}$ is a set of transition \textbf{guards}
-        \item $\Gamma$ is a finite output alphabet
-        \item $q_{init}\in Q$ is the starting state
-        \item $X = \{\texttt{x}, \texttt{insample}, \texttt{insample}'\}$ is a set of real-valued program variables
-        \item $P: Q\to \QQ\times \QQ^{\geq 0}\times \QQ\times  \QQ^{\geq 0}$ is a function that assigns a series of Laplace distribution parameters to each state for sampling
-        \item $\delta: (Q\times C)\to Q\times (\Gamma\cup\{\texttt{insample}, \texttt{insample}'\})$ is a (partial) transition function. 
-    \end{itemize}
-    Additionally, $\delta$ is restricted such that \begin{itemize}  
-        \item For every state $q\in Q$,  $\delta(q, c)$ can be defined for \textbf{at most one} $c\in C$. 
-        \item There are no cycles in the graph of $A$; i.e., for every path $\rho = q_{init} \to q_1\to\ldots\to q_n$ in $A$ starting from $q_{init}$, $q_{init}$ and $q_i$ are all pairwise distinct. 
-    \end{itemize}
-
-    Note in particular that $A(x)$ is parameterized by some initial real value $x$, stored in the variable $\texttt{x}$. Importantly, we will treat $x$ as a random variable drawn from some Laplace distribution.
-\end{defn}
-
-An SSA $A(x)$ runs as follows:
-\begin{itemize}
-    \item The variable $\texttt{x}$ has a stored real value, which is initialized to $x$. 
-    \item At \textbf{every} state $q\in Q$, $A$ will read in some real-valued input value $a$. Here, $a$ corresponds to the ``true'' value of a query function $q_i(X)$. Let $P(q) = (\mu, b, \mu', b')$. 
-    The variables $\texttt{insample}$ and $\texttt{insample}'$ are initialized such that $\texttt{insample} = a + \Lap(\mu, b)$ and $\texttt{insample}' = a + \Lap(\mu', b')$.
-    \item If $\delta(q, \texttt{true}) = (q', \sigma)$, then $A$ transitions to $q'$ and outputs $\sigma \in(\Gamma\cup\{\texttt{insample}, \texttt{insample}'\})$. Similarly if $\lguard$ (symmetrically, $\gguard$) and $\delta(q, \lguard) = (q', \sigma)$ (symmetrically, $\delta(q, \gguard) = (q', \sigma)$), then then $A$ transitions to $q'$ and outputs $\sigma \in(\Gamma\cup\{\texttt{insample}, \texttt{insample}'\})$.
-    \item If, at a state $q\in Q$, a guard $c$ is valid (e.g. $c=\lguard$ and $\lguard$) and $\delta(q, c)$ is not defined (including if $\delta(q, c)$ is not defined for any $c$), the automaton terminates.
-    \item If $q = q_{init}$, then $\texttt{x}$ is \textbf{assigned} so that $\texttt{x}\gets \texttt{insample}$ after the transition comparison.
-\end{itemize}
-
-Note that, without loss of generality, we can assume that $P(q) = (0, b, 0, b')$ by shifting the inputs appropriately. Thus, we will frequently abuse notation and write $P(q) = (b, b')$. 
-
-
-\begin{defn}
-    A path $\rho$ of an SSA $A(x)$ is a sequence of states $r_0\to r_1\to\ldots\to r_n$ such that for every $i\in\{0, 1,\ldots, n-1\}$, there exists some guard $c\in C$ such that $\delta(q_i, c) = (q_{i+1}, \sigma)$ for some output $\sigma$. 
-\end{defn}
-
-Given a path $\rho = r_0\to r_1\to \ldots \to r_n$ in $A$, we will notate the transition $r_i\to r_{i+1}$ with $\trans(r_i)$ and the guard (i.e. $\texttt{true}, \lguard$, or $\gguard$) of $\trans(r_i)$ as $\guard(r_i)$. 
-
-For technical reasons, whenever either $\texttt{insample}$ or $\texttt{insample}'$ are output by an SSA, we must define an interval $(a, b)$ that contains the output. Thus, when a transition outputs $\texttt{insample}$ or $\texttt{insample}'$, we say that $\sigma$ is of the form $(\texttt{insample}, c, d)$ or $(\texttt{insample}', c, d)$ for $c, d\in R_\infty$. 
-
-If such a tuple is output, it can be interpreted as $\texttt{insample}$ or $\texttt{insample}'$ being output with the outputted real value falling within the interval $(c, d)$. 
-
-Importantly, this allows us to define the \textbf{probability} of an SSA traversing a specified path with a specified output. 
-
-\begin{defn}
-    Let $A(x)$ be an SSA, $\rho = r_0\to r_1\to \ldots \to r_n$ be a path in $A$, and let $\sigma$ be a possible output of $A$. Additionally, let $\alpha \in \RR^*$ be a sequence of real-valued inputs. 
-
-    Then $\PP[x, \rho^{(\alpha, \sigma)}]$ is the probability of $A$ outputting $\sigma$ while traversing path $\rho$ with $\texttt{x} = x$ at the initial state and input sequence $\alpha$.
-    
-    In particular, we can define $\PP[x, \rho^{(\alpha, \sigma)}]$ inductively. Let $\delta(r_0, \guard(r_0))=(q, \sigma_0)$ and $P(r_0) = (\mu, b, \mu', b')$. If $\sigma_0 \in \{\texttt{insample}, \texttt{insample}'\}$, then let $\sigma_0 = (\texttt{insample}, c, d)$ or $\sigma_0 = (\texttt{insample}', c', d')$ as appropriate. 
-
-    Additionally, let $(u, v), (u', v')\in \RR_{\infty}$ be defined as follows:
-    \begin{align*}
-        (u, v) &= \begin{cases}
-        (-\infty, \infty) & \guard(r_0)=\texttt{true}\land \sigma_0 \neq \texttt{insample}\\
-        (c, d) &\guard(r_0)=\texttt{true}\land \sigma_0 = \texttt{insample}\\
-        (-\infty, x) & \guard(r_0)=\lguard\land \sigma_0 \neq \texttt{insample}\\
-        (c, \min(x, d)) &\guard(r_0)=\lguard\land \sigma_0 = \texttt{insample}\\
-        (x, \infty) & \guard(r_0)=\gguard\land \sigma_0 \neq \texttt{insample}\\
-        (\max(x, c), d) &\guard(r_0)=\gguard\land \sigma_0 = \texttt{insample}\\
-    \end{cases}\\
-    (u, v)& = (c', d')\end{align*}
-    
-    Then \[
-        \PP[x, \rho^{(\alpha, \sigma)}] = \begin{cases}
-            1 & |\rho| = 0\\
-            \int_u^v \Lap_{\mu+a, b}(z)dz\PP[x, tail(\rho^{(\alpha, \sigma)})]& \sigma_0 \neq \texttt{insample}' \land r_0 \neq q_{init}\\
-            \int_{u'}^{v'}\Lap_{\mu'+a, b'}(z')dz'\int_u^v \Lap_{\mu+a, b}(z)dz\PP[x, tail(\rho^{(\alpha, \sigma)})]& \sigma_0 = \texttt{insample}' \land r_0 \neq q_{init}\\
-            \int_u^v \Lap_{\mu+a, b}(z)\PP[z, tail(\rho^{(\alpha, \sigma)})]dz& \sigma_0 \neq \texttt{insample}' \land r_0 = q_{init}\\
-            \int_{u'}^{v'}\Lap_{\mu'+a, b'}(z')dz'\int_u^v \Lap_{\mu+a, b}(z)\PP[z, tail(\rho^{(\alpha, \sigma)})]dz& \sigma_0 = \texttt{insample}' \land r_0 = q_{init}
-        \end{cases}
-    \] 
-    where $\Lap_{\mu, b}(x)$ is the PDF of a Laplace distribution with mean $\mu$ and spread parameter $b$ and $tail(\rho) = r_1\to\ldots\to r_n$.
-\end{defn}
-
-We now work towards defining what it means for an SSA to be differentially private. Recall that $\alpha$ is, in reality, a sequence of \textbf{functions} of some underlying dataset. This means that adjacency in this context is defined as follows:
-
-\begin{defn}
-    Two input sequences $\alpha, \alpha'$ of length $n$ are $\Delta$-adjacent if, for all $i\in [n]$, $|\alpha_i-\alpha'_i|\leq \Delta$. 
-
-    Similarly, two paths $\rho^{(\alpha, \sigma)}$ and $\rho^{(\alpha', \sigma)}$ are $\Delta$-adjacent if $\alpha$ and $\alpha'$ are adjacent. 
-
-    If $\Delta$ is not specified, we assume that $\Delta = 1$. 
-\end{defn}
-
-We can now define what it means for SSAs to be \textbf{differentially private}.
-
-\begin{defn}
-    An SSA $A(x)$ with initial value $x$ is $d\varepsilon$-differentially private if there exists some $d>0$ such that $\forall \varepsilon> 0$, for all paths $\rho$, possible outputs $\sigma$, and adjacent input sequences $\alpha\sim \alpha'$, $\PP[x, \rho^{(\alpha, \sigma)}]\leq e^{d\varepsilon}\PP[x, \rho^{(\alpha', \sigma)}]$. 
-
-    Recall that $x$ is treated as a random variable drawn from a Laplace distribution. 
-\end{defn}
-
-Note that we slightly redefine $\varepsilon$-differential privacy as $d\varepsilon$-differential privacy, treating $\varepsilon$ as a universal scaling parameter that can be fine-tuned by users for their own purposes. 
-In particular, we argue that this definition is functionally equivalent\footnote{\cite{chadhaLinearTimeDecidability2021} notes that it is not entirely clear how this differs from standard differential privacy, but that the known decidability result does not apply here - {\color{red} maybe something to investigate}}, since if we target $\varepsilon^*$-differential privacy, we can always take $\varepsilon = \frac{\varepsilon^*}{d}$.
-
-\subsection{Coupling Strategies}
-
-For an SSA $A(x)$ as defined above, there are a finite set of \textbf{strategies}, using approximate liftings, that we can use to show that $A(x)$ is $d\varepsilon$-differentially private. 
-
-
-These \textbf{coupling strategies} are comprised of a series of liftings that, when combined together, will prove that $A$ is private. 
-
-As a preliminary step, we fix $\varepsilon>0$ as a generic privacy scale parameter, as described previously. 
-
-\subsubsection{A Discrete Set of Coupling Strategies}
-
-First, fix some possible output $\sigma$ of $A$. Note that this implicitly also determines some path $\rho$ in $A$, since SSAs have no branching. Fix two adjacent datasets $X\sim X'$; this also determines two adjacent input sequences $\alpha, \alpha'$. We will consider the adjacent paths $\rho^{(\alpha, \sigma)}$ and $\rho^{(\alpha', \sigma)}$
-
-For this path, we are aiming to construct the lifting $\rho(X)\{(a, b): a=o \implies b=o\}^{\#d\varepsilon}\rho(X')$. 
-
-In particular, because SSAs have no branching, we must only ensure that all transitions in $\rho$ are taken and, if a real-value $r$ is output, that $A(X)$ outputting $r$ implies $A(X')$ outputting $r$ as well. 
-
-We claim that, in all cases, we can select one of three \textbf{coupling strategies} that will allow us to construct the larger lifting for the entire segment. 
-
-We will first set up some preliminary notation. Let $\rho = r_0\to r_1\to\ldots r_n$ where $r_0 = q_{init}$ and let $\sigma = \sigma_1\sigma_2\cdots\sigma_n$. 
-
-For all states $r_i$, let $P(r_i) = (\frac{1}{d_i\varepsilon}, \frac{1}{d'_i\varepsilon})$ and let $z_i\sim \Lap(\frac{1}{d_i\varepsilon}), z'_i\sim \Lap(\frac{1}{d'_i\varepsilon})$ be the noises added to the input for $\texttt{insample}$ and $\texttt{insample}'$ at each state, respectively. Additionally, suppose that $\texttt{x} = x_0\sim \Lap(\mu_x, \frac{1}{d_x\varepsilon})$ initially.
-
-Similarly, let $\texttt{in}_i$ for $i \in \{0,\ldots, n\}$ represent the input value read at each state $r_i$ and let $x$ be the value of the stored variable of $A$ after $q_0$. Note that $\texttt{insample}_i = \texttt{in}_i + z_i$ by definition.
-
-For all of these variables $v$, let $v\brangle{1}$ represent its value in a run of $A(X)$, and let $v\brangle{2}$ represent its value in a run of $A(X')$. For example, this means that $\texttt{in}_i \brangle{1}= \alpha_i$ and $\texttt{in}_i\brangle{2} = \alpha'_i$. 
-In particular, we will overload notation and use $\sigma\brangle{k}$ to represent the random variable corresponding to the output of run $k$\footnote{As distinguished from the fixed output $\sigma$ from before}.
-
-
-We call the three coupling strategies we can apply $S^L, S^G$, and $S^N$. 
-
-\textbf{Coupling Strategies 1 and 2}: $S^L$ and $S^G$. 
-
-Suppose that $\trans(r_0)$ does not output $\texttt{insample}$. If it does, then we cannot use $S^L$, and must use $S^N$.
-
-Create the lifting $z_0\brangle{1} (=)^{\#2d_0\varepsilon} z_0\brangle{2} + \texttt{in}_0\brangle{2}- \texttt{in}_0\brangle{1} - 1$. 
-Note that since $\texttt{insample}_0$ gets assigned into $\texttt{x}$ and $\texttt{insample}_0 = \texttt{in}_0 + z_0$, this is equivalent to constructing the lifting $x\brangle{1} + 1 (=)^{\#2d_0\varepsilon}x\brangle{2}$. 
-
-Recall that $|\texttt{in}_0\brangle{1}-\texttt{in}_0\brangle{2}|\leq 1$ since the input sequences $\alpha, \alpha'$ are (1-)adjacent; this is why the lifting has a cost of $2d_0\varepsilon$. 
-
-We must ensure that the initial transition guard $\guard(r_0)$ is satisfied. This is a unique situation because this guard is dependent on the \textit{initial} value of $\texttt{x} = x_0$; all later guards will depend on the value that $\texttt{x}$ takes \textit{after} this transition. 
-
-If $\guard(r_0) = \texttt{true}$ this is trivially satisfied. Otherwise, if $\guard(r_0) = \lguard$, then if we construct $x_0\brangle{1}+1(=)^{\#d_x\varepsilon}x_0\brangle{2}$, we have that $\texttt{insample}_0\brangle{1} < x_0\brangle{1}+1\implies \texttt{insample}_0\brangle{2}-1<x_0\brangle{2}-1$. 
-
-Similarly, if $\guard(r_0) = \gguard$, then if we construct $x_0\brangle{1}(=)^{\#0}x_0\brangle{2}$, we have that $\texttt{insample}_0\brangle{1} \geq x_0\brangle{1}\implies \texttt{insample}_0\brangle{2} \geq x_0\brangle{2}$.
-
-Although we can freely couple $x_0\brangle{1}$ and $x_0\brangle{2}$ together in this case, we will see that with more complicated families of automata, there may be additional restrictions on $x_0$ that constrain our ability to do so in the future. 
-
-We now consider all transitions after the initial transition. Fix some $i\in\{1, \ldots, n-1\}$. 
-
-If $\trans(r_i)$ outputs $\texttt{insample}$, then construct the lifting $z_i\brangle{1} (=)^{\#d_i}z_i\brangle{2} + \texttt{in}_i\brangle{2}-\texttt{in}_0\brangle{1}$. This is equivalent to constructing the lifting $\texttt{insample}\brangle{1} (=)^{\#d_i}\texttt{insample}\brangle{2}$.
-
-Similarly, if $\trans(r_i)$ outputs $\texttt{insample}'$, then construct the lifting \\$\texttt{insample}'\brangle{1} (=)^{\#(d'_i, 0)} \texttt{insample}'\brangle{2}$.
-
-
-Otherwise if $\guard(r_i) = \lguard$, construct the lifting $z_i\brangle{1} (=)^{\#(0, 0)}z_i\brangle{2}$. If $\trans(r_i)$ doesn't output $\texttt{insample}$ and $\guard(r_i) = \gguard$, construct the lifting $z_i\brangle{1} + 2 (=)^{\#(2\epsilon_i, 0)}z_i\brangle{2}$. 
-
-Because every transition must have an output, we can construct our final lifting by creating liftings for each character of the output; i.e. creating the liftings $\sigma_i\brangle{1}\{(a, b): o = a\implies o=b\}^{\#d_i}\sigma_i\brangle{2}$ for all $i$. 
-
-We claim that if $\sigma_i \in \Gamma$ and $\guard(a_i) \in \{\lguard, \texttt{true}\}$, we can construct the lifting $\sigma_i\brangle{1}\{(a, b): a = \sigma_i \implies b = \sigma_i\}^{\#0}\sigma_i\brangle{2}$. 
-
-We demonstrate why this holds for $\guard(a_i) = \lguard$: \begin{align*}\sigma_i\brangle{1} = \sigma_i&\implies A(X)\text{ takes }\trans(a_i)\\
-&\implies \texttt{in}_i\langle 1 \rangle + z_i\langle 1 \rangle < x\langle 1 \rangle\\
-&\implies\texttt{in}_i\langle 1 \rangle +1 + z_i\langle 2 \rangle < x\langle 2 \rangle\\
-&\implies\texttt{in}_i\langle 2 \rangle + z_i\langle 2 \rangle < x\langle 2 \rangle\\
-&\implies \mathcal{A}(X')\text{ takes }\trans(a_i)\\
-&\implies \sigma_i\brangle{2} = \sigma_i
-\end{align*}
-
-When $\sigma_i = \texttt{insample}$ or $\sigma_i = \texttt{insample}'$, a similar analysis holds, with the additional caveat that $\texttt{insample}\brangle{1} = \texttt{insample}\brangle{2}$ and $\texttt{insample}'\brangle{1} = \texttt{insample}'\brangle{2}$ hold, as guaranteed by a previous lifting. 
-
-Similarly, if $\sigma_i \in \Gamma$ and $\guard(r_i) = \gguard$, then we can construct the lifting $\sigma_i\brangle{1}\{(a, b): a = \sigma_i \implies b = \sigma_i\}^{\#2d_i}\sigma_i\brangle{2}$.
-
-However, if $\sigma_i = \texttt{insample}$ and $\guard(r_i) = \gguard$, the only lifting we can construct is $\sigma_i\brangle{1}\{(a, b): a = \sigma_i \implies b = \sigma_i\}^{\#\infty}\sigma_i\brangle{2}$. If this is the case, we say $r_i$ is \textit{faulty} (in the context of $S^L$).
-
-Intuitively, with some overhead initial privacy cost, we assign 0 cost to every transition with guard $\lguard$ and twice the standard cost to every transition with guard $\gguard$, which is why we call this strategy $S^L$ (for ``less than'').
-
-Indeed, we have the following transition cost function for $i\in\{1, \ldots, n-1\}$:
-\[
-    c^L(t_i) = \begin{cases}
-        0 & \sigma_i \in \Gamma \land \guard(t_i)\neq \gguard\\
-        d_i & \sigma_i = \texttt{insample}\land \guard(t_i)\neq \gguard\\
-        d'_i & \sigma_i = \texttt{insample}'\land \guard(t_i)\neq \gguard\\
-        2d_i & \sigma_i \in \Gamma \land \guard(t_i) =\gguard\\
-        \infty & \sigma_i = \texttt{insample} \land \guard(t_i) =\gguard\\
-        2d_i +d'_i& \sigma_i = \texttt{insample}' \land \guard(t_i) =\gguard
-    \end{cases}    
-\] 
-
-By sequential composition of liftings, we have $\rho_\sigma(X)\{(a, b): a = \sigma_k \implies b = \sigma_k\}^{\#d_L\varepsilon}\rho_\sigma(X')$, where the total privacy cost $d_L^\rho$ of $S^L$ on path $\rho$ is \[
-	d_L^\rho=2d_0+ \sum_{i\in\{1, \ldots, n-1\}}c^L(t_i)
-\]
-
-Note that for an SSA, $d_L < \infty$ if and only if no transitions in $d_L$ are faulty. 
-
-The construction and cost of $S^G$ is exactly symmetric. 
-
-\textbf{Coupling Strategy 3:} $S^N$.
-
-As mentioned, there are occasional restrictions on when $S^L$ and $S^G$ can be used to prove the privacy of a segment. In particular, if $\trans(r_0)$ outputs $\texttt{insample}$, or if both a $\lguard$ and a $\gguard$ transition output $\texttt{insample}$, then neither $S^G$ nor $S^L$ are valid. For this scenario, we define the coupling strategy $S^N$ as follows. 
-
-Fix some $i\in\{0, \ldots, n-1\}$. 
-
-For all states $r_i$, construct the lifting $z_i\brangle{1} (=)^{\#(d_i\varepsilon, 0)}z_i\brangle{2}+ \texttt{in}_i\brangle{2}- \texttt{in}_i\brangle{1}$. This is equivalent to constructing the lifting $\texttt{insample}\brangle{1} (=)^{\#d_i\varepsilon}\texttt{insample}\brangle{2}$. For $i=0$, this specifically also is equivalent to constructing the lifting $x\brangle{1} (=)^{\#d_0\varepsilon}x\brangle{2}$
-
-Again, if $\trans(r_i)$ outputs $\texttt{insample}'$, then construct the lifting \\$\texttt{insample}'\brangle{1} (=)^{\#(d'_i, 0)} \texttt{insample}'\brangle{2}$.
-
-As before, we must ensure that the initial transition guard $\guard(r_0)$ is satisfied.
-
-We claim that $x_0\brangle{1}(=)^{\#0}x_0\brangle{2}$, which is sufficient to show that $\guard(r_0)$ is satisfied in $A(X)\implies \guard(r_0)$ is satisfied in $A(X')$.
-
-We claim that if $\sigma_i \in \Gamma\cup\{\texttt{insample}\}$, we can construct the lifting $\sigma_i\brangle{1}\{(a, b): a = \sigma_i \implies b = \sigma_i\}^{\#d_i\varepsilon}\sigma_i\brangle{2}$. 
-
-Otherwise, if $\sigma_i = \texttt{insample}'$, then we can construct the lifting $\sigma_i\brangle{1}\{(a, b): a = \sigma_i \implies b = \sigma_i\}^{\#(d_i+d'_i)\varepsilon}\sigma_i\brangle{2}$
-
-This gives us the following transition cost function for $i\in [n-1]$:
-\[
-    c^N(t_i) =\begin{cases}
-        d_i & \sigma_i \neq \texttt{insample}'\\
-        d_i +d'_i& \sigma_i = \texttt{insample}'
-    \end{cases}    
-\] 
-
-
-Thus by sequential composition of liftings, we have $\rho_\sigma(X)\{(a, b): a = \sigma_k \implies b = \sigma_k\}^{\#d_N\varepsilon}\rho_\sigma(X')$, where the total privacy cost $d_N^\rho$ of $S^N$ on path $\rho$ is \[d_N^\rho= \sum_{i\in [n-1]} c^N(t_i).\]
-
-$S^N$ (the ``null'' coupling strategy) assigns each transition cost proportional to the spread parameter of the Laplace distribution being sampled from at each transition. With $S^N$, we gain flexibility in outputting $\texttt{insample}$ at the cost of every transition being ``costly''.
-
-\subsubsection{Privacy}
-
-\begin{defn}
-    The coupling costs $d_N, d_L, d_G$ for an SSA $A$ are defined as \begin{align*}
-        d_N &= \sup_{\rho} d_N^\rho\\
-        d_L &= \sup_{\rho} d_L^\rho\\
-        d_G &= \sup_{\rho} d_G^\rho
-    \end{align*}
-\end{defn}
-
-
-\begin{prop}
-    If an SSA $A(x)$ has coupling costs $d_N, d_L, d_G$, $A(x)$ is \\
-    $\min\{d_N, d_L, d_G\}\varepsilon$-differentially private. 
-\end{prop}
-
-\begin{proof}
-    For every output $\sigma$ and associated path $\rho$, we have shown that the lifting \[A(x)(X)\{(a, b): a = \sigma \implies b=\sigma\}^{\#\min\{d_N^{\rho}, d_L^{\rho}, d_G^{\rho}\}\varepsilon}A(x)(X')\] is valid for adjacent datasets $X\sim X'$. In particular, note that at least $d_N^\rho$ is always finite. 
-    
-    Because there are a finite set of paths through $A$, $d_N$, $d_L$, $d_G$ are always finite if for all $\rho$, $d_N^\rho$, $d_L^\rho$, and $d_G^\rho$ are finite, respectively.
-    
-    Thus, we can construct the lifting \[A(x)(X)\{(a, b): a = \sigma \implies b=\sigma\}^{\#\min\{d_N, d_L, d_G\}\varepsilon}A(x)(X'),\]
-    which gives us the finite cost $d = \min\{d_N, d_L, d_G\}$.
-    Applying theorem \ref{implicationcouplingthm} then completes the proof.
-\end{proof}
-
-It is worth noting that all SSAs are inherently $d\varepsilon$-differentially private for \textit{some} $d > 0$ because there are a finite number of paths through any SSA $A$.
-
-Thus, we now examine an extension of SSAs that allows for loops in which this is not necessarily the case. 
-
-\subsection{Loops}
-\begin{defn}\label{LSADefn}
-    A looping segment automaton (LSA) $A(x)$ with initial value $x\in \RR$ is a tuple $(Q, \Sigma, C, \Gamma, q_{init}, X, P, \delta)$ where $(Q, \Sigma, C, \Gamma, q_{init}, X, P, \delta)$ are defined exactly as in \ref{SSADefn}, \textbf{except} that $\delta$ has the following, changed set of restrictions: \begin{itemize}  
-        \item \textbf{Determinism:} For any state $q\in Q$, if $\delta(q,\texttt{true})$ is defined, then $\delta(q,\lguard)$ and $\delta(q,\gguard)$ are not defined. 
-
-        \item \textbf{Output Distinction:} For any state $q\in Q$, if $\delta(q, \gguard) = (q_1, o_1, b_1)$ and $\delta(q, \lguard) = (q_2, o_2, b_2)$, then $o_1\neq o_2$ and at least one of $o_1\in \Gamma$ and $o_2\in \Gamma$ is true.
-        \item \textbf{No Branching:} If $\delta(q, \lguard)$ and $\delta(q, \gguard)$ {\color{red}figure out exactly how to define this later}
-        \item Also $q_{init}$ can't be in a cycle. 
-    \end{itemize}
-
-    As with SSAs, $A(x)$ is parameterized by some initial real value $x$, stored in the variable $\texttt{x}$ and we will treat $x$ as a random variable drawn from some Laplace distribution.
-\end{defn}
-
-\begin{defn}
-    A cycle $C$ in an SSA $A$ is a \gcycle\ if there exists a transition $t$ in $C$ with guard $\guard(t) = \gguard$. Similarly, $C$ is an \lcycle\ if there exists a transition $t$ in $C$ with guard $\guard(t) = \lguard$.
-\end{defn}
-
-Note that a cycle can be both an \lcycle~and a \gcycle.\ Also, we will assume that all executions of an LSA $A$ terminate; this means that every cycle in $A$ \textit{must} be either an \lcycle~or a \gcycle.
-
-Paths, path probabilities, and the concept of $d\varepsilon$-differential privacy remain identical for LSAs as for SSAs. 
-
-Importantly, the same three coupling strategies for SSAs are still valid proof strategies for LSAs. 
-
-\begin{prop}\label{LSAcouplingsvalid}
-    For an LSA $A$, if at least one of $S^N, S^L$, or $S^G$ have finite coupling cost on $A$, then $A$ is $\min\{\varepsilon_N, \varepsilon_L, \varepsilon_G\}$-differentially private. 
-\end{prop}
-
-The proof of validity for coupling strategies on SSAs holds for LSAs as well.
-
-However, now that LSAs can \textit{fail} to be differentially private, it is worth exploring in exactly what scenarios LSAs will or will not be private, and what couplings have to say about them.
-
-We begin by identifying three graph-theoretic structures that mean that an LSA is not private. 
-
-\begin{defn}
-    A \textbf{leaking pair} in an LSA $A$ is a pair of cycles $C, C'$ in $A$ such that there exists a path from $C$ to $C'$, $C$ is an \lcycle, and $C'$ is a \gcycle(or vice versa). 
-\end{defn}
-
-\begin{defn}
-    A \textbf{disclosing cycle} in an LSA $A$ is a cycle $C$ in $A$ where a transition in $C$ outputs either $\texttt{insample}$ or $\texttt{insample}'$.
-\end{defn}
-
-\begin{defn}
-    A \textbf{privacy violating path} in an LSA $A$ is a path $\rho = q_0\to q_1\to\ldots\to q_n$ in $A$ such that one of the following conditions holds:\begin{itemize}
-        \item $q_0= q_{init}$, $\trans(q_0)$ outputs $\texttt{insample}$, and $q_n$ is in a \gcycle\ or an \lcycle.
-        \item $q_n$ is in a \gcycle (symmetrically, \lcycle), $\guard(q_0) =\lguard$ (symmetrically, $\gguard$), and $\trans(q_0)$ outputs $\texttt{insample}$.
-        \item $q_0$ is in a \gcycle (symmetrically, \lcycle), $\guard(q_n) =\lguard$ (symmetrically, $\gguard$), and $\trans(q_n)$ outputs $\texttt{insample}$.
-    \end{itemize}
-\end{defn}
-
-\begin{prop}\label{LSAnotwellformed}
-    If an LSA $A$ contains a leaking pair, a disclosing cycle, or privacy violating path, then $A$ is not $d\varepsilon$-differentially private for any $d>0$. 
-\end{prop}
-
-The proof can be found in~\cite{chadhaLinearTimeDecidability2021}.
-
-Perhaps surprisingly, we can thus show that if none of the coupling strategies have finite coupling cost for an LSA $A$, then $A$ is not $d\varepsilon$-differentially private. 
-
-\begin{lemma}
-    For an LSA $A$, $d_N < \infty$ if and only if there is no cycle in $A$. Further, if there exists an \lcycle~in $A$, then $d_G = \infty$ and if there exists a \gcycle~in $A$, then $d_L = \infty$. 
-\end{lemma}
-\begin{proof}
-    Follows immediately from the coupling strategies cost functions. 
-\end{proof}
-
-\begin{lemma}
-    For an LSA $A$, there exists a global bound $N_A\in \NN$ such that every path $\rho$ in $A$ has at most $N_A$ non-cycle transitions. 
-\end{lemma}
-\begin{proof}
-    Follows from the fact that $A$ has a finite number of states. 
-\end{proof}
-
-\begin{lemma}\label{LSAnocouplingsnotwellformed}
-    If $d_N =\infty, d_L=\infty$, and $d_G=\infty$, then $A$ must contain a leaking pair, a disclosing cycle, or a privacy violating path. 
-\end{lemma}
-\begin{proof}
-    Because $d_N = \infty$, we know there must be some cycle $C$ in $A$. WLOG suppose that $C$ is an \lcycle. 
-    
-    If $C$ is also a \gcycle, then $C$ is a leaking pair with itself, so we can assume that $C$ is not also a \gcycle. Similarly, if $\trans(q_0)$ outputs $\texttt{insample}$, then there must be a privacy violating path from $q_0$ to $C$, so suppose $\trans(q_0)$ doesn't output $\texttt{insample}$. 
-
-    Suppose that there are no disclosing cycles and no leaking pairs in $A$. Because there are no leaking pairs, a \gcycle~cannot exist in $A$. Additionally, because there are no disclosing cycles and no \gcycle{}s, every cycle transition $t$ must have $c^L(t) = 0$. Because there are a bounded number of non-cycle transitions in $A$, $d_L$ can only be $\infty$ if there exists a faulty transition with respect to $S^L$ in $A$. 
-    Thus, there must be some transition with guard $\gguard$ that outputs $\texttt{insample}$; the path from or to this transition from $C$ must be a privacy violating path. 
-
-    Now suppose that there are no privacy violating paths and no leaking pairs in $A$. If there is no privacy violating path, then there can be no faulty transitions with respect to $S^L$ in $A$ by the reasoning above. Because of the bound on non-cycle transitions in a path in $A$, $d_L=\infty$ only if there exists some cycle transition $t_i$ in $A$ with non-zero cost. 
-    In particular, because there are no leaking pairs, every cycle in $A$ only has transitions with guard $\lguard$. In order for such a transition $t_i$ to have cost $c^L(t_i) > 0$, $t_i$ must output either $\texttt{insample}$ or $\texttt{insample}'$, creating a disclosing cycle.
-
-    Finally, suppose that there are no privacy violating paths and no disclosing cycles in $A$. As before, there can be no faulty transitions with respect to $S^L$ in $A$ and every cycle transition with guard $\lguard$ or $\texttt{true}$ must have cost 0. Again because of the bound on non-cycle transitions in a path in $A$, this implies that there must be some cycle transition in $A$ with guard $\gguard$, creating a \gcycle.
-\end{proof}
-
-\begin{thm}
-    An LSA $A$ is $d\varepsilon$-differentially private if and only if $\min\{d_N, d_L, d_G\}<\infty$.
-\end{thm}
-\begin{proof}
-    This follows directly from proposition \ref{LSAcouplingsvalid}, proposition \ref{LSAnotwellformed}, and lemma \ref{LSAnocouplingsnotwellformed}.
-\end{proof}
-
-\subsection{Branching}
-
-\begin{defn}
-    A segment automaton (SA) $A(x)$ with initial value $x\in \RR$ is a tuple $(Q, \Sigma, C, \Gamma, q_{init}, X, P, \delta)$ where $(Q, \Sigma, C, \Gamma, q_{init}, X, P, \delta)$ are defined exactly as in \ref{SSADefn} and \ref{LSADefn}, except that $\delta$ has the following set of restrictions: \begin{itemize}  
-        \item \textbf{Determinism:} For any state $q\in Q$, if $\delta(q,\texttt{true})$ is defined, then $\delta(q,\lguard)$ and $\delta(q,\gguard)$ are not defined. 
-
-        \item \textbf{Output Distinction:} For any state $q\in Q$, if $\delta(q, \gguard) = (q_1, o_1, b_1)$ and $\delta(q, \lguard) = (q_2, o_2, b_2)$, then $o_1\neq o_2$ and at least one of $o_1\in \Gamma$ and $o_2\in \Gamma$ is true.
-        \item $q_{init}$ is not in a cycle. 
-    \end{itemize}
-
-    As before, $A(x)$ is parameterized by some initial real value $x$, stored in the variable $\texttt{x}$ and we will treat $x$ as a random variable drawn from some Laplace distribution.
-\end{defn}
-
-Once branching gets added into the program model, a single coupling strategy no longer works for the entire automaton; instead, each distinct branch of the automaton will require a possibly different coupling strategy. 
-
-\begin{defn}
-    Consider a path $\rho$ in an SA $A$. Let $acyclic(\rho)$ be a function that given a path $\rho$, removes all cycles in $\rho$; i.e. if $\rho = q_0\to \ldots\to q_n$, $acyclic(\rho) = q_{x_0}\to \ldots \to q_{x_k}$, where $\{x_i\}_{i=0}^k$ is the longest possible subsequence of $[n]$ such that $i\neq j\implies q_{x_i}\neq q_{x_j}$. 
-    
-    Let $\equiv_b$ be an equivalence relation between paths of $A$ where $\rho\equiv_b\rho'$ iff $acyclic(\rho) = acyclic(\rho')$. Then $branches(A)$ is the set of equivalence classes of $\equiv_b$. 
-\end{defn}
-
-Note that there are a finite number of branches for every segment automaton. We aim to assign one coupling strategy to each \textbf{branch}. In particular, note that each branch taken in isolation is itself an LSA, so that every segment automaton can be viewed as a combined set of parallel and overlapping looping segment automata. 
-
-As before, we can define the cost of each branch under each coupling stategy.
-
-\begin{defn}
-    Let $A(x)$ be a segment automaton. For a branch $B\in branches(A)$ of $A$, the coupling costs of $S^N, S^L$, and $S^G$ are, respectively,
-    \begin{align*}
-        d_N^{(B)} &= \sup_{\rho\in B} d_N^\rho\\
-        d_L^{(B)} &= \sup_{\rho\in B} d_L^\rho\\
-        d_G^{(B)} &= \sup_{\rho\in B} d_G^\rho
-    \end{align*}
-\end{defn}
-
-
-\begin{prop}
-    Consider an SA $A(x)$. If for all branches $B\in branches(A)$ there exists a coupling strategy $S_X^{(B)}$ with finite coupling cost $d_X^{(B)} <\infty$, then $A(x)$ is $d\varepsilon$-differentially private, where \[
-        d = \max_{B\in branches(A)} d_X^{(B)}   
-    \]
-\end{prop}
-\begin{proof}
-    For every output $\sigma$ and associated path $\rho_\sigma$, we have the lifting \[
-        A(x)(X)\{(a, b): a = \sigma \implies b=\sigma\}^{\#\min\{d_N^{(B)}, d_L^{(B)}, d_G^{(B)}\}\varepsilon}A(x)(X'),
-    \]
-    where $\rho_\sigma\in B\in branches(A)$. 
-
-    This means that for all outputs $\sigma$ and adjacent datasets $X\sim X'$,
-    \[\PP[A(X) = \sigma] \leq e^{d_X^{(B)}\varepsilon}\PP[A(X')=\sigma],\]
-    where again $\rho_\sigma \in B$ and $d_X^{(B)}=\min\{d_N^{(B)}, d_L^{(B)}, d_G^{(B)}\}$.
-
-    This means that for all outputs $\sigma$ and adjacent datasets $X\sim X'$,    
-    \[\PP[A(X) = \sigma] \leq e^{\max_{B\in branches(A)}\{d_X^{(B)}\}\varepsilon}\PP[A(X')=\sigma],\]
-    which completes the proof.
-\end{proof}
-
-For the exact same reason as LSAs, these coupling strategies indeed still completely characterize the privacy of SAs.
-
-\begin{prop}
-    An SA $A(x)$ is $d\varepsilon$-differentially private if and only if for all branches $B\in branches(A)$ there exists a coupling strategy with finite coupling cost $d_X^{(B)}$.
-\end{prop}
-
-\begin{proof}
-    Because each branch of a segment automaton is an LSA, this again follows directly from proposition \ref{LSAcouplingsvalid}, proposition \ref{LSAnotwellformed} (from \cite{chadhaLinearTimeDecidability2021} the same result holds for segment automata), and lemma \ref{LSAnocouplingsnotwellformed}.
-\end{proof}
 
 \section{DiPA}
 
