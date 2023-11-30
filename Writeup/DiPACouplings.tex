@@ -51,6 +51,7 @@
 \newtheorem{lemma}[thm]{Lemma}
 \newtheorem{prop}[thm]{Proposition}
 \newtheorem{cor}[thm]{Corollary}
+\newtheorem{obs}[thm]{Observation}
 \theoremstyle{definition}
 \newtheorem{defn}[thm]{Definition}
 \newtheorem{const}[thm]{Construction}
@@ -256,6 +257,8 @@ However, re-analyzing SVT using approximate liftings can be relatively simple.
 
 We begin by building up a program model for SVT-style algorithms. There are three major components of SVT: taking in a threshold value and adding Laplace noise to it, taking in input and adding Laplace noise to it, and comparing the noisy threshold to the noisy input. 
 
+{\color{red} TODO: add non-input transitions (still don't understand why they're useful) - very trivial since the guards of a non-input transition have to be $\texttt{true}$}
+
 \subsection{Individual Transitions}
 We will model programs as finite state automata, with each state of the automaton representing a possible program state. Under this paradigm, we begin with the simplest possible program: a single transition between two program states. 
 
@@ -281,31 +284,44 @@ In general, we will assume that at all states $q$, $x_q$ has been sampled from s
 
 \subsection{Privacy}
 
-\begin{defn}[Transition probabilities]
+\begin{obs}[Transition probabilities]
     Consider a single transition $t=(q, q', c, \sigma, \tau)$ from state $q\in Q$ to $q'\in Q$. Additionally, let $x_q\sim \Lap(\hat{\mu_q}, \frac{1}{\hat{d_q}\varepsilon})$ be the initial stored value of $\texttt{x}$ at $q$. 
 
     Let $\sigma_0$ be a \textit{potential} output of $t$. In particular, if $\sigma\in \{\texttt{insample}, \texttt{insample}'\}$, then let $\sigma_0 = (\texttt{insample}, a, b)$ or $\sigma_0 = (\texttt{insample}', a', b')$ as appropriate. Otherwise, $\sigma_0 = \sigma\in \Gamma$. 
     
-    Then let $(u, v), (u', v')\in \RR_{\infty}$ be defined as follows:
+    Then, given an input $\texttt{in}$ at $q$, the \textbf{probability} that $t$ is taken with output $\sigma_0$ is clearly \[
+        \PP[x_q, t, \texttt{in}, \sigma_0] = \begin{cases}
+            \PP[c\text{ is satisfied}] & \sigma_0 =\sigma \\
+            \PP[c\text{ is satisfied}\land \texttt{insample}\in(a, b)] & \sigma_0 = (\texttt{insample}, a, b)\\
+            \PP[\texttt{insample}'\in (a', b')]\PP[c\text{ is satisfied}]& \sigma_0 = (\texttt{insample}', a', b')
+        \end{cases}
+    \]
+    where $\Lap_{\mu, s}(x)$ is the PDF of a Laplace distribution with mean $\mu$ and spread parameter $s$.
+\end{obs}
+
+Note, in particular, that $c$ being satisfied and $\texttt{insample}\in (a, b)$ are not independent events.
+
+
+More precisely, if $(u, v), (u', v')\in \RR_{\infty}$ is defined as follows:
     \begin{align*}
         (u, v) &= \begin{cases}
-        (-\infty, \infty) & c=\texttt{true}\land \sigma_0 \neq (\texttt{insample}, a, b)\\
-        (a, b) &c=\texttt{true}\land \sigma_0 = (\texttt{insample}, a, b)\\
-        (-\infty, \texttt{x}_0) & a=\lguard\land \sigma_0 \neq (\texttt{insample}, a, b)\\
-        (a, \min(\texttt{x}_0, b)) &c=\lguard\land \sigma_0 = (\texttt{insample}, a, b)\\
-        (\texttt{x}_0, \infty) & c=\gguard\land \sigma_0 \neq (\texttt{insample}, a, b)\\
-        (\max(\texttt{x}_0, a),b) &c=\gguard\land \sigma_0 = (\texttt{insample}, a, b)\\
-    \end{cases}\\
-    (u', v')& = (a', b')\end{align*}
-
-    Then, given an input $\texttt{in}$ at $q$, the \textbf{probability} that $t$ is taken with output $\sigma_0$ is defined as \[
+            (-\infty, \infty) & c=\texttt{true}\land \sigma_0 \neq (\texttt{insample}, a, b)\\
+            (a, b) &c=\texttt{true}\land \sigma_0 = (\texttt{insample}, a, b)\\
+            (-\infty, \texttt{x}_0) & a=\lguard\land \sigma_0 \neq (\texttt{insample}, a, b)\\
+            (a, \min(\texttt{x}_0, b)) &c=\lguard\land \sigma_0 = (\texttt{insample}, a, b)\\
+            (\texttt{x}_0, \infty) & c=\gguard\land \sigma_0 \neq (\texttt{insample}, a, b)\\
+            (\max(\texttt{x}_0, a),b) &c=\gguard\land \sigma_0 = (\texttt{insample}, a, b)\\
+        \end{cases}\\
+        (u', v')& = (a', b'),
+    \end{align*}
+    then, given an input $\texttt{in}$ at $q$, the probability that $t$ is taken with output $\sigma_0$ can be computed to be \[
         \PP[x_q, t, \texttt{in}, \sigma_0] = \begin{cases}
             \int_u^v \Lap_{\texttt{in}, \frac{1}{d_q\varepsilon}}(z)dz & \sigma_0 \neq (\texttt{insample}', a', b') \\
             \int_{u'}^{v'}\Lap_{\texttt{in}, \frac{1}{d'_q\varepsilon}}(z')dz'\int_u^v \Lap_{\texttt{in}, \frac{1}{d_q\varepsilon}}(z)dz& \sigma_0 = (\texttt{insample}', a', b')
         \end{cases}
     \]
     where $\Lap_{\mu, s}(x)$ is the PDF of a Laplace distribution with mean $\mu$ and spread parameter $s$.
-\end{defn}
+
 
 
 Recall that $\texttt{in}$, in reality, represents a \textbf{function} of some underlying dataset. This means that `closeness' in this context is defined as follows:
@@ -372,13 +388,13 @@ Finally, create the lifting $z'\brangle{1} (=)^{\#(|-\texttt{in}\brangle{1}+\tex
 
 If $c=\lguard[\texttt{x}]$ and $\gamma_q\leq \gamma_x$, then \begin{align*}
     \texttt{insample}\brangle{1}<x_q\brangle{1}&\implies \texttt{in}\brangle{1}+z\brangle{1}<x_q\brangle{1}\\
-    &\implies \texttt{in}\brangle{1}+z\brangle{2}-\texttt{in}\brangle{1}+\texttt{in}\brangle{2}+\gamma_q<x_q\brangle{2}-\gamma_x\\
+    &\implies \texttt{in}\brangle{1}+z\brangle{2}-\texttt{in}\brangle{1}+\texttt{in}\brangle{2}-\gamma_q<x_q\brangle{2}-\gamma_x\\
     &\implies \texttt{insample}\brangle{2}<x_q\brangle{2}
 \end{align*}
 
 Similarly, if $c=\gguard[\texttt{x}]$ and $\gamma_q\geq \gamma_x$, then \begin{align*}
     \texttt{insample}\brangle{1}\geq x_q\brangle{1}&\implies \texttt{in}\brangle{1}+z\brangle{1}\geq x_q\brangle{1}\\
-    &\implies \texttt{in}\brangle{1}+z\brangle{2}-\texttt{in}\brangle{1}+\texttt{in}\brangle{2}+\gamma_q\geq x_q\brangle{2}-\gamma_x\\
+    &\implies \texttt{in}\brangle{1}+z\brangle{2}-\texttt{in}\brangle{1}+\texttt{in}\brangle{2}-\gamma_q\geq x_q\brangle{2}-\gamma_x\\
     &\implies \texttt{insample}\brangle{2}\geq x_q\brangle{2}
 \end{align*}
 
@@ -434,15 +450,15 @@ In particular, a valid coupling proof gives an upper bound on the privacy cost o
 
 Of course, in practice we would like to analyze the behaviour of programs with more than two program states.
 
-We start with \textit{paths} of program states. 
+We start with \textit{executions}, comprised of a sequence of transitions. 
 
-\begin{defn}[Program paths]
-    Consider some set of program states $Q$. A program \textbf{path} is a sequence of transitions $t_0, t_1, \ldots, t_{n-1}$ such that for all $i\in 0\ldots n-1$, $t_i = (q_i, q_{i+1}, c_i, \sigma_i, \tau_i)$ for some $c_i, \sigma_i, \tau_i$. We will often notate a path $\rho$ as $\rho = q_0\to q_1\to \ldots \to q_n$. 
+\begin{defn}[Program executions]
+    Consider some set of program states $Q$. A program \textbf{execution} is a sequence of transitions $t_0, t_1, \ldots, t_{n-1}$ such that for all $i\in 0\ldots n-1$, $t_i = (q_i, q_{i+1}, c_i, \sigma_i, \tau_i)$ for some $c_i, \sigma_i, \tau_i$. We will often notate an execution $\rho$ as $\rho = q_0\to q_1\to \ldots \to q_n$. 
     
-    Additionally, if $\tau_0 = \texttt{true}$ and $c_0 = \texttt{true}$ (i.e.\ the first transition in any path always assigns its noised input value into $\texttt{x}$), then $\rho$ is a \textbf{complete path}. We call this condition the \textbf{initialization} condition.
+    Additionally, if $\tau_0 = \texttt{true}$ and $c_0 = \texttt{true}$ (i.e.\ the first transition in any execution always assigns its noised input value into $\texttt{x}$), then $\rho$ is a \textbf{complete execution}. We call this condition the \textbf{initialization} condition.
 \end{defn}
-\begin{defn}[Taking a path]
-    Consider some complete path $\rho = q_0\to \ldots \to q_n$ and let $\texttt{x}_i$ for all $i\in 1\ldots n$ be the value of $\texttt{x}$ at each program state $q_i$. Note that we can safely ignore $\texttt{x}_0$ because of the initialization condition. As before, for a program state $q_i\in Q$ with noise parameters $P({q_i}) = (d_{q_i}, d_{q_i}')$, let $z_i\sim \Lap(0, \frac{1}{d_{q_i}\varepsilon})$ and $z_i'\sim\Lap(0, \frac{1}{d_{q_i}'\varepsilon})$. 
+\begin{defn}[Taking a execution]
+    Consider some complete execution $\rho = q_0\to \ldots \to q_n$ and let $\texttt{x}_i$ for all $i\in 1\ldots n$ be the value of $\texttt{x}$ at each program state $q_i$. Note that we can safely ignore $\texttt{x}_0$ because of the initialization condition. As before, for a program state $q_i\in Q$ with noise parameters $P({q_i}) = (d_{q_i}, d_{q_i}')$, let $z_i\sim \Lap(0, \frac{1}{d_{q_i}\varepsilon})$ and $z_i'\sim\Lap(0, \frac{1}{d_{q_i}'\varepsilon})$. 
     Further, given an input $\texttt{in}\in \RR^n$ and possible output $\sigma \in (\Gamma\cup\{(\texttt{insample}, a, b), (\texttt{insample}', a, b)\})^n$, let $\texttt{insample}_i = \texttt{in}_i+z_i$ and $\texttt{insample}_i' = \texttt{in}_i+z_i'$. $\texttt{x}$ will be updated with $\texttt{insample}$ at a transition $t_i$ if and only if $\tau_i = \texttt{true}$. In other words, $\texttt{x}_i = \begin{cases}
         \texttt{x}_{i-1} & \tau_{i-1} =\texttt{false}\\
         \texttt{insample}_{i-1} &\tau_{i-1}=\texttt{true}
@@ -453,16 +469,16 @@ We start with \textit{paths} of program states.
 
 \subsubsection{Privacy}
 
-We can naturally  extend the definition of probability on a single transition to an entire path recursively.
+We can naturally  extend the definition of probability on a single transition to an entire execution recursively.
 
 \begin{defn}
-    Given a path $\rho = q_0\to q_1\to \ldots \to q_n$, the \textbf{tail} of $\rho$ is defined as $tail(\rho) = q_1\to q_2 \to \ldots\to q_n$. 
+    Given a execution $\rho = q_0\to q_1\to \ldots \to q_n$, the \textbf{tail} of $\rho$ is defined as $tail(\rho) = q_1\to q_2 \to \ldots\to q_n$. 
 
-    We may additionally use the notation $\rho_{i:j}$ to represent the subpath $q_i\to q_{i+1}\to \ldots \to q_j$ of $\rho$. Using this notation, $tail(\rho) = \rho_{i:} = \rho_{i:n}$.
+    We may additionally use the notation $\rho_{i:j}$ to represent the subexecution $q_i\to q_{i+1}\to \ldots \to q_j$ of $\rho$. Using this notation, $tail(\rho) = \rho_{i:} = \rho_{i:n}$.
 \end{defn}
 
-\begin{defn}[Path probabilities]
-    Consider a path $\rho = q_0\to q_1\to \ldots \to q_n$ of length $n$. Let $t_0=(q_0, q_1, c_0, \sigma_0, \tau_0)$ between states $q$ and $q'$. Additionally, let $\texttt{x}_0$ be the initial value of $\texttt{x}$ at $q_0$. 
+\begin{defn}[execution probabilities]
+    Consider a execution $\rho = q_0\to q_1\to \ldots \to q_n$ of length $n$. Let $t_0=(q_0, q_1, c_0, \sigma_0, \tau_0)$ between states $q$ and $q'$. Additionally, let $\texttt{x}_0$ be the initial value of $\texttt{x}$ at $q_0$. 
     
     If $\sigma_0 \in \{\texttt{insample}, \texttt{insample}'\}$, then let $\sigma_0 = (\texttt{insample}, a, b)$ or $\sigma_0 = (\texttt{insample}', a', b')$ as appropriate. 
 
@@ -490,7 +506,7 @@ We can naturally  extend the definition of probability on a single transition to
     where $\Lap_{\mu, s}(x)$ is the PDF of a Laplace distribution with mean $\mu$ and spread parameter $s$.
 \end{defn}
 
-For a complete path $\rho$, note that the initial value of $\texttt{x}$ is irrelevant, so we will shorthand $\PP[\texttt{x}_0, \rho, \texttt{in}, \sigma]$ to $\PP[\rho, \texttt{in}, \sigma]$.
+For a complete execution $\rho$, note that the initial value of $\texttt{x}$ is irrelevant, so we will shorthand $\PP[\texttt{x}_0, \rho, \texttt{in}, \sigma]$ to $\PP[\rho, \texttt{in}, \sigma]$.
 
 Additionally, because we now read in a \textit{sequence} of real-valued inputs, we need to slightly modify our definition of adjacency.
 
@@ -502,21 +518,21 @@ Additionally, because we now read in a \textit{sequence} of real-valued inputs, 
 
 Thus, we get the following definition of privacy:
 
-\begin{defn}[$d\varepsilon$-differential privacy for a path]
-    A complete path $\rho$ of length $n$ is $d\varepsilon$-differentially private for some $d>0$ if $\forall \varepsilon>0$, for all adjacent input sequences $\alpha\sim \beta$ of length $n$ and all possible output sequences $\sigma$ of length $n$, $\PP[\rho, \alpha, \sigma]\leq e^{d\varepsilon}\PP[\rho, \beta, \sigma]$.
+\begin{defn}[$d\varepsilon$-differential privacy for a execution]
+    A complete execution $\rho$ of length $n$ is $d\varepsilon$-differentially private for some $d>0$ if $\forall \varepsilon>0$, for all adjacent input sequences $\alpha\sim \beta$ of length $n$ and all possible output sequences $\sigma$ of length $n$, $\PP[\rho, \alpha, \sigma]\leq e^{d\varepsilon}\PP[\rho, \beta, \sigma]$.
 \end{defn}
 
 \subsubsection{Concatenating couplings}
 
 Let $\rho[\texttt{in}]$ be a random variable representing the output of $\rho$ given input sequence $\texttt{in}$. 
 
-In order to show that a program path $\rho$ is differentially private, for all adjacent inputs $\alpha\sim\beta$ and all possible outputs $\sigma$, we want to create the coupling $\rho[\alpha]\{(a, b): a=\sigma\implies b=\sigma\}^{\#d\varepsilon}\rho[\beta]$ for some $d>0$. 
+In order to show that a program execution $\rho$ is differentially private, for all adjacent inputs $\alpha\sim\beta$ and all possible outputs $\sigma$, we want to create the coupling $\rho[\alpha]\{(a, b): a=\sigma\implies b=\sigma\}^{\#d\varepsilon}\rho[\beta]$ for some $d>0$. 
 
 Ideally, we would like to simply create couplings for each individual transition in $\rho$ as before and compose them together to create this overall coupling. Indeed, this approach is almost sufficient; the constraints imposed upon shifts for a coupling for transition $t_i$ depend solely on the shift at the most recent \textbf{assignment transition} in $\rho$ (i.e. the most recent transition $t_j$ such that $\tau_j = \texttt{true}$). 
 The coupling shifts for \textit{non-assignment transitions} can thus never impact each other. 
 
 \begin{defn}[Assignment transitions]
-    Let $A_\rho = \{t_i=(q_i, q_{i+1}, c_i, \sigma_i, \tau_i): \tau_i = \texttt{true}\}$ be the set of \textbf{assignment transitions} in a path $\rho$. 
+    Let $A_\rho = \{t_i=(q_i, q_{i+1}, c_i, \sigma_i, \tau_i): \tau_i = \texttt{true}\}$ be the set of \textbf{assignment transitions} in a execution $\rho$. 
 
     For every transition $t_i$ in $\rho$, let $t_{at(i)}$ be the most recent assignment transition in $\rho$; i.e., $at(i) = \max\{j<i: t_j\in A_\rho\}$. If such a $j$ does not exist, we set $at(i)=-1$. 
 \end{defn}
@@ -525,10 +541,11 @@ In particular, note that for transition $t_i$, $\gamma_x = \gamma_{at(i)}$, wher
 
 Thus, for an individual transition $t_i$ of $\rho$. From proposition \ref{indivTransitionCouplingProp}, we have a family of valid coupling strategies $C_i(\gamma_{at(i)}, \gamma_i, \gamma_i')$. 
 
-We can merge these coupling strategies together to create a proof of privacy for the entire path: 
+We can merge these coupling strategies together to create a proof of privacy for the entire execution: 
 
 \begin{lemma}\label{multTransitionsCouplingProof}
-    Let $\rho = q_0\to \ldots \to q_n$ be a complete path of length $n$. Let $\texttt{in}\brangle{1}\sim \texttt{in}\brangle{2}$ be arbitrary adjacent input sequences of length $n$. Additionally, fix some potential output $\sigma$ of $\rho$ of length $n$ and let $\sigma\brangle{1}$, $\sigma\brangle{2}$ be random variables representing possible outputs of $\rho$ given inputs $\texttt{in}\brangle{1}$ and $\texttt{in}\brangle{2}$, respectively. Additionally, for all $q_i$, let $P(q_i) = (d_i, d_i')$.
+    Let $\rho = q_0\to \ldots \to q_n$ be a complete execution of length $n$. 
+    Let $\texttt{in}\brangle{1}\sim \texttt{in}\brangle{2}$ be arbitrary adjacent input sequences of length $n$. Additionally, fix some potential output $\sigma$ of $\rho$ of length $n$ and let $\sigma\brangle{1}$, $\sigma\brangle{2}$ be random variables representing possible outputs of $\rho$ given inputs $\texttt{in}\brangle{1}$ and $\texttt{in}\brangle{2}$, respectively. Additionally, for all $q_i$, let $P(q_i) = (d_i, d_i')$.
 
     Then $\forall \varepsilon>0$ and for all $\{\gamma_i, \gamma_i'\}_{i=0}^{n-1}$ that, for all $i$, satisfy the constraints \[
         \begin{cases}
@@ -569,13 +586,13 @@ We can merge these coupling strategies together to create a proof of privacy for
     which gives us an overall coupling cost of $d = \sum_{i=0}^{n-1}(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i|)d_i+(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i'|)d_i'$.
 \end{proof}
 \begin{defn}
-    For a complete path $\rho$ of length $n$ and adjacent input sequences $\texttt{in}\brangle{1}\sim \texttt{in}\brangle{2}$, a \textbf{coupling strategy} is two functions $\bm{\gamma}(\texttt{in}\brangle{1}, \texttt{in}\brangle{2}):\RR^n\times \RR^n\to [-1, 1]^n$ and $\bm{\gamma}'(\texttt{in}\brangle{1}, \texttt{in}\brangle{2}):\RR^n\times \RR^n\to [-1, 1]^n$ that produce shifts for each transition of $\rho$ dependent on the input sequences. 
+    For a complete execution $\rho$ of length $n$ and adjacent input sequences $\texttt{in}\brangle{1}\sim \texttt{in}\brangle{2}$, a \textbf{coupling strategy} is two functions $\bm{\gamma}(\texttt{in}\brangle{1}, \texttt{in}\brangle{2}):\RR^n\times \RR^n\to [-1, 1]^n$ and $\bm{\gamma}'(\texttt{in}\brangle{1}, \texttt{in}\brangle{2}):\RR^n\times \RR^n\to [-1, 1]^n$ that produce shifts for each transition of $\rho$ dependent on the input sequences. 
 
     If $\texttt{in}\brangle{1}$ and $\texttt{in}\brangle{2}$ are clear from context, we will often shorthand notating a coupling strategy as $\bm{\gamma}$ and $\bm{\gamma}'$. 
 \end{defn}
 
 \begin{defn}
-    For a complete path $\rho$ of length $n$, a coupling strategy $C_\rho = (\bm{\gamma}, \bm{\gamma}')$ is \textbf{valid} if $\forall \texttt{in}\brangle{1}\sim\texttt{in}\brangle{2}$, $\bm{\gamma}(\texttt{in}\brangle{1}, \texttt{in}\brangle{2})$ and $\bm{\gamma}'(\texttt{in}\brangle{1}, \texttt{in}\brangle{2})$ satisfy the constraints \[
+    For a complete execution $\rho$ of length $n$, a coupling strategy $C_\rho = (\bm{\gamma}, \bm{\gamma}')$ is \textbf{valid} if $\forall \texttt{in}\brangle{1}\sim\texttt{in}\brangle{2}$, $\bm{\gamma}(\texttt{in}\brangle{1}, \texttt{in}\brangle{2})$ and $\bm{\gamma}'(\texttt{in}\brangle{1}, \texttt{in}\brangle{2})$ satisfy the constraints \[
         \begin{cases}
           \gamma_i\leq\gamma_{at(i)} & c_i = \lguard[\texttt{x}]\\
           \gamma_i\geq\gamma_{at(i)} & c_i = \gguard[\texttt{x}]\\
@@ -588,13 +605,13 @@ We can merge these coupling strategies together to create a proof of privacy for
 \subsubsection{Optimizing Privacy}
 
 \begin{defn}
-    For a complete path $\rho$ of length $n$, the \textbf{cost} of a coupling strategy $C_\rho=(\bm{\gamma}, \bm{\gamma}')$ is \[cost(C_\rho) = \max_{\texttt{in}\brangle{1}\sim\texttt{in}\brangle{2}}\sum_{i=0}^{n-1}(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i|)d_i+(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i'|)d_i'.\]
+    For a complete execution $\rho$ of length $n$, the \textbf{cost} of a coupling strategy $C_\rho=(\bm{\gamma}, \bm{\gamma}')$ is \[cost(C_\rho) = \max_{\texttt{in}\brangle{1}\sim\texttt{in}\brangle{2}}\sum_{i=0}^{n-1}(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i|)d_i+(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i'|)d_i'.\]
 
     Additionally, let $G$ be the set of all valid coupling strategies $C_\rho=(\bm{\gamma}, \bm{\gamma}')$ for $\rho$. Then the \textbf{coupling cost} of $\rho$ is 
     \[cost(\rho) = \min_{(\bm{\gamma}, \bm{\gamma}')\in G}cost((\bm{\gamma}, \bm{\gamma}')).\]
 \end{defn}
 
-As before, the existence of a valid coupling strategy upper bounds the privacy cost of any path. 
+As before, the existence of a valid coupling strategy upper bounds the privacy cost of any execution. 
 
 \begin{prop}
     If $C_\rho=(\bm{\gamma}, \bm{\gamma}')$ is valid, then $\rho$ is $cost(C_\rho)\varepsilon$-differentially private.
@@ -605,7 +622,7 @@ As before, the existence of a valid coupling strategy upper bounds the privacy c
 \end{proof}
 
 \begin{cor}
-    Any complete path $\rho$ is $cost(\rho)\varepsilon$-differentially private. Further, for all complete paths $\rho$, $cost(\rho)<\infty$. 
+    Any complete execution $\rho$ is $cost(\rho)\varepsilon$-differentially private. Further, for all complete executions $\rho$, $cost(\rho)<\infty$. 
 \end{cor}
 
 \begin{proof}
@@ -616,7 +633,7 @@ As before, the existence of a valid coupling strategy upper bounds the privacy c
 
 
 \begin{prop}
-    The cost of a coupling strategy over a fixed path $\rho$ is maximized when, for every transition, the difference between the input values is $1$. In other words,
+    The cost of a coupling strategy over a fixed execution $\rho$ is maximized when, for every transition, the difference between the input values is $1$. In other words,
     \begin{align*}
         &\max_{\texttt{in}\brangle{1}\sim \texttt{in}\brangle{2}} \sum_{i=0}^{n-1}(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i|)d_i+(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i'|)d_i' \\
         = &\max_{\Delta\in \{-1, 1\}} \sum_{i=0}^{n-1}(|\Delta-\gamma_i|)d_i+(|\Delta-\gamma_i'|)d_i'
@@ -626,15 +643,17 @@ As before, the existence of a valid coupling strategy upper bounds the privacy c
     (Vishnu)
 \end{proof}
 
-Note then, that the process of finding the optimal coupling cost of a path $\rho$ can be formulated as a linear program.
+Note then, that the process of finding the optimal coupling cost of a execution $\rho$ can be formulated as a linear program.
  
 
 \subsection{Branching}
 
+
 \begin{defn}[Branching program]
-    Given a set of program states $Q$, a branching program $B$ is a finite set of complete paths over $Q$ such that for all $\rho=q_0\to\ldots\to q_n, \rho'=q'_0\to\ldots\to q'_m\in B$, $q_0=q'_0$. $B$ must also satisfy the following properties: \begin{enumerate}
-        \item If any transition $t$ in any path $\rho\in B$ is of the form $(q, q', c, \sigma, \tau)$, then no other transitions of the form $(q, q^*, c, \sigma', \tau')$ for $q, q', q^*\in Q$ exist in any path of $B$. Additionally, if any transition $t$ in any path $\rho\in B$ is of the form $(q, q', \texttt{true}, \sigma, \tau)$, then transitions of the form $(q, q^*, \lguard[\texttt{x}], \sigma', \tau')$ or $(q, q^*, \lguard[\texttt{x}], \sigma', \tau')$ do not exist in any path of $B$.
-        \item If a transition of the form $(q, q', \lguard[\texttt{x}], \sigma, \tau)$ exists in any path in $B$ and a transition of the form $(q, q^*, \gguard[\texttt{x}], \sigma', \tau')$ exists in any (potentially different) path in $B$, then $\sigma \neq \sigma'$. Additionally, at least one of $\sigma\in \Gamma$, $\sigma'\in \Gamma$ is true.
+    Given a set of program states $Q$, a branching program $B$ is a finite set of complete executions over $Q$ such that for all $\rho=q_0\to\ldots\to q_n, \rho'=q'_0\to\ldots\to q'_m\in B$, $q_0=q'_0$. $B$ must also satisfy the following properties: \begin{enumerate}
+        \item If any transition $t$ in any execution $\rho\in B$ is of the form $(q, q', c, \sigma, \tau)$, then no other transitions of the form $(q, q^*, c, \sigma', \tau')$ for $q, q', q^*\in Q$ exist in any execution of $B$. 
+        Additionally, if any transition $t$ in any execution $\rho\in B$ is of the form $(q, q', \texttt{true}, \sigma, \tau)$, then transitions of the form $(q, q^*, \lguard[\texttt{x}], \sigma', \tau')$ or $(q, q^*, \lguard[\texttt{x}], \sigma', \tau')$ do not exist in any execution of $B$.
+        \item If a transition of the form $(q, q', \lguard[\texttt{x}], \sigma, \tau)$ exists in any execution in $B$ and a transition of the form $(q, q^*, \gguard[\texttt{x}], \sigma', \tau')$ exists in any (potentially different) execution in $B$, then $\sigma \neq \sigma'$. Additionally, at least one of $\sigma\in \Gamma$, $\sigma'\in \Gamma$ is true.
     \end{enumerate} 
     We will refer to the first condition as \textbf{determinism} and the second condition as \textbf{output distinction}.
 \end{defn}
@@ -646,43 +665,64 @@ Note then, that the process of finding the optimal coupling cost of a path $\rho
 \end{defn}
 
 \begin{prop}
-    A branching program $B$ is DP if and only if for every complete path in $B$, etc.
+    A branching program $B$ is $d\varepsilon$-differentially private for $d>0$ if and only if for every complete execution $\rho$ in $B$, $\rho$ is $d\varepsilon$-differentially private.
 \end{prop}
 \begin{proof}
-    Each potential output of $B$ uniquely determines a path in $B$ by output distinction and determinism.
+    From the conditions of output distinction and determinism, note that for every single possible output $\sigma$ of $B$, there is exactly one possible execution $\rho$ that could have output $\sigma$. Thus, the probability that $B$ outputs $\sigma$ is exactly the probability that $\rho$ outputs $\sigma$; the result follows immediately.
 \end{proof}
 
 
-We can do no better than assigning coupling strategies for each path independently. 
-\begin{defn}[Coupling strategy]
-    A assignment of coupling strategies 
+We can do no better than assigning coupling strategies for each execution independently. 
+\begin{defn}[Coupling strategies]
+    A (branched program) coupling strategy $C$ for a branching program $B$ is a collection of (execution) coupling strategies where each complete execution $\rho\in B$ is assigned a coupling strategy $C_\rho$. 
 \end{defn}
 
-\begin{prop}
-    Optimal cost is dependent on path (Vishnu)
+\begin{defn}
+    A coupling strategy $C$ for a branching program $B$ is valid if, for every constituent execution coupling strategy $C_\rho$, $C_\rho$ is valid. 
+\end{defn}
+
+\begin{defn}
+    The cost of a coupling strategy $C$ for a branched program $B$ is \[
+        \max_{\rho\in B}cost(\rho)
+    \]
+\end{defn}
+
+\begin{prop}\label{costDependsExecutionProp}
+    Optimal cost is dependent on execution (Vishnu)
 \end{prop}
+
+As previously noted, we use a finite union of complete executions to model an underlying program with branching, in part due to proposition \ref{costDependsExecutionProp}. We now formally define that underlying model:
+
+\begin{defn}
+    The underlying graph [NAME VERY TENTATIVE] of a branching program $B$ is the directed acyclic graph $G = (V, E)$ such that $V = Q$ and $(q, q')\in E$ if, for some execution $\rho\in B$, there exists a transition $t\in \rho$ such that $t = (q, q', c, \sigma, \tau)$ for some $c, \sigma, \tau$.  
+
+    {\color{red} need also to force this to be acyclic}
+\end{defn}
+
 
 \subsection{Loops}
 
-\begin{defn}[Looping path]
-    Consider a complete path $\rho = q_0\to\ldots \to q_n$ such that for some $i<n$, $q_i = q_n$. WLOG suppose also that $\forall j\neq i$, $q_j \neq q_n$. A looping path $L_\rho$ is the infinite set of paths $\{q_0\to\ldots\to q_{i-1}\to (q_i\to\ldots\to q_{n-1})^k\to q_n| k\in \NN\}$, where $(q_i\to\ldots\to q_{n-1})^k$ means that the subpath $(q_i\to\ldots\to q_{n-1})^k$ is iterated $k$ times. 
+We will illustrate applying coupling strategies to loops through a simple \textbf{lasso} model. 
+
+\begin{defn}[Lassos]
+    Consider a complete execution $\rho = q_0\to\ldots \to q_n$ such that for some $i<n$, $q_i = q_n$. Suppose also that $\forall j\neq i$, $q_j \neq q_n$. A lasso $L_\rho$ is the infinite set of executions $\{q_0\to\ldots\to q_{i-1}\to (q_i\to\ldots\to q_{n-1})^k\to q_n| k\in \NN\}$, where $(q_i\to\ldots\to q_{n-1})^k$ means that the subexecution $(q_i\to\ldots\to q_{n-1})^k$ is iterated $k$ times. 
     Additionally, $L_\rho$ must satisfy the properties of \textbf{determinism} and \textbf{output distinction} as with branching programs.
 \end{defn}
 
-\begin{defn}[Looping path privacy]
-    A looping path $L_\rho$ is $d\varepsilon$-differentially private for $d>0$ if for all complete paths $\rho'$ in $L_\rho$, for all possible outputs $\sigma_{\rho'}$ of $\rho'$ and input sequences $\texttt{in}\brangle{1}\sim \texttt{in}\brangle{2}$, $\forall \varepsilon>0, \PP[\rho', \sigma_{\rho'}, \texttt{in}\brangle{1}]\leq e^{d\varepsilon}\PP[\rho', \sigma_{\rho'}, \texttt{in}\brangle{2}]$.
+\begin{defn}[Lasso privacy]
+    A lasso $L_\rho$ is $d\varepsilon$-differentially private for $d>0$ if for all complete executions $\rho'$ in $L_\rho$, for all possible outputs $\sigma_{\rho'}$ of $\rho'$ and input sequences $\texttt{in}\brangle{1}\sim \texttt{in}\brangle{2}$, $\forall \varepsilon>0, \PP[\rho', \sigma_{\rho'}, \texttt{in}\brangle{1}]\leq e^{d\varepsilon}\PP[\rho', \sigma_{\rho'}, \texttt{in}\brangle{2}]$.
 \end{defn}
 
 \begin{prop}
-    A looping path $L_\rho$ is $d\varepsilon$-differentially private for $d>0$ if and only if for all complete paths $\rho'$ in $L_\rho$, $\rho'$ is $d\varepsilon$-differentially private. 
+    A lasso $L_\rho$ is $d\varepsilon$-differentially private for $d>0$ if and only if for all complete executions $\rho'$ in $L_\rho$, $\rho'$ is $d\varepsilon$-differentially private. 
 \end{prop}
 
 \begin{defn}[Coupling strategies]
-    A \textbf{coupling strategy} for a looping path $L_\rho$, where $\rho=q_0\to\ldots \to q_n$ is an assignment of shifts $\gamma_i, \gamma_i'$ for each transition in $\rho$ as a function of the input differences. 
+    A \textbf{coupling strategy} for a lasso $L_\rho$, where $\rho=q_0\to\ldots \to q_n$ is an assignment of shifts $\gamma_i, \gamma_i'$ for each transition in $\rho$ as a function of the input differences. 
 \end{defn}
 
 \begin{defn}[Validity]
-    A coupling strategy $C_{L_\rho}=(\bm{\gamma}, \bm{\gamma}')$ for a looping path $L_\rho$ is \textbf{valid} if, for all paths $\rho'$ of $A$, the following constraints hold for all adjacent input sequences $\alpha\sim\beta$ and for all $i$:
+    A coupling strategy $C_{L_\rho}=(\bm{\gamma}, \bm{\gamma}')$ for a lasso $L_\rho$ is \textbf{valid} if, for all executions $\rho'$ of $A$, the following constraints hold for all adjacent input sequences $\alpha\sim\beta$ and for all $i$:
     \begin{itemize}
         \item If $c_i = \lguard[\texttt{x}]$, then $\gamma_i\leq\gamma_{at(i)}$
         \item If $c_i = \gguard[\texttt{x}]$, then $\gamma_i\geq\gamma_{at(i)}$
@@ -691,10 +731,10 @@ We can do no better than assigning coupling strategies for each path independent
     \end{itemize}
 \end{defn}
 
-Note that given a complete path $\rho'$ in a looping path $L_\rho$, a coupling strategy $C_A$ induces a coupling strategy $C_{\rho'}$ for $\rho'$.
+Note that given a complete execution $\rho'$ in a lasso $L_\rho$, a coupling strategy $C_A$ induces a coupling strategy $C_{\rho'}$ for $\rho'$.
 
 \begin{defn}
-    The \textbf{cost} of a coupling strategy $C_{L_\rho} = (\bm{\gamma}, \bm{\gamma}')$ for a looping path $L_\rho$ is \begin{align*}
+    The \textbf{cost} of a coupling strategy $C_{L_\rho} = (\bm{\gamma}, \bm{\gamma}')$ for a lasso $L_\rho$ is \begin{align*}
     cost(C_{L_\rho}) &= \sup_{\rho'\in L_{\rho}}\max_{\texttt{in}\brangle{1}\sim \texttt{in}\brangle{2}} \sum_{i=0}^{|\rho'|-1}(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i|)d_i+(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i'|)d_i'\\
     &=\sup_{\rho'\in L_\rho}cost(C_{\rho'})
 \end{align*}
@@ -704,20 +744,20 @@ Note that given a complete path $\rho'$ in a looping path $L_\rho$, a coupling s
 \end{defn}
 
 \begin{prop}
-    Given a valid coupling strategy $C_{L_\rho}$ for a looping path $L_\rho$, $L_\rho$ is $cost(C_{L_\rho})\varepsilon$-differentially private. 
+    Given a valid coupling strategy $C_{L_\rho}$ for a lasso $L_\rho$, $L_\rho$ is $cost(C_{L_\rho})\varepsilon$-differentially private. 
 \end{prop}
 \begin{proof}
-    Let $\rho'$ be a complete path in $L_\rho$ and let $C_{\rho'}$ be the coupling strategy for $\rho'$ derived from $C_A$. We know from lemma \ref{multTransitionsCouplingProof} that, if $C_A$ is valid, then the lifting $\sigma\brangle{1}\{(a, b): a=\sigma\implies b=\sigma\}^{\#cost(C_{\rho'})\varepsilon}\sigma\brangle{2}$ is valid, 
+    Let $\rho'$ be a complete execution in $L_\rho$ and let $C_{\rho'}$ be the coupling strategy for $\rho'$ derived from $C_A$. We know from lemma \ref{multTransitionsCouplingProof} that, if $C_A$ is valid, then the lifting $\sigma\brangle{1}\{(a, b): a=\sigma\implies b=\sigma\}^{\#cost(C_{\rho'})\varepsilon}\sigma\brangle{2}$ is valid, 
     and therefore for all possible outputs $\sigma$ of $\rho'$ and adjacent inputs $\texttt{in}\brangle{1}\sim\texttt{in}\brangle{2}$, $\forall \varepsilon>0, \PP[\rho', \sigma, \texttt{in}\brangle{1}]\leq e^{cost(C_{\rho'})\varepsilon}\PP[\rho', \sigma, \texttt{in}\brangle{2}]\leq e^{cost(C_{L_\rho})\varepsilon}\PP[\rho', \sigma, \texttt{in}\brangle{2}]$.
 \end{proof}
 \begin{cor}
-    A looping path $L_\rho$ is $cost(L_\rho)\varepsilon$-differentially private. 
+    A lasso $L_\rho$ is $cost(L_\rho)\varepsilon$-differentially private. 
 \end{cor}
 
 
 
 \begin{lemma}\label{finiteCostConstraintLemma}
-    For a looping path $L_\rho$, given adjacent input sequences $\texttt{in}\brangle{1}\sim \texttt{in}\brangle{2}$, a valid coupling strategy $C_{L_\rho} = (\mathbf{\gamma}, \mathbf{\gamma}')$ has finite cost $cost(C_{L_\rho})<\infty$ if and only if the following constraint applies for all $i$:
+    For a lasso $L_\rho$, given adjacent input sequences $\texttt{in}\brangle{1}\sim \texttt{in}\brangle{2}$, a valid coupling strategy $C_{L_\rho} = (\mathbf{\gamma}, \mathbf{\gamma}')$ has finite cost $cost(C_{L_\rho})<\infty$ if and only if the following constraint applies for all $i$:
     \begin{itemize}
         \item If $t_i$ is in a cycle and $c_i\neq\texttt{true}$, then $\gamma_i = -\texttt{in}\brangle{1}_i+\texttt{in}\brangle{2}_i$ and $\gamma_i' = -\texttt{in}\brangle{1}_i+\texttt{in}\brangle{2}_i$.
     \end{itemize}
@@ -728,9 +768,9 @@ Note that given a complete path $\rho'$ in a looping path $L_\rho$, a coupling s
 
     ($\impliedby$)
 
-    Let $T$ be the set of transitions $t_i$ in $L_\rho$ such that $t_i$ is \textbf{not} in a cycle. Note that $T$ is independent of any choice of path(s) through $L_\rho$. 
+    Let $T$ be the set of transitions $t_i$ in $L_\rho$ such that $t_i$ is \textbf{not} in a cycle. Note that $T$ is independent of any choice of execution(s) through $L_\rho$. 
 
-    Fix a complete path $\rho'$ in $L_\rho$ and let $C_\rho'$ be the coupling strategy for $\rho'$ induced by $C_{L_\rho}$. 
+    Fix a complete execution $\rho'$ in $L_\rho$ and let $C_\rho'$ be the coupling strategy for $\rho'$ induced by $C_{L_\rho}$. 
 
     Let $D_\rho$ be the set of transitions $t_i$ in $\rho$ such that $t_i$ is in a cycle in $L_\rho$, i.e., $t_i\notin T$.  
 
@@ -750,14 +790,16 @@ Note that given a complete path $\rho'$ in a looping path $L_\rho$, a coupling s
 
     Fix such a $\texttt{in}\brangle{1}\sim \texttt{in}\brangle{2}$. 
 
-    Let $\rho_k$ be a complete path in $A$ with $C$ iterated $k$ times. Then for all $k\in \NN$, \begin{align*}
+    Let $\rho_k$ be a complete execution in $A$ with $C$ iterated $k$ times. Then for all $k\in \NN$, \begin{align*}
         cost(\rho_k) \geq k((|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i|)d_i+(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i'|)d_i'),
     \end{align*}
     so for all $M\in \RR$, $\exists \rho_k$ such that $cost(\rho_k) > M$.
 \end{proof}
 
+{\color{red} move these two lemmas away from this section (appendix or closer to usage in main theorem)}
+
 \begin{lemma}\label{cycleGammaConstraints}
-    If a coupling strategy $C=(\mathbf{\gamma}, \mathbf{\gamma}')$ for a looping path $L_\rho$ is valid and has finite cost, then the following must hold for all $i$:
+    If a coupling strategy $C=(\mathbf{\gamma}, \mathbf{\gamma}')$ for a lasso $L_\rho$ is valid and has finite cost, then the following must hold for all $i$:
     \begin{enumerate}
         \item If $t_i$ is in a cycle and $c_i = \lguard[\texttt{x}]$, then $\gamma_i = -\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}$ and $\gamma_{at(i)} = 1$.
         \item If $t_i$ is in a cycle and $c_i = \gguard[\texttt{x}]$, then $\gamma_i = -\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}$ and $\gamma_{at(i)} = -1$.
@@ -771,7 +813,7 @@ Note that given a complete path $\rho'$ in a looping path $L_\rho$, a coupling s
     Further, because $\gamma_{at(i)}$ must be greater than $\gamma_i$ for all $\texttt{in}_i\brangle{1}\sim\texttt{in}_i\brangle{2}$ for $C$ to be valid, we must have that $\gamma_{at(i)}=1$.
 \end{proof}
 \begin{lemma}
-    If a valid finite cost coupling strategy $C = (\gamma, \gamma')$ exists for a looping path $L_\rho$, then there exists a valid finite cost coupling strategy $C^*= (\gamma^*, \gamma^{*\prime})$ such that for all $i\in AT(L_\rho)$, $\gamma_i^*\in \{-1, 0, 1\}$. 
+    If a valid finite cost coupling strategy $C = (\gamma, \gamma')$ exists for a lasso $L_\rho$, then there exists a valid finite cost coupling strategy $C^*= (\gamma^*, \gamma^{*\prime})$ such that for all $i\in AT(L_\rho)$, $\gamma_i^*\in \{-1, 0, 1\}$. 
 \end{lemma}
 \begin{proof}
     TBD
@@ -779,24 +821,98 @@ Note that given a complete path $\rho'$ in a looping path $L_\rho$, a coupling s
 
 \subsection{Programs}
 
-\begin{defn}[Program]
-    Given a fixed set of program states $Q$, A [come up with a good name] program $P$ is a set of complete paths on $Q$ with the closure property that, for every complete path $\rho = q_0\to \ldots \to q_n$ in $P$, if, $q_i = q_j$ and $i\neq j$, then the complete path $\rho_k = q_0\to \ldots \to (q_i \to \ldots \to q_j)^k \to \ldots \to q_n\in P$ for all $k\in \NN$. Additionally, $P$ must satisfy the determinism and output distinction conditions of 
-\end{defn}
-
-\begin{defn}[Path Classes]
-    For a complete path $\rho=q_0\to \ldots \to q_n$ in a program $P$, let $\bar{\rho}$ be $\rho$ with all cycles removed. $\bar{\rho}$ can be defined by an iterative process where $\rho^0 = \rho$, and, given that $\rho^k =q_0^k\to \ldots \to q_{n_k}^k$, if there exists some $i\neq j$ such that $q_i^k=q_j^k$, then $\rho^{k+1} = q_0^k\to \ldots \to q_i^k \to q_{j+1}^k\to \ldots\to q_{n_k}^k$. $\bar{\rho}$ is the first such $\rho^k$ where there are no $i\neq j$ such that $q_i^k=q_j^k$. 
-    {\color{red} Edge case: the program is just one big cycle}
-
-    Then we can define the equivalence relation $\sim_p$ such that $\rho\sim_p\rho'$ if $\bar{\rho} = \bar{\rho'}$. Note then that the equivalence classes of $\sim_p$ correspond to the set of all acyclic complete paths in $P$. {\color{red} TODO: double check this} We will call these equivalence classes \textbf{path classes}.
-\end{defn}
+We will now define programs by adding loops to our basic branched program model: 
 
 \begin{defn}
-    For each path class of a program $P$, a coupling strategy [...]
+    A program $A$ is the tuple $A =(Q, C, \Gamma, q_{init}, X,P, \delta)$ where \begin{itemize}
+        \item $Q$ is a finite set of states 
+        \item $C = \{\texttt{true}, \lguard, \gguard\}$ is a set of guard conditions
+        \item $\Gamma$ is a finite output alphabet
+        \item $q_{init}\in Q$ is the initial state
+        \item $X = \{\texttt{x}, \texttt{insample}, \texttt{insample}'\}$ is the set of variables
+        \item $P: Q\to \QQ^{\geq 0}\times \QQ^{\geq 0}$ is a parameter function that assigns sampling parameters for the Laplace distribution for each state
+        \item $\delta:(Q\times C)\to (Q\times (\Gamma \cup \{\texttt{insample}, \texttt{insample}'\})\times \{\texttt{true}, \texttt{false}\})$ is a partial transition function. 
+    \end{itemize}
+    Additionally, $\delta$ must satisfy the conditions:
+    \begin{itemize}
+        \item \textbf{Determinism:} For any state $q\in Q$, if $\delta(q,\texttt{true})$ is defined, then $\delta(q,\lguard)$ and $\delta(q,\gguard)$ are not defined. 
+
+        \item \textbf{Output Distinction:} For any state $q\in Q$, if $\delta(q, \gguard) = (q_1, o_1, b_1)$ and $\delta(q, \lguard) = (q_2, o_2, b_2)$, then $o_1\neq o_2$ and at least one of $o_1\in \Gamma$ and $o_2\in \Gamma$ is true.
+
+        \item \textbf{Initialization:} The initial state $q_0$ has only one outgoing transition of the form $\delta(q_0, \texttt{true}) = (q, o, \texttt{true})$.
+    \end{itemize}
+\end{defn}
+
+\begin{defn}[Program executions]
+    An execution of a program $A = (Q, C, \Gamma, q_{init}, X, P, \delta)$ is a sequence of transitions $\rho = t_0, \ldots t_{n-1}$ such that for all $t_i = (q_i, q_{i+1}, c_i, \sigma_i, \tau_i)$, $\delta(q_i, c_i) = (q_{i+1}, \sigma_i, \tau_i)$. 
+
+    Additionally, if $t_0 = (q_{init}, q_1, \texttt{true}, \sigma_0, \texttt{true})$ for some $q_1 \in Q, \sigma_0\in \Gamma\cup\{\texttt{insample}, \texttt{insample}'\}$, then $\rho$ is a complete execution. 
+\end{defn}
+
+Note that we are simply translating between languages of transitions and the finite state automata of programs. Every program $A$ defines a possibly infinite set of its possible executions. 
+
+\begin{defn}[DP]
+    Privacy Def
+\end{defn}
+
+As with branching programs, the conditions of determinism and output distinction mean that knowing the output of a program means that we know what execution the program must have taken. 
+
+\begin{prop}
+    For every complete execution $\rho$ of a program $A$, $\rho$ is $d\varepsilon$-differentially private if and only if $A$ is differentially private. 
+\end{prop}
+
+As expected, then, we can use coupling strategies for executions to prove privacy.
+
+\begin{prop}
+    If, for every complete execution $\rho$ of a program $A$, there is a coupling strategy $C_\rho$ such that $cost(C_\rho)<d$, then $A$ is $d\varepsilon$-differentially private.
+\end{prop}
+
+However, this naive is not actually tractable, since there are possibly an infinite number of executions in a single program $A$ due to cycles. 
+
+What we will show instead is that, inspired by our work with lassos, we can choose a coupling strategy for each of a finite number of subgraphs of $A$, which will induce coupling strategies for every execution of $A$. 
+
+\begin{defn}
+    For an execution $\rho$ of a program $A$, let $graph(\rho)$ be the subgraph of the underlying graph of $A$ that is traversed by $\rho$. That is, if the underlying graph of $A$ is $G=(V, E)$, then $graph(\rho) = (V', E')$, where $V'\subseteq V$, $E'\subseteq E$, and for all transitions $t_i = (q_i, q_{i+1}, c_i, \sigma_i, \tau_i)$, $q_i, q_{i+1}\in V$ and $(q_i, q_{i+1}) \in E$. 
+\end{defn}
+
+Note that the relation between complete executions $\sim_G$ where $\rho \sim_G\rho'$ if and only if $graph(\rho) = graph(\rho')$ is clearly an equivalence relationship; let $[\rho]_G$ be the equivalence class of $\rho$ defined by this relationship for any complete execution $\rho$ of a program $A$. 
+
+\begin{defn}[Class Coupling Strategies]
+    Consider an execution class $[\rho]_G$ of a program $A$ and let $G=(V, E) = graph(\rho)$ be the underlying subgraph of $[\rho]_G$. A [name tentative] class coupling strategy $C_{[\rho]_G}$ for $[\rho]_G$ is a function $C_{[\rho]_G}: E\to (\RR\times\RR\to[-1, 1])\times (\RR\times\RR\to[-1, 1])$ mapping edges of $G$ to shift functions $(\gamma, \gamma')$.
+\end{defn}
+
+Observe that there are a finite possible number of execution classes of a program $A$ since $A$ must have a finite number of states; additionally, a class coupling strategy for an execution class $[\rho]_G$ directly induces execution coupling strategies for every complete execution in the class. 
+
+\begin{defn}
+    The cost of a class coupling strategy $C_{[\rho]_G}$ for an execution class $[\rho]_G$ is $cost(C_{[\rho]_G}) = \max_{\rho'\in [\rho]_G}cost(C_{\rho'})$, where $C_{\rho'}$ is the execution coupling strategy for $\rho'$ induced by $C_{[\rho]_G}$.
 \end{defn}
 
 \begin{prop}
-    If valid coupling + constraint holds for every path class, then program is differentially private. 
+    If, for every complete execution class $[\rho]_G$ of a program $A$, there is a coupling strategy $C_{[\rho]_G}$ such that $cost(C_{[\rho]_G})<d$, then $A$ is $d\varepsilon$-differentially private.
 \end{prop}
+
+Indeed, for the purposes of privacy, we do not need to distinguish between different members of execution classes. 
+
+\begin{prop}
+    If there exists a valid and finite cost coupling strategy for every execution in a program $A$, then there exists a class coupling strategy for each execution class $[\rho]_G$ of $A$ that is valid and has finite cost. {\color{red} also the same cost?} 
+\end{prop}
+
+\begin{prop}
+    If, for all execution classes $[\rho]_G$ of a program $A$, there exists a coupling strategy $C_{[\rho]_G}$ such that $cost(C_{[\rho]_G})\leq d$, then $A$ is $d\varepsilon$-differentially private. 
+\end{prop}
+
+As before, for a coupling strategy to have finite cost, we must ensure that every cycle transition has no cost:
+\begin{prop}
+    A valid class coupling strategy $C_{[\rho]_G}$ of $A$ has finite cost if and only if the following constraint holds for every distinct transition $t_i$ in $[\rho]_G$:
+    \begin{itemize}
+        \item If $t_i$ is in a cycle in $graph(\rho)$ and $c_i\neq\texttt{true}$, then $\gamma_i = -\texttt{in}\brangle{1}_i+\texttt{in}\brangle{2}_i$ and $\gamma_i' = -\texttt{in}\brangle{1}_i+\texttt{in}\brangle{2}_i$.
+    \end{itemize}
+\end{prop}
+
+
+
+Surprisingly, we prove that 
+
 
 \subsection{DiPA}
 
@@ -853,13 +969,59 @@ If all constraints are statisfied, then $A$ is private.
 \begin{proof}
     Consider a ``maximially'' satisfied coupling strategy $C=(\mathbf{\gamma}, \mathbf{\gamma}')$; i.e. there is no other coupling strategy $C'$ for $A$ such that $C'$ satisfies more constraints than $C$. By lemma [tbd], we are allowed to only consider coupling strategies $C=(\gamma, \gamma')$ such that, for all $i\in AT(A)$, $\gamma_i \in \{-1, 0, 1\}$. 
 
-    Fix some looping path $\rho$ in $A$ such that at least one constraint is not satisfied by $C$ as applied to $\rho$.
+    Fix some lasso $\rho$ in $A$ such that at least one constraint is not satisfied by $C$ as applied to $\rho$.
 
     By assumption, at least one constraint is unsatisfied by $C$. We will show that in every case, $A$ must contain at least one of a leaking cycle, leaking pair, disclosing cycle, or privacy violating path. By theorem \ref{DiPACounterexamplesThm}, this is sufficient to show that $A$ is not $d\varepsilon$-differentially private for any $d>0$.
 
     \textbf{Case 1: (1) is unsatisfied for $\gamma_i$}
-
     
+    In this case, $c_i = \lguard[\texttt{x}]$ and $\gamma_i > \gamma_{at(i)}$. Note that $\gamma_{at(i)} \neq 1$. 
+
+    There are two ways to resolve constraint (1): either setting $\gamma_i = \gamma_{at(i)}$ or $\gamma_{at(i)} = 1$. 
+
+    Because $C$ is maximal, we know that setting $\gamma_i=\gamma_{at(i)}$ must violate some other constraint. In particular, it can either violate constraints (3) or (5) for $\gamma_i$ or constraint (1) for some $\gamma_j$ such that $at(j) = i$. 
+
+    Similarly, if we set $\gamma_{at(i)} = 1$, then constraints (1), (3), or (5) for $\gamma_{at(i)}$ or constraint (2) for some $\gamma_k$ such that $at(k) = at(i)$ would be violated. 
+
+
+
+    \textbf{Case 1a: Setting $\gamma_i = \gamma_{at(i)}$ would violate (3) for $\gamma_i$}
+
+    In this case, then $\sigma_i = \texttt{insample}$. Additionally, $\gamma_{at(i)} \neq 0$, so $\gamma_{at(i)} = -1$. 
+
+    Changing $\gamma_{at(i)}$ from -1 to 0 to satisfy contraint (3) for $\gamma_i$ can newly violate constraints (1) or (5) for $\gamma_{at(i)}$ or constraint (2) for some $\gamma_j$ such that $at(j) = at(i)$. We appeal to case (3a) to show that in such a scenario, there must be a leaking cycle, disclosing cycle, or privacy violating path. 
+
+    \textbf{Case 1b: Setting $\gamma_i = \gamma_{at(i)}$ would violate (5) for $\gamma_i$}
+    
+    The only way to satisfy both constraints (1) for $\gamma_i$ and (5) is if $\gamma_{at(i)} = 1$. We then appeal to cases (1d-1g).
+
+    \textbf{Case 1c: Setting $\gamma_i = \gamma_{at(i)}$ would violate (1) for some $\gamma_j$ such that $at(j) = i$}
+
+    In this case, $\gamma_i$ was changed from 1 to $\gamma_{at(i)} \in \{-1, 0\}$; additionally, $t_i$ is an assignment transition. We can assume that $t_i$ is not in a cycle, since if it were, the cycle containing $t_i$ would be a leaking cycle. 
+
+    Note that $c_j = \lguard[\texttt{x}]$.
+
+    If $\gamma_i = 0$, then $\gamma_{j} >0$ originally. Then to satisfy constraint (1) for $\gamma_j$, we must either assign $\gamma_{at(i)} = \gamma_i = 1$ or assign $\gamma_j = 0$. If we assign $\gamma_{at(i)} = \gamma_i =1$, then we appeal to cases (1d-1g). 
+    Otherwise, we will show that even if we assign $\gamma_j=0$, we must still assign $\gamma_{at(i)} =\gamma_i=1$ to attempt to satisfy more constraints. If we assign $\gamma_j=0$, then either constraint (5) for $\gamma_j$ or constraint (1) for some $\gamma_k$ such that $at(k) = j$ must be newly violated. Note that (2) cannot be newly violated for some $\gamma k$ such that $at(k) = j$ since $j>0$ originally; if (2) was satisfied when $j>0$, then (2) must still be satisfied when $j=0$. 
+
+    If constraint (5) for $\gamma_j$ is newly violated, then the only way to satisfy (1) for $\gamma_j$ is to set $\gamma_{at(j)} = \gamma_{i}=\gamma_{at(i)}=1$. As before, we appeal to cases (1d-1g).
+
+    If assigning $\gamma_j=0$ would newly violate constraint (1) for some $\gamma_k$ such that $at(k) = j$, then 
+
+    ???
+
+    {\color{red} come back to this}
+
+
+    If $\gamma_i = -1$, then $\gamma_j > -1$. Satisfying (1) for $\gamma_j$ by setting $\gamma_j = -1$ can possibly violate constraints (3) or (5) for 
+
+    \textbf{Case 1d: Setting $\gamma_{at(i)}=1$ would violate (1) for $\gamma_{at(i)}$}
+
+    \textbf{Case 1e: Setting $\gamma_{at(i)}=1$ would violate (3) for $\gamma_{at(i)}$}
+
+    \textbf{Case 1f: Setting $\gamma_{at(i)}=1$ would violate (5) for $\gamma_{at(i)}$}
+
+    \textbf{Case 1g: Setting $\gamma_{at(i)}=1$ would violate (2) for some $\gamma_k$ such that $at(k)= at(i)$}
 
     \textbf{Case 2: (2) is unsatisfied for $\gamma_i$}
 
@@ -873,7 +1035,27 @@ If all constraints are statisfied, then $A$ is private.
 
     \textbf{Case 3a: Satisfying (3) for $\gamma_i$ would violate (1) for $\gamma_i$}
 
-    This means that $\gamma_{at(i)}<0$. 
+    This means that $\gamma_{at(i)}<0\implies \gamma_{at(i)} = -1$. Further, $c_i = \lguard[\texttt{x}]$. Then changing $\gamma_{at(i)}=0$ can newly violate constraints (1) or (5) for $\gamma_{at(i)}$ or constraint (2) for some $\gamma_j$ such that $at(j) = at(i)$.
+
+    If constraint (5) is newly violated, then $t_{at(i)}$ is in a cycle. In particular, the cycle must be a leaking cycle; if $t_i$ and $t_{at(i)}$ are both contained in a cycle, then it must be leaking because $c_i = \lguard[\texttt{x}]$. Otherwise, there still must be some transition in the cycle containing $t_{at(i)}$ that has a non-$\texttt{true}$ guard since otherwise a path from $t_{at(i)}$ to $t_i$ could not exist. 
+
+    By similar reasoning, we can assume that for every assignment transition $t_{at(j)}$before $t_{at(i)}$ on a complete path to $t_i$, $t_{at(j)}$ is not in a cycle. 
+
+    If constraint (1) is newly violated for $\gamma_{at(i)}$, then $c_{at(i)} = \lguard[\texttt{x}]$. Let $t_{at(j)}$ be the earliest assignment transition before $t_{at(i)}$ such that $\gamma_{at(l)} = -1$ and for all assignment transitions $t_{at(k)}$ between $t_{at(j)}$ and $t_{at(i)}$, $c_{at(k)} = \lguard[\texttt{x}]$ and $\gamma_{at(k)} = -1$. 
+    
+    Then there must exist some assignment transition $t_{at(k)}$, $at(j)\leq at(k)\leq at(i)$ between $t_{at(j)}$ and $t_{at(i)}$ such that setting $\gamma_{at(k)} = 0$ would newly violate constraint (2) for some $l$ where $at(l) = at(k)$. In particular, this must be because $t_l$ is in a cycle and setting $\gamma_l = 0$ would violate constraint (5). Thus, $t_l$ is in a $\texttt{G}$-cycle. Then there is an $\texttt{AL}$-path from $t_l$ to $t_i$, creating a privacy violating path from $t_l$ to $t_i$. 
+
+    If changing $\gamma_{at(i)}$ from $-1$ to $0$ means that constraint (2) would be newly violated for some $\gamma_j$ such that $at(j) = at(i)$, note that $\gamma_j < 0$ and $c_j = \gguard[\texttt{x}]$. 
+    
+    So setting $\gamma_j = 0$ can violate either (2) for some $\gamma_l$ where $at(l) = j$ or (5) for $\gamma_j$. 
+
+    If setting $\gamma_j = 0$ would violate constraint (2) for some $\gamma_l$ where $at(l) = j$, then let let $t_{at(m)}$ be the latest assignment transition after $t_{at(j)}$ such that $\gamma_{at(m)} = -1$ and for all assignment transitions $t_{at(k)}$ between $t_{at(j)}$ and $t_{at(m)}$, $c_{at(k)} = \gguard[\texttt{x}]$ and $\gamma_{at(k)} = -1$. 
+    
+    Then there must exist some assignment transition $t_{at(k)}$, $at(j)\leq at(k)\leq at(m)$ between $t_{at(j)}$ and $t_{at(m)}$ such that setting $\gamma_{at(k)} = 0$ would newly violate constraint (2) for some $l'$ where $at(l') = at(k)$. 
+    In particular, this must be because $t_{l'}$ is in a cycle and setting $\gamma_l = 0$ would violate constraint (5). Thus, $t_l$ is in a $\texttt{G}$-cycle. Then there is an $\texttt{AG}$-path from $t_i$ to $t_l$, creating a privacy violating path from $t_i$ to $t_l$. 
+
+    Otherwise, if setting $\gamma_j = 0$ would violate constraint (5) for $\gamma_j$, then $t_j$ is in a $\texttt{G}$-cycle. We can assume that $j\neq i$ because otherwise, the cycle containing $t_j$ would be a disclosing cycle. Additionally, note that there are no assignment transitions between $t_i$ and $t_j$ or vice versa, since $at(j) = at(i)$.
+    Thus, if $j<i$, then there is an $\texttt{AL}$-path from $t_j$ to $t_i$, which forms a privacy violating path. Symmetrically, if $i<j$, then there is an $\texttt{AG}-$path from $t_i$ to $t_j$, which again forms a privacy violating path. 
 
     \textbf{Case 3b: Satisfying (3) for $\gamma_i$ would violate (2) for $\gamma_i$}
 
@@ -887,7 +1069,7 @@ If all constraints are statisfied, then $A$ is private.
 
     If constraint (5) would be newly violated for $\gamma_l$, then $\gamma_l$ is in an $\texttt{L}$-cycle. Additionally, note that the path from $t_{i+1}$ to $t_l$ is an $\texttt{AL}$-path, so there is a privacy violating path from $t_i$ to $t_l$. 
 
-    Otherwise, if setting $\gamma_l = 0$ would violate constraint (1) for some $\gamma_{l'}$ where $at(l')=l$, let $t_{at(j)}$ be the latest assignment transition such that $c_{at(j)} = \lguard[\texttt{x}]$ and $\gamma_{at(j)}<1$ and, for all assignment transitions $t_{at(k)}$ between $t_{at(j)}$, $c_{at(k)} = \lguard[\texttt{x}]$ and $\gamma_{at(k)}<1$. 
+    Otherwise, if setting $\gamma_l = 0$ would violate constraint (1) for some $\gamma_{l'}$ where $at(l')=l$, let $t_{at(j)}$ be the latest assignment transition such that $c_{at(j)} = \lguard[\texttt{x}]$ and $\gamma_{at(j)}<1$ and, for all assignment transitions $t_{at(k)}$ between $t_l$ and $t_{at(j)}$, $c_{at(k)} = \lguard[\texttt{x}]$ and $\gamma_{at(k)}<1$. 
 
     If $at(j) = l$, then $l'$ is not an assignment transition. Then, setting $\gamma_{l'} = 0$ could only violate constraint (5). In this case, as before, there is a privacy violating path from $t_i$ to $t_l$. 
 
