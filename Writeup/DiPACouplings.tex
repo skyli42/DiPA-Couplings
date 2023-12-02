@@ -821,35 +821,16 @@ Note that given a complete execution $\rho'$ in a lasso $L_\rho$, a coupling str
 
 \subsection{Programs}
 
-We will now define programs by adding loops to our basic branched program model: 
+
 
 \begin{defn}
-    A program $A$ is the tuple $A =(Q, C, \Gamma, q_{init}, X,P, \delta)$ where \begin{itemize}
-        \item $Q$ is a finite set of states 
-        \item $C = \{\texttt{true}, \lguard, \gguard\}$ is a set of guard conditions
-        \item $\Gamma$ is a finite output alphabet
-        \item $q_{init}\in Q$ is the initial state
-        \item $X = \{\texttt{x}, \texttt{insample}, \texttt{insample}'\}$ is the set of variables
-        \item $P: Q\to \QQ^{\geq 0}\times \QQ^{\geq 0}$ is a parameter function that assigns sampling parameters for the Laplace distribution for each state
-        \item $\delta:(Q\times C)\to (Q\times (\Gamma \cup \{\texttt{insample}, \texttt{insample}'\})\times \{\texttt{true}, \texttt{false}\})$ is a partial transition function. 
+    Given a state space $Q$, a program $A$ is a set of complete executions $\rho$ such that for all $\rho=q_0\to\ldots\to q_n, \rho'=q'_0\to\ldots\to q'_m\in B$, $q_0=q'_0$ and $A$ satisfies the following closure property:\begin{itemize}
+        \item If a complete execution $\rho\in A$ such that $\rho = q_0\to \ldots \to q_i \to \ldots \to q_j \to q_i\to \ldots \to q_n$, then, for all $k\in \NN$, the execution $\rho_k\in A$, where $\rho_k = q_0\to \ldots \to (q_i \to \ldots \to q_j)^k \to q_i\to \ldots \to q_n$.
     \end{itemize}
-    Additionally, $\delta$ must satisfy the conditions:
-    \begin{itemize}
-        \item \textbf{Determinism:} For any state $q\in Q$, if $\delta(q,\texttt{true})$ is defined, then $\delta(q,\lguard)$ and $\delta(q,\gguard)$ are not defined. 
-
-        \item \textbf{Output Distinction:} For any state $q\in Q$, if $\delta(q, \gguard) = (q_1, o_1, b_1)$ and $\delta(q, \lguard) = (q_2, o_2, b_2)$, then $o_1\neq o_2$ and at least one of $o_1\in \Gamma$ and $o_2\in \Gamma$ is true.
-
-        \item \textbf{Initialization:} The initial state $q_0$ has only one outgoing transition of the form $\delta(q_0, \texttt{true}) = (q, o, \texttt{true})$.
-    \end{itemize}
+    Additionally, $A$ must satisfy the properties of \textbf{determinism} and \textbf{output distinction}, as with branching programs. 
 \end{defn}
 
-\begin{defn}[Program executions]
-    An execution of a program $A = (Q, C, \Gamma, q_{init}, X, P, \delta)$ is a sequence of transitions $\rho = t_0, \ldots t_{n-1}$ such that for all $t_i = (q_i, q_{i+1}, c_i, \sigma_i, \tau_i)$, $\delta(q_i, c_i) = (q_{i+1}, \sigma_i, \tau_i)$. 
-
-    Additionally, if $t_0 = (q_{init}, q_1, \texttt{true}, \sigma_0, \texttt{true})$ for some $q_1 \in Q, \sigma_0\in \Gamma\cup\{\texttt{insample}, \texttt{insample}'\}$, then $\rho$ is a complete execution. 
-\end{defn}
-
-Note that we are simply translating between languages of transitions and the finite state automata of programs. Every program $A$ defines a possibly infinite set of its possible executions. 
+Intuitively, this closure condition means that if a execution $\rho$ with the cycle $q_i\to \ldots \to q_j\to q_i$ is in $A$, then every execution that is identical to $\rho$ except with the cycle iterated a different number of times must be in $A$ as well. 
 
 \begin{defn}[DP]
     Privacy Def
@@ -867,9 +848,14 @@ As expected, then, we can use coupling strategies for executions to prove privac
     If, for every complete execution $\rho$ of a program $A$, there is a coupling strategy $C_\rho$ such that $cost(C_\rho)<d$, then $A$ is $d\varepsilon$-differentially private.
 \end{prop}
 
-However, this naive is not actually tractable, since there are possibly an infinite number of executions in a single program $A$ due to cycles. 
+However, this naive approach is not actually tractable, since there are possibly an unbounded number of executions in a single program $A$. 
 
-What we will show instead is that, inspired by our work with lassos, we can choose a coupling strategy for each of a finite number of subgraphs of $A$, which will induce coupling strategies for every execution of $A$. 
+What we will show instead is that, inspired by our work with lassos, we can choose a coupling strategy for each of a finite number of execution classes of $A$, which will induce coupling strategies for every execution of $A$. 
+
+
+\begin{defn}
+    For an execution $\rho$ of a program $A$, 
+\end{defn}
 
 \begin{defn}
     For an execution $\rho$ of a program $A$, let $graph(\rho)$ be the subgraph of the underlying graph of $A$ that is traversed by $\rho$. That is, if the underlying graph of $A$ is $G=(V, E)$, then $graph(\rho) = (V', E')$, where $V'\subseteq V$, $E'\subseteq E$, and for all transitions $t_i = (q_i, q_{i+1}, c_i, \sigma_i, \tau_i)$, $q_i, q_{i+1}\in V$ and $(q_i, q_{i+1}) \in E$. 
@@ -880,6 +866,10 @@ Note that the relation between complete executions $\sim_G$ where $\rho \sim_G\r
 \begin{defn}[Class Coupling Strategies]
     Consider an execution class $[\rho]_G$ of a program $A$ and let $G=(V, E) = graph(\rho)$ be the underlying subgraph of $[\rho]_G$. A [name tentative] class coupling strategy $C_{[\rho]_G}$ for $[\rho]_G$ is a function $C_{[\rho]_G}: E\to (\RR\times\RR\to[-1, 1])\times (\RR\times\RR\to[-1, 1])$ mapping edges of $G$ to shift functions $(\gamma, \gamma')$.
 \end{defn}
+
+\begin{obs}
+    
+\end{obs}
 
 Observe that there are a finite possible number of execution classes of a program $A$ since $A$ must have a finite number of states; additionally, a class coupling strategy for an execution class $[\rho]_G$ directly induces execution coupling strategies for every complete execution in the class. 
 
@@ -909,9 +899,18 @@ As before, for a coupling strategy to have finite cost, we must ensure that ever
     \end{itemize}
 \end{prop}
 
+Perhaps surprisingly, we prove that coupling proofs are \textbf{complete} for programs of this form; while producing a valid and finite cost coupling proof is clearly sufficient for a program to be private, it is also necessary for such a coupling proof to exist for privacy. 
 
+\begin{thm}
+    There exists a valid and finite cost coupling strategy for a program $P$ if and only if $P$ is $d\varepsilon$-differentially private for some $d>0$. 
+\end{thm}
 
-Surprisingly, we prove that 
+\begin{lemma}
+    If there exists a valid coupling strategy with cost $d>0$ for a program $P$, then $P$ is $d\varepsilon$-differentially private. 
+\end{lemma}
+\begin{proof}
+    [follows from all previous results]
+\end{proof}
 
 
 \subsection{DiPA}
@@ -925,22 +924,12 @@ Surprisingly, we prove that
 \end{defn}
 
 \begin{prop}[informal]
-    The class of programs captured by [above] is exactly the set of programs captured by DiPA. 
+    There is a bijection between the set $S_P$ of all possible programs $P$ and the set of all possible DiPAs $S_D$. [that preserves coupling proofs etc]
 \end{prop}
-
-
-
 
 
 \subsubsection{Deciding Privacy}
 
-
-\begin{lemma}
-    If there exists some valid coupling strategy $S$ for a DiPA $A$ with $cost(S)<\infty$, then $A$ is $cost(S)$-DP.
-\end{lemma}
-\begin{proof}
-    Follows immediately from [before].
-\end{proof}
 
 \begin{defn}[Leaking Pair, etc from DiPA]
     [...]
@@ -959,9 +948,7 @@ Note that for any path in $A$, we have a list of constraints that a coupling str
     \item If $t_i$ is in a cycle and $c_i\neq \texttt{true}$, then $\gamma_i' = -\texttt{in}\brangle{1}_i+\texttt{in}\brangle{2}_i$
 \end{enumerate}
 
-
 If all constraints are statisfied, then $A$ is private. 
-
 
 \begin{lemma}
     If there does not exist a valid coupling strategy for a DiPA $A$ with finite cost, then $A$ is not differentially private. 
@@ -969,7 +956,7 @@ If all constraints are statisfied, then $A$ is private.
 \begin{proof}
     Consider a ``maximially'' satisfied coupling strategy $C=(\mathbf{\gamma}, \mathbf{\gamma}')$; i.e. there is no other coupling strategy $C'$ for $A$ such that $C'$ satisfies more constraints than $C$. By lemma [tbd], we are allowed to only consider coupling strategies $C=(\gamma, \gamma')$ such that, for all $i\in AT(A)$, $\gamma_i \in \{-1, 0, 1\}$. 
 
-    Fix some lasso $\rho$ in $A$ such that at least one constraint is not satisfied by $C$ as applied to $\rho$.
+    Fix some execution class $\rho$ in $A$ such that at least one constraint is not satisfied by $C$ as applied to $\rho$.
 
     By assumption, at least one constraint is unsatisfied by $C$. We will show that in every case, $A$ must contain at least one of a leaking cycle, leaking pair, disclosing cycle, or privacy violating path. By theorem \ref{DiPACounterexamplesThm}, this is sufficient to show that $A$ is not $d\varepsilon$-differentially private for any $d>0$.
 
@@ -977,51 +964,85 @@ If all constraints are statisfied, then $A$ is private.
     
     In this case, $c_i = \lguard[\texttt{x}]$ and $\gamma_i > \gamma_{at(i)}$. Note that $\gamma_{at(i)} \neq 1$. 
 
-    There are two ways to resolve constraint (1): either setting $\gamma_i = \gamma_{at(i)}$ or $\gamma_{at(i)} = 1$. 
+    We can assume that for all assignment transitions $t_at(k)$ in $\rho$ that $t_{at(k)}$ is not in a cycle, since otherwise there would be a leaking cycle in $A$. 
 
-    Because $C$ is maximal, we know that setting $\gamma_i=\gamma_{at(i)}$ must violate some other constraint. In particular, it can either violate constraints (3) or (5) for $\gamma_i$ or constraint (1) for some $\gamma_j$ such that $at(j) = i$. 
+    \textbf{Case 1.1: $t_i$ is in a cycle}
 
-    Similarly, if we set $\gamma_{at(i)} = 1$, then constraints (1), (3), or (5) for $\gamma_{at(i)}$ or constraint (2) for some $\gamma_k$ such that $at(k) = at(i)$ would be violated. 
-
-
-
-    \textbf{Case 1a: Setting $\gamma_i = \gamma_{at(i)}$ would violate (3) for $\gamma_i$}
-
-    In this case, then $\sigma_i = \texttt{insample}$. Additionally, $\gamma_{at(i)} \neq 0$, so $\gamma_{at(i)} = -1$. 
-
-    Changing $\gamma_{at(i)}$ from -1 to 0 to satisfy contraint (3) for $\gamma_i$ can newly violate constraints (1) or (5) for $\gamma_{at(i)}$ or constraint (2) for some $\gamma_j$ such that $at(j) = at(i)$. We appeal to case (3a) to show that in such a scenario, there must be a leaking cycle, disclosing cycle, or privacy violating path. 
-
-    \textbf{Case 1b: Setting $\gamma_i = \gamma_{at(i)}$ would violate (5) for $\gamma_i$}
+    In this case, we can suppose that $t_i$ is not an assignment transition and $t_i$ does not output $\texttt{insample}$ or $\texttt{insample}'$, since otherwise either a leaking cycle or a disclosing cycle would clearly exist in $A$. We can thus additionally assume that constraint (5) is satisfied for $\gamma_i$. 
     
-    The only way to satisfy both constraints (1) for $\gamma_i$ and (5) is if $\gamma_{at(i)} = 1$. We then appeal to cases (1d-1g).
+    Noe that the cycle containing $t_i$ is also an $\texttt{L}$-cycle by definition.
 
-    \textbf{Case 1c: Setting $\gamma_i = \gamma_{at(i)}$ would violate (1) for some $\gamma_j$ such that $at(j) = i$}
+    Then attempting to resolve (1) for $\gamma_i$ by setting $\gamma_{at(i)} = 1$ must violate another constraint. In particular, either constraint (1) or (3) for $\gamma_{at(i)}$ or constraint (2) for some $\gamma_j$ such that $at(j) = at(i)$ must be newly violated. Note that constraint (5) for $\gamma_{at(i)}$ cannot be violated since we assumed that $t_{at(i)}$ is not in a cycle. 
 
-    In this case, $\gamma_i$ was changed from 1 to $\gamma_{at(i)} \in \{-1, 0\}$; additionally, $t_i$ is an assignment transition. We can assume that $t_i$ is not in a cycle, since if it were, the cycle containing $t_i$ would be a leaking cycle. 
+    \textbf{Case 1.1.1: setting $\gamma_{at(i)} = 1$ violates constraint (1) for $\gamma_{at(i)}$}
 
-    Note that $c_j = \lguard[\texttt{x}]$.
+    - either leaking pair or pvp
 
-    If $\gamma_i = 0$, then $\gamma_{j} >0$ originally. Then to satisfy constraint (1) for $\gamma_j$, we must either assign $\gamma_{at(i)} = \gamma_i = 1$ or assign $\gamma_j = 0$. If we assign $\gamma_{at(i)} = \gamma_i =1$, then we appeal to cases (1d-1g). 
-    Otherwise, we will show that even if we assign $\gamma_j=0$, we must still assign $\gamma_{at(i)} =\gamma_i=1$ to attempt to satisfy more constraints. If we assign $\gamma_j=0$, then either constraint (5) for $\gamma_j$ or constraint (1) for some $\gamma_k$ such that $at(k) = j$ must be newly violated. Note that (2) cannot be newly violated for some $\gamma k$ such that $at(k) = j$ since $j>0$ originally; if (2) was satisfied when $j>0$, then (2) must still be satisfied when $j=0$. 
+    \textbf{Case 1.1.2: Setting $\gamma_{at(i)}=1$ would violate (3) for $\gamma_{at(i)}$}
+    assume not disclosing / leaking cycle
 
-    If constraint (5) for $\gamma_j$ is newly violated, then the only way to satisfy (1) for $\gamma_j$ is to set $\gamma_{at(j)} = \gamma_{i}=\gamma_{at(i)}=1$. As before, we appeal to cases (1d-1g).
+    - then privacy violating path
 
-    If assigning $\gamma_j=0$ would newly violate constraint (1) for some $\gamma_k$ such that $at(k) = j$, then 
+    \textbf{Case 1.1.3: Setting $\gamma_{at(i)}=1$ would violate (2) for some $\gamma_k$ such that $at(k)= at(i)$}
 
-    ???
+    
 
-    {\color{red} come back to this}
+    - leaking pair or pvp
 
+    \textbf{Case 1.2: $t_i$ is not in a cycle}
 
-    If $\gamma_i = -1$, then $\gamma_j > -1$. Satisfying (1) for $\gamma_j$ by setting $\gamma_j = -1$ can possibly violate constraints (3) or (5) for 
+    Note that $t_i$ must either be an assignment transition or output $\texttt{insample}$ or both, since otherwise, setting $\gamma_i = \gamma_{at(i)}$ would resolve constraint (1) for $\gamma_i$ without violating any other constraint. 
 
-    \textbf{Case 1d: Setting $\gamma_{at(i)}=1$ would violate (1) for $\gamma_{at(i)}$}
+    \textbf{Case 1.2.1: $t_i$ outputs $\texttt{insample}$ and $t_i$ is an assignment transition}
 
-    \textbf{Case 1e: Setting $\gamma_{at(i)}=1$ would violate (3) for $\gamma_{at(i)}$}
+    In this case, attempting to resolve constraint (1) without violating constraint (3) for $\gamma_i$ by setting $\gamma_i = \gamma_{at(i)} = 0$ must violate some other constraint. In particular, setting $\gamma_{at(i)} = 0$ can newly violate constraint (1) for $\gamma_{at(i)}$ or constraint (2) for some $\gamma_j$ such that $at(j) = at(i)$; note that setting $\gamma_{at(i)}=0$ cannot \textit{newly} violate constraint (1) for some $\gamma_j$ such that $at(j) = at(i)$. 
+    Alternatively, setting $\gamma_i = 0$ could potentially newly violate either constraint (1) or constraint (2) for some $\gamma_j$ such that $at(j) = i$. 
 
-    \textbf{Case 1f: Setting $\gamma_{at(i)}=1$ would violate (5) for $\gamma_{at(i)}$}
+    \textbf{Case 1.2.2.1: Setting $\gamma_{at(i)} =0$ violates constraint (1) for $\gamma_{at(i)}$}
 
-    \textbf{Case 1g: Setting $\gamma_{at(i)}=1$ would violate (2) for some $\gamma_k$ such that $at(k)= at(i)$}
+    Let $t_{at(k)}$ be the earliest assignment transition before $t_{at(i)}$ such that, for all $at(k)\leq at(l)< at(i)$, $\gamma_{at(l)} = -1$ and $c_{at(l)} = \lguard[\texttt{x}]$. Then there must be \textit{some} $\gamma_{at(l)}$ such that setting $\gamma_{at(l)} = 0$ would violate constraint (2) for some $\gamma_{l'}$ such that $at(l') = at(l)$.  
+    Additionally, note that setting $\gamma_{l'} = \gamma_{at(l)} = 0$ can only violate constraint (5) for $\gamma_{l'}$, since $\gamma_{l'}$ cannot be an assignment transition. 
+    
+    Thus, $t_{l'}$ is in a cycle, so the cycle containing $t_{l'}$ is a \gcycle. Note that the path from $t_{l'}$ to $t_i$ is an $\texttt{AL}$-path. Therefore, there is a privacy violating path from $t_{l'}$ to $t_i$.
+
+    \textbf{Case 1.2.2.2: Setting $\gamma_{at(i)} =0$ violates constraint (2) for some $\gamma_j$ such that $at(j) = at(i)$}
+
+    Note that $j\neq i$, meaning that $t_j$ is not an assignment transition. Then setting $\gamma_j = \gamma_{at(i)} = 0$ must violate constraint (5) for $\gamma_j$; this means that $t_j$ is in a \gcycle. 
+
+    If $i<j$, then the path from $t_i$ to $t_j$ is an $\texttt{AL}$-path, so it is also a privacy violating path.
+
+    Otherwise illustratef $j<i$, then the path from $t_j$ to $t_i$ is an $\texttt{AG}$ path, so it is also a privacy violating path.
+
+    \textbf{Case 1.2.2.3: Setting $\gamma_i =0$ violates constraint (1) for some $\gamma_j$ such that $at(j) = i$}
+
+    If $\gamma_j$ is not an assignment transition, then setting $\gamma_j = \gamma_i = 0$ must violate constraint (5) for $\gamma_j$, so $t_j$ is in an \lcycle. Then there is a privacy violating path from $t_i$ to $t_j$, since the path from $t_{i+1}$ to $t_j$ is an $\texttt{AL}$-path by virtue of not containing any assignment transitions. 
+
+    Otherwise if $t_j$ is an assignment transition, then $\gamma_j$ must originally be set to 1. Let $t_{at(k)}$ be the latest assignment after $t_{i}$ such that, for all $i\leq at(l)< at(k)$, $\gamma_{at(l)} = 1$ and $c_{at(l)} = \lguard[\texttt{x}]$. Then there must be \textit{some} $\gamma_{at(l)}$ such that setting $\gamma_{at(l)} = 0$ would violate constraint (1) for some $\gamma_{l'}$ such that $at(l') = at(l)$.  
+    Additionally, note that setting $\gamma_{l'} = \gamma_{at(l)} = 0$ can only violate constraint (5) for $\gamma_{l'}$, since $\gamma_{l'}$ cannot be an assignment transition. 
+
+    Then $\gamma_{l'}$ must be in an \lcycle. Since the path from $t_i$ to $t_{l'}$ is an $\texttt{AL}$-path, there is a privacy violating path from $t_i$ to $t_{l'}$.
+
+    \textbf{Case 1.2.2.4: Setting $\gamma_i =0$ violates constraint (2) for some $\gamma_j$ such that $at(j) = i$}
+
+    This case is exactly symmetric to case 1.2.2.3.
+
+    \textbf{Case 1.2.2: $t_i$ outputs $\texttt{insample}$ and $t_i$ is not an assignment transition}
+
+    We can assume that $\gamma_{at(i)} = -1$ originally, since otherwise, setting $\gamma_i = 0$ would resolve constraint (1) without violating any additional ones.
+
+    Thus attempting to resolve constraint (1) while preserving constraint (3) for $\gamma_i$ by setting $\gamma_{at(i)}=\gamma_i =0$ must violate constraint (1) for $\gamma_{at(i)}$. 
+   
+    Let $t_{at(k)}$ be the earliest assignment transition before $t_{at(i)}$ such that, for all $at(k)\leq at(l)< at(i)$, $\gamma_{at(l)} = -1$ and $c_{at(l)} = \lguard[\texttt{x}]$. Then there must be some $\gamma_{at(l)}$ such that setting $\gamma_{at(l)} = 0$ would violate constraint (2) for some $\gamma_{l'}$ such that $at(l') = at(l)$.  
+    Additionally, note that setting $\gamma_{l'} = \gamma_{at(l)} = 0$ can only violate constraint (5) for $\gamma_{l'}$, since $\gamma_{l'}$ cannot be an assignment transition. 
+    
+    Thus, $t_{l'}$ is in a cycle, so the cycle containing $t_{l'}$ is a \gcycle. Note that the path from $t_{l'}$ to $t_i$ is an $\texttt{AL}$-path. Therefore, there is a privacy violating path from $t_{l'}$ to $t_i$.
+
+    \textbf{Case 1.2.3: $t_i$ does not output $\texttt{insample}$ and $t_i$ is an assignment transition}
+
+    In this case, attempting to resolve (1) by setting $\gamma_{at(i)} = 1$ must violate some other constraint. [gcycle or bad output]
+
+    Additionally, attempting to resolve (1) by setting $\gamma_i = \gamma_{at(i)}$ must violate some other constraint. [lcycle?]
+
 
     \textbf{Case 2: (2) is unsatisfied for $\gamma_i$}
 
@@ -1033,7 +1054,7 @@ If all constraints are statisfied, then $A$ is private.
 
     Because $C$ is maximal, setting $\gamma_i=0$ must violate at least one of constraints (1) or (2) for $\gamma_i$ or (1) for some $\gamma_l$ such that $at(l) = i$.
 
-    \textbf{Case 3a: Satisfying (3) for $\gamma_i$ would violate (1) for $\gamma_i$}
+    \textbf{Case 3.1: Satisfying (3) for $\gamma_i$ would violate (1) for $\gamma_i$}
 
     This means that $\gamma_{at(i)}<0\implies \gamma_{at(i)} = -1$. Further, $c_i = \lguard[\texttt{x}]$. Then changing $\gamma_{at(i)}=0$ can newly violate constraints (1) or (5) for $\gamma_{at(i)}$ or constraint (2) for some $\gamma_j$ such that $at(j) = at(i)$.
 
@@ -1057,11 +1078,11 @@ If all constraints are statisfied, then $A$ is private.
     Otherwise, if setting $\gamma_j = 0$ would violate constraint (5) for $\gamma_j$, then $t_j$ is in a $\texttt{G}$-cycle. We can assume that $j\neq i$ because otherwise, the cycle containing $t_j$ would be a disclosing cycle. Additionally, note that there are no assignment transitions between $t_i$ and $t_j$ or vice versa, since $at(j) = at(i)$.
     Thus, if $j<i$, then there is an $\texttt{AL}$-path from $t_j$ to $t_i$, which forms a privacy violating path. Symmetrically, if $i<j$, then there is an $\texttt{AG}-$path from $t_i$ to $t_j$, which again forms a privacy violating path. 
 
-    \textbf{Case 3b: Satisfying (3) for $\gamma_i$ would violate (2) for $\gamma_i$}
+    \textbf{Case 3.2: Satisfying (3) for $\gamma_i$ would violate (2) for $\gamma_i$}
 
     This case is exactly symmetric to case (3a).
 
-    \textbf{Case 3c: Satisfying (3) for $\gamma_i$ would violate (1) for some $\gamma_l$ where $at(l) = i$}
+    \textbf{Case 3.3: Satisfying (3) for $\gamma_i$ would violate (1) for some $\gamma_l$ where $at(l) = i$}
 
     Note that $t_i$ must be an assignment transition. Further, we know that $\gamma_l>0$ and $c_l = \lguard[\texttt{x}]$. 
     
@@ -1076,7 +1097,7 @@ If all constraints are statisfied, then $A$ is private.
     Otherwise, since $C$ is maximal, we cannot set $\gamma_{at(k)}=0$ for any $l<at(k)\leq at(j)$ without violating another constraint. In particular, there must be some $at(k)$ such that setting $\gamma_{at(k)} = 0$ would violate constraint (1) for some $\gamma_{k'}$ such that $at(k') = at(k)$. Note that there must be an \texttt{AL}-path from $t_i$ to $t_{k'}$. Then, as before, there must be a privacy violating path from $t_i$ to $t_{k'}$. 
 
 
-    \textbf{Case 3d: Satisfying (3) for $\gamma_i$ would violate (2) for some $\gamma_l$ where $at(l) = i$} 
+    \textbf{Case 3.4: Satisfying (3) for $\gamma_i$ would violate (2) for some $\gamma_l$ where $at(l) = i$} 
 
     This case is exactly symmetric to case (3c).
 
@@ -1086,7 +1107,7 @@ If all constraints are statisfied, then $A$ is private.
 
     \textbf{Case 5: (5) is unsatisfied for $t_i$:} Because $C$ is maximal, we know that if $\gamma_i = -\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}$ then another constraint must be violated. In particular, at least one of constraints (1), (2), or (3) must be violated for $\gamma_i$. 
     
-    \textbf{Case 5a: Satisfying (5) for $t_i$ would violate (1)}
+    \textbf{Case 5.1: Satisfying (5) for $t_i$ would violate (1)}
 
     If (1) is now violated, then either $t_i$ is an assignment transition or $c_i = \lguard[\texttt{x}]$ and $\gamma_{at(i)}<1$. If $t_i$ is an assignment transition, then the cycle containing $t_i$ has a transition with a non-$\texttt{true}$ guard ($t_i$) and an assignment transition, so it must be a leaking cycle. 
 
@@ -1110,11 +1131,11 @@ If all constraints are statisfied, then $A$ is private.
     If constraint (3) would be violated for $\gamma_{at(k)}$ then $t_{at(k)}$ outputs $\texttt{insample}$, so as before, there is a privacy violating path from $t_{at(k)}$ to $t_i$. Otherwise if constraint (2) would be violated for some $\gamma_l$ such that $at(l) = at(k)$, then as before, $\gamma_l$ must either output $\texttt{insample}$ or $t_l$ is in a cycle. 
     Just like before, this means that there must be either a privacy violating path from $t_l$ to $t_i$ or the cycle containing $t_l$ and the cycle containing $t_i$ together make up a leaking pair. 
 
-    \textbf{Case 5b: Satisfying (5) for $t_i$ would violate (2)}
+    \textbf{Case 5.2: Satisfying (5) for $t_i$ would violate (2)}
 
     This case is exactly symmetric to case (5a).
 
-    \textbf{Case 5c: Satisfying (5) for $t_i$ would violate (3)}
+    \textbf{Case 5.3: Satisfying (5) for $t_i$ would violate (3)}
 
     If (3) would be violated, then $t_i$ must output $\texttt{insample}$. Then the cycle containing $t_i$ must be a disclosing cycle. 
     
@@ -1168,13 +1189,21 @@ If we have a differentially private program, we'd also like to optimize its priv
 \end{prop}
 
 \begin{conj}[IF I HAVE TIME LOOK INTO THIS]
-    Optimal coupling cost $\leq$ cost given by original DiPA analysis. 
+    Optimal coupling cost $\leq$ cost given by original DiPA analysis. [Vishnu says he almost certainly has a proof of this]
 \end{conj}
 
 \begin{conj}
     Optimal coupling cost = ``true'' optimal privacy cost
 \end{conj}
 
+
+\section{Extensions}
+
+- brief word about counter, maybe the simplified multivariable case
+
+\subsection{Two-Threshold Programs}
+
+\noindent\hrulefill
 
 \section{DiPA}
 
