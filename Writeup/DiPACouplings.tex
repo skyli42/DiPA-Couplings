@@ -287,9 +287,9 @@ In general, we will assume that at all states $q$, $x_q$ has been sampled from s
 \begin{obs}[Transition probabilities]
     Consider a single transition $t=(q, q', c, \sigma, \tau)$ from state $q\in Q$ to $q'\in Q$. Additionally, let $x_q\sim \Lap(\hat{\mu_q}, \frac{1}{\hat{d_q}\varepsilon})$ be the initial stored value of $\texttt{x}$ at $q$. 
 
-    Let $\sigma_0$ be a \textit{potential} output of $t$. In particular, if $\sigma\in \{\texttt{insample}, \texttt{insample}'\}$, then let $\sigma_0 = (\texttt{insample}, a, b)$ or $\sigma_0 = (\texttt{insample}', a', b')$ as appropriate. Otherwise, $\sigma_0 = \sigma\in \Gamma$. 
+    Let $\sigma_0$ be a \textit{potential} output of $t$
     
-    Then, given an input $\texttt{in}$ at $q$, the \textbf{probability} that $t$ is taken with output $\sigma_0$ is clearly \[
+    Then, given an input $\texttt{in}$ at $q$, the \textbf{probability} that $t$ is taken with output $\sigma_0$ in range $(a, b)\subseteq \RR$ is \[
         \PP[x_q, t, \texttt{in}, \sigma_0] = \begin{cases}
             \PP[c\text{ is satisfied}] & \sigma_0 =\sigma \\
             \PP[c\text{ is satisfied}\land \texttt{insample}\in(a, b)] & \sigma_0 = (\texttt{insample}, a, b)\\
@@ -301,6 +301,7 @@ In general, we will assume that at all states $q$, $x_q$ has been sampled from s
 
 Note, in particular, that $c$ being satisfied and $\texttt{insample}\in (a, b)$ are not independent events.
 
+\hrulefill{\color{red}Move this to proof section probably}
 
 More precisely, if $(u, v), (u', v')\in \RR_{\infty}$ is defined as follows:
     \begin{align*}
@@ -321,7 +322,7 @@ More precisely, if $(u, v), (u', v')\in \RR_{\infty}$ is defined as follows:
         \end{cases}
     \]
     where $\Lap_{\mu, s}(x)$ is the PDF of a Laplace distribution with mean $\mu$ and spread parameter $s$.
-
+\hrulefill
 
 
 Recall that $\texttt{in}$, in reality, represents a \textbf{function} of some underlying dataset. This means that `closeness' in this context is defined as follows:
@@ -856,11 +857,7 @@ However, this naive approach is not actually tractable, since there are possibly
 
 What we will show instead is that, inspired by our work with lassos, we can choose a coupling strategy for each of a finite number of execution classes of $A$, which will induce coupling strategies for every execution of $A$. 
 
-
-\begin{defn}
-    Given a complete execution $\rho = q_0\to \ldots \to q_n$ of a program $A$, let the description $desc(\rho)$ of $\rho$ be the cycle-free substring of $\rho$. {\color{red} still don't like this definition}
-\end{defn}
-
+\hrulefill
 {\color{red} ALTERNATIVE DEFINITION FROM SUBGRAPHS}
 \begin{defn}
     For an execution $\rho$ of a program $A$, let $graph(\rho)$ be the subgraph of the underlying graph of $A$ that is traversed by $\rho$. That is, if the underlying graph of $A$ is $G=(V, E)$, then $graph(\rho) = (V', E')$, where $V'\subseteq V$, $E'\subseteq E$, and for all transitions $t_i = (q_i, q_{i+1}, c_i, \sigma_i, \tau_i)$, $q_i, q_{i+1}\in V$ and $(q_i, q_{i+1}) \in E$. 
@@ -872,37 +869,122 @@ Note that the relation between complete executions $\sim_G$ where $\rho \sim_G\r
     Consider an execution class $[\rho]_G$ of a program $A$ and let $G=(V, E) = graph(\rho)$ be the underlying subgraph of $[\rho]_G$. A [name tentative] class coupling strategy $C_{[\rho]_G}$ for $[\rho]_G$ is a function $C_{[\rho]_G}: E\to (\RR\times\RR\to[-1, 1])\times (\RR\times\RR\to[-1, 1])$ mapping edges of $G$ to shift functions $(\gamma, \gamma')$.
 \end{defn}
 
-\begin{obs}
-    
-\end{obs}
-
 Observe that there are a finite possible number of execution classes of a program $A$ since $A$ must have a finite number of states; additionally, a class coupling strategy for an execution class $[\rho]_G$ directly induces execution coupling strategies for every complete execution in the class. 
 
+
+\hrulefill
+
+\begin{defn}[Execution Descriptions]
+    Given a complete execution $\rho = q_0\to \ldots \to q_n$ of a program $A$, let the description $desc(\rho)$ of $\rho$ be the cycle-free substring of $\rho$. {\color{red} still don't like this definition}
+\end{defn}
+
+Note that the relation between complete executions $\sim$ where $\rho \sim\rho'$ if and only if $desc(\rho) = desc(\rho')$ is clearly an equivalence relationship; let $[\rho]$ be the equivalence class of $\rho$ defined by this relationship for any complete execution $\rho$ of a program $A$. 
+
+\begin{defn}[Execution Class]
+    An execution class $[\rho]$ of a program $A$ is the equivalence class of an execution $\rho$ of $A$ under the aforementioned equivalence relation. 
+\end{defn}
+
+\begin{obs}
+    There are a finite number of execution classes of a program $A$ because there are a finite number of simple paths through any finite graph.
+\end{obs}
+
+\begin{defn}[Class Coupling Strategies]
+    Given an execution class $[\rho]$ of a program $A$, let $T$ be the set of all transitions of any path in $[\rho]$. Note that $T$ is finite. Then a (class) coupling strategy for $[\rho]$ is a pair of functions $C = (\gamma, \gamma')$ such that $\gamma:T\to (\RR\times\RR\to[-1, 1])$ and $\gamma':(\RR\times\RR\to[-1, 1])$ are two shift functions that map each transition in $[\rho]$ to a shift in $[-1, 1]$. 
+\end{defn}
+
+
+\begin{defn}[Induced Coupling Strategy]
+    {\color{red}not sure how necessary this is}
+    Given a class coupling strategy $C = (\gamma, \gamma')$ for an execution class $[\rho]$ and a specific execution $\rho\in [\rho]$, the coupling strategy for $\rho=q_0\to \ldots \to q_n$ induced by $C$ is the pair of functions $\gamma_\rho, \gamma'_\rho$ such that 
+    \begin{align*}
+        \gamma_\rho(\texttt{in}\brangle{1}, \texttt{in}\brangle{2}) &= (\gamma(q_0\to q_1)(\texttt{in}\brangle{1}, \texttt{in}\brangle{2}), \gamma(q_1\to q_2)(\texttt{in}\brangle{1}, \texttt{in}\brangle{2}), \ldots,\gamma(q_{n-1}\to q_n)(\texttt{in}\brangle{1}, \texttt{in}\brangle{2}) )\\
+        \gamma'_\rho(\texttt{in}\brangle{1}, \texttt{in}\brangle{2}) &= (\gamma'(q_0\to q_1)(\texttt{in}\brangle{1}, \texttt{in}\brangle{2}), \gamma'(q_1\to q_2)(\texttt{in}\brangle{1}, \texttt{in}\brangle{2}), \ldots,\gamma'(q_{n-1}\to q_n)(\texttt{in}\brangle{1}, \texttt{in}\brangle{2}) )
+    \end{align*}
+\end{defn}
+
 \begin{defn}
-    The cost of a class coupling strategy $C_{[\rho]_G}$ for an execution class $[\rho]_G$ is $cost(C_{[\rho]_G}) = \max_{\rho'\in [\rho]_G}cost(C_{\rho'})$, where $C_{\rho'}$ is the execution coupling strategy for $\rho'$ induced by $C_{[\rho]_G}$.
+    The cost of a class coupling strategy $C$ for an execution class $[\rho]$ is $cost(C) = \sup_{\rho\in [\rho]}cost(C_{\rho})$, where $C_{\rho}$ is the execution coupling strategy for $\rho'$ induced by $C$.
 \end{defn}
 
 \begin{prop}
-    If, for every complete execution class $[\rho]_G$ of a program $A$, there is a coupling strategy $C_{[\rho]_G}$ such that $cost(C_{[\rho]_G})<d$, then $A$ is $d\varepsilon$-differentially private.
+    If, for every complete execution class $[\rho]$ of a program $A$, there is a coupling strategy $C_{[\rho]}$ such that $cost(C_{[\rho]})<d$, then $A$ is $d\varepsilon$-differentially private.
 \end{prop}
 
-Indeed, for the purposes of privacy, we do not need to distinguish between different members of execution classes. 
+As with lassos, we primarily care about making sure that cycle transitions are costless. 
 
 \begin{prop}
-    If there exists a valid and finite cost coupling strategy for every execution in a program $A$, then there exists a class coupling strategy for each execution class $[\rho]_G$ of $A$ that is valid and has finite cost. {\color{red} also the same cost?} 
-\end{prop}
-
-\begin{prop}
-    If, for all execution classes $[\rho]_G$ of a program $A$, there exists a coupling strategy $C_{[\rho]_G}$ such that $cost(C_{[\rho]_G})\leq d$, then $A$ is $d\varepsilon$-differentially private. 
-\end{prop}
-
-As before, for a coupling strategy to have finite cost, we must ensure that every cycle transition has no cost:
-\begin{prop}
-    A valid class coupling strategy $C_{[\rho]_G}$ of $A$ has finite cost if and only if the following constraint holds for every distinct transition $t_i$ in $[\rho]_G$:
+    A valid class coupling strategy $C=(\gamma, \gamma')$ for an execution class $[\rho]$ has finite coupling cost if and only if the following constraint holds for all $i$: 
     \begin{itemize}
-        \item If $t_i$ is in a cycle in $graph(\rho)$ and $c_i\neq\texttt{true}$, then $\gamma_i = -\texttt{in}\brangle{1}_i+\texttt{in}\brangle{2}_i$ and $\gamma_i' = -\texttt{in}\brangle{1}_i+\texttt{in}\brangle{2}_i$.
+        \item If $t_i$ is in a cycle in $[\rho]$ and $c_i\neq\texttt{true}$, then $\gamma_i = -\texttt{in}\brangle{1}_i+\texttt{in}\brangle{2}_i$ and $\gamma_i' = -\texttt{in}\brangle{1}_i+\texttt{in}\brangle{2}_i$.
     \end{itemize}
 \end{prop}
+
+
+Indeed, collapsing the infinite collection of executions in a program to the finite set of execution classes does not cost us anything. 
+
+\begin{prop}
+    If there exists a valid coupling strategy $C_\rho$ with cost $cost(C_\rho)$ for every execution $\rho$ of an execution class $[\rho]$ in a program $A$ and $\sup_{\rho\in [\rho]}cost(C_\rho)< \infty$, then there exists a class coupling strategy $C'$ for $[\rho]$ of $A$ that is valid such that $cost(C') \leq \sup_{\rho\in [\rho]}cost(C_\rho)$. 
+\end{prop}
+
+\begin{proof}{\color{red} Make sure to put this proof after the DiPA counterexample proof}
+
+    Because $\sup_{\rho\in [\rho]}cost(C_\rho)< \infty$, we can assume that there are no leaking cycles, disclosing cycles, leaking pairs, or privacy violating paths in $[\rho]$.
+
+
+    For a given execution $\rho$ and a coupling strategy $C_\rho$, recall that we effectively assign each transition $t_i$ in $\rho$ the cost $\max_{\Delta \in \{-1, 0, 1\}}|\Delta - \gamma_i(\Delta)| + |\Delta' - \gamma'_i(\Delta)|$. For convenience, we will shorthand this quantity as $\delta(\rho, t_i) + \delta'(\rho, t_i)$.
+
+
+    For all $n\in \NN$, let $\rho_n$ be the path in $[\rho]$ with every cycle in $\rho_n$ repeated $n$ times. 
+
+   Let $cycle([\rho])$ be the set of all transitions in $[\rho]$ that are contained within a cycle in $[\rho]$. Observe that for all $t\in cycle([\rho])$, \[
+        \lim_{n\to\infty}\inf_{t_i\in\rho_n: t_i=t} \delta(\rho_n, t_i) = 0
+    \]
+    Informally, for every cycle transition $t$ in $[\rho]$, if the cycle it is contained in is iterated enough times, there must be some iteration $t_i$ of $t$ that is assigned costs approaching 0. 
+
+    This can be shown by considering a transition $t$ in a cycle in $[\rho]$ whose minimum coupling cost is non-zero (i.e. $\inf_{\rho\in[\rho]; t_i=t} \delta(t_i) > 0$). Then for any finite $d>0$, there exists an execution $\rho_n$ where $n>\lceil\frac{d}{\inf\delta(t_i)}\rceil+1$. Then $cost(C_{\rho^*})>d$, which implies that $\sup_{\rho\in [\rho]}cost(C_\rho) = \infty$, so the observation must hold. 
+
+    Let $t_i$ be a transition in a cycle in $[\rho]$ and let $\mathcal{C}_i$ be the cycle containing $t_i$. 
+
+    Then in particular, if $\mathcal{C}_i$ contains a transition with guard $\lguard[\texttt{x}]$, then for all $\psi>0$, there exists $n\in \NN$ such that for $\rho_n\in [\rho]$, $\gamma_{at(i)}> 1-\psi$ and if $\mathcal{C}_i$ contains a transition with guard $\lguard[\texttt{x}]$, then for all $\psi>0$, $\gamma_{at(i)}> -1+\psi$. 
+    Informally, assignment transitions before an \lcycle\ have shifts that approach 1 and assignment transitions before a \gcycle\ have shifts that approach -1 in $\rho_n$ as $n\to\infty$. 
+
+    Because we know that all coupling strategies $C_{\rho}$ are valid, this may also imply that other assignment transitions also have shifts that approach 1 or -1. 
+
+    Further, if the shifts for an assignment transition $t_i$ approach 1, then the shifts for a transition $t_j$ such that $at(j) = i$ and $c_j = \gguard[\texttt{x}]$ must also approach 1; symmetrically, if the shifts for an assignment transition $t_i$ approach -1, then the shifts for a transition $t_j$ such that $at(j) = i$ and $c_j = \lguard[\texttt{x}]$ must also approach -1. 
+
+    Let $T_1$ and $T_{-1}$ be the sets of assignment transitions in $[\rho]$ that approach 1 and -1, respectively. 
+
+    Note that every other transition in $[\rho]$ is a non-cycle transition. Consider such a transition $t$ in $[\rho]$. Then for every execution $\rho\in [\rho]$ and its corresponding coupling strategy $C_\rho$, there is exactly one shift assignment for $t$ because $t$ is not in a cycle. 
+
+    Let the class coupling strategy $C' = (\gamma, \gamma')$ be partially defined as follows: \begin{align*}
+        \gamma(t_i)(\texttt{in}\brangle{1}, \texttt{in}\brangle{2}) &= \begin{cases}
+            1 & t_i \in T_1\\
+            -1 & t_i \in T_{-1}\\
+            \texttt{in}\brangle{1}-\texttt{in}\brangle{2} & c_i = \lguard[\texttt{x}]\land t_{at(i)}\in T_1\\
+            \texttt{in}\brangle{1}-\texttt{in}\brangle{2} & c_i = \gguard[\texttt{x}]\land t_{at(i)}\in T_{-1}\\
+            1 & c_i = \gguard[\texttt{x}]\land t_{at(i)}\in T_1\\
+            -1 & c_i = \lguard[\texttt{x}]\land t_{at(i)}\in T_{-1}
+        \end{cases}\\
+        \gamma'(t_i)(\texttt{in}\brangle{1}, \texttt{in}\brangle{2}) &=\begin{cases}
+            0 & t_i\text{ outputs }\texttt{insample}'\\
+            \texttt{in}\brangle{1}-\texttt{in}\brangle{2} & \text{otherwise}
+        \end{cases}
+    \end{align*}
+
+    Let $T_{un}$ be the set of transitions in $[\rho]$ that are not assigned by $\gamma$ so far. Note that all transitions in $T_{un}$ are not in cycles. 
+
+    Let $C^* = (\gamma^*, \gamma^{*\prime})$ be the minimal-cost valid class coupling strategy such that for all $t\notin T_{un}$, $\gamma^*(t) = \gamma(t)$. 
+
+    In other words, $cost(C^*) = \inf_{\text{all such possible valid class coupling strategies } C} cost(C)$. Note that $C^*$ is valid. 
+
+    We additionally claim that $cost(C^*)\leq \sup_{\rho\in [\rho]}cost(C_\rho)$. The cost of $C^*$ can be separated into costs attributed to $\gamma^{*\prime}$, costs attributed to all transitions not in $T_{un}$ by $\gamma^*$, and costs attributed to all transitions in $T_{un}$ by $\gamma^*$. 
+    
+    First, note that the coupling cost attributed to $\gamma^{*\prime}$ in $C^*$ must be at most the maximimum coupling cost attributed to $\gamma'$ over all execution-specific coupling strategies. From before, we additionally know that the cost attributed to all transitions $t\notin T_{un}$ by $\gamma^*$ is at most the supremum of the costs attributed to $t$ over all executions in $[\rho]$, since we take the limit of all such shifts for $\rho_n$ as $n\to\infty$.
+
+    Finally, since all execution-specific coupling strategies are valid, taking the remaining transition shifts to minimize the overall cost while retaining a valid coupling strategy sufficies. 
+
+    {\color{red} If i have time, come back to this argument - expressed poorly right now}
+\end{proof}
 
 Perhaps surprisingly, we prove that coupling proofs are \textbf{complete} for programs of this form; while producing a valid and finite cost coupling proof is clearly sufficient for a program to be private, it is also necessary for such a coupling proof to exist for privacy. 
 
