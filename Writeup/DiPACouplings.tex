@@ -640,7 +640,7 @@ As before, the existence of a valid coupling strategy upper bounds the privacy c
     \end{align*}
 \end{prop}
 \begin{proof}
-    (Vishnu)
+There's a massive 
 \end{proof}
 
 Note then, that the process of finding the optimal coupling cost of a execution $\rho$ can be formulated as a linear program.
@@ -688,8 +688,12 @@ We can do no better than assigning coupling strategies for each execution indepe
 \end{defn}
 
 \begin{prop}\label{costDependsExecutionProp}
-    Optimal cost is dependent on execution (Vishnu)
+    Optimal cost is dependent on execution
 \end{prop}
+
+\begin{proof}
+    TODO: Vishnu
+\end{proof}
 
 As previously noted, we use a finite union of complete executions to model an underlying program with branching, in part due to proposition \ref{costDependsExecutionProp}. We now formally define that underlying model:
 
@@ -1247,8 +1251,12 @@ In particular, this lends itself to conceptualizing complete paths by splitting 
 
 In other words, a segment is a subpath of $\rho$ between two consecutive assignment transitions (or between the last assignment transition and the end of the path). Splitting up a path into segments thus allows us to think about a single value of $\texttt{x}$ at a time.
 
+\begin{defn}
+    Segments following each other
+\end{defn}
+
 \begin{prop}
-    [Vishnu's segment graph overview here]
+    [Vishnu's segment graph overview here] TODO: Vishnu
 \end{prop}
 
 \subsection{Minimizing a privacy budget}
@@ -1257,30 +1265,37 @@ If we have a differentially private program, we'd also like to optimize its priv
 
 \begin{prop}
     Introduce linear program here - maybe this is a definition?
+    TODO: Vishnu
 \end{prop}
 
 \begin{prop}
     Introduce approximate version here
+    TODO: Vishnu
 \end{prop}
 
 \begin{prop}
     Optimal linear program always has cost at worst approx version; there is indeed a separation between the optimal + approx
+    TODO: Vishnu
 \end{prop}
 
 \begin{prop}
     Approximate version is an approximation of the optimal by a factor linear in the number of segments. 
+    TODO: Vishnu
 \end{prop}
 
 \begin{prop}
     Approximate version can be solved in polytime
+    TODO: Vishnu
 \end{prop}
 
 \begin{conj}[IF I HAVE TIME LOOK INTO THIS]
     Optimal coupling cost $\leq$ cost given by original DiPA analysis. [Vishnu says he almost certainly has a proof of this]
+    TODO: Vishnu
 \end{conj}
 
 \begin{conj}
     Optimal coupling cost = ``true'' optimal privacy cost
+    TODO: Vishnu
 \end{conj}
 
 
