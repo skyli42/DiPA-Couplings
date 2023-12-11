@@ -260,6 +260,96 @@ We begin by building up a program model for SVT-style algorithms. There are thre
 {\color{red} TODO: add non-input transitions (still don't understand why they're useful) - very trivial since the guards of a non-input transition have to be $\texttt{true}$}
 
 \subsection{Individual Transitions}
+
+
+\begin{defn}
+    Let $Q$ be a finite set of program states. Then $P_Q(q): Q\to \RR^{\geq 0}\times \RR^{\geq 0}$ is a function that associates each state state with two \textbf{noise parameters} $P(q) = (d_q, d_q')$.
+\end{defn}
+
+In our program model, we have a singular persistent real-valued variable $\texttt{x}$, which can be thought of as analogous to the threshold in algorithms like SVT. 
+
+To capture the value of $\texttt{x}$ at different states, we pair each state with possible values of $\texttt{x}$:
+
+\begin{defn}
+    Given a finite set of program states $Q$, the set $Q\times \RR$ is the set of \textbf{instantiated states} of $Q$. 
+\end{defn}
+
+Let $\mathcal{C}=\{\texttt{true}, \lguard[\texttt{x}], \gguard[\texttt{x}]\}$ be a set of \textbf{transition guards}.
+
+We now can define the simplest programs, individual transitions:
+
+\begin{defn}[Transitions]
+    Given a finite set of program states $Q$ and a set of real-valued variables $\{\texttt{x}, \texttt{insample}, \texttt{insample}'\}$. A transition is a tuple $t = (q, q', c, \sigma, \tau)$, where \begin{itemize}
+        \item $q\in Q$ is the initial state.
+        \item $q'\in Q$ is the following state.
+        \item $c\in \mathcal{C}$ is a transition guard that determines if $t$ is taken.
+        \item $\sigma \in \Gamma\cup\{\texttt{insample}, \texttt{insample}'\}$ is the output of $t$.
+        \item $\tau\in\{\texttt{true}, \texttt{false}\}$ is a boolean value indicating whether or not the stored value of $\texttt{x}$ will be updated.
+    \end{itemize}
+    Depending on context, we may also notate $t$ as $q\to q'$. 
+\end{defn}
+
+Semantically, each transition $t = (q, q', c, \sigma, \tau)$ will first read in a real number input $\texttt{in}$, sample two random variables $z\sim\Lap(0, \frac{1}{d\varepsilon})$, $z'\sim\Lap(0, \frac{1}{d'\varepsilon})$, where $P(q) = (d, d')$, and then assign $\texttt{insample} = \texttt{in} + z$ and $\texttt{insample}' = \texttt{in} + z'$. 
+If the guard $c$ is satisfied, then we transition to state $q'$, outputting $\sigma$ and, if $\tau = \texttt{true}$, reassigning $\texttt{x} = \texttt{insample}$. 
+
+These transitions are primarily \textbf{structural} elements, describing in general how a program can move from state $q$ to $q'$. However, we will also want to look at \textbf{individual executions} of a transition, with concrete values for $\texttt{x}$. 
+
+\begin{defn}[Instantiated Transitions]
+    An instantiated transition is a tuple $\hat{t} = ((q, x), (q', x'), c, \sigma, \tau)$, where \begin{itemize}
+        \item $(q, x)\in Q\times \RR$ is the initial state paired with the initial value of $\texttt{x}$ at $q$.
+        \item $(q', x')\in Q\times \RR$ is the following state paired with a (possibly) new value of $\texttt{x}$. 
+        \item $c\in \mathcal{C}$ is a transition guard that determines if $t$ is taken.
+        \item $\sigma \in \Gamma\cup\{\texttt{insample}, \texttt{insample}'\}$ is the output of $t$.
+        \item $\tau\in\{0, 1\}$ is a boolean value indicating whether or not the stored value of $\texttt{x}$ will be updated.
+    \end{itemize}
+    Additionally, if $\tau = 0$, then $x = x'$, since $\texttt{x}$ will not be updated. 
+\end{defn}
+
+To distinguish between the two notationally, all instantiated transitions will be notated $\hat{t}$ where $t$ is the underlying (structural) transition of $\hat{t}$. 
+
+As is natural when analyzing programs for differential privacy, we will often talk about \textbf{possible outputs} of a transition $t$. We observe that for a transition $t = (q, q', c, \sigma, \tau)$, if $\sigma \in \Gamma$, then the possible outputs of $t$ are simply elements of $\Gamma$. 
+
+Otherwise, the possible outputs of $t$ would be all possible real numbers; to avoid issues with probabilities of measure zero sets, we will consider all measurable subsets of real numbers instead. 
+
+Additionally, we will semantically require that in order for $t$ to ``output'' a value, the guard $c$ must be satisfied. 
+
+\begin{defn}[is this a definition?]
+    Let $t = (q, q', c, \sigma, \tau)$ be a transition and let $o$ be a possible output of $t$ (i.e. if $\sigma \in \Gamma$, let $s\in \Gamma$ and if $\sigma \in \{\texttt{insample}, \texttt{insample}'\}$, let $o\subseteq \RR$).
+
+    Then $\PP[t, x, \texttt{in}, o]$ is the \textbf{probability} that $t$ outputs (a value in) $o$ when reading in input $\texttt{in} \in \RR$ given that $\texttt{x} = x$.
+
+    Similarly, let $\hat{t} = ((q, x), (q', x), c, \sigma, \tau)$ be an instantiated transition and let $o$ be a possible output of $\hat{t}$. 
+
+    Then $\PP[\hat{t}, \texttt{in}, o]$ is the \textbf{probability} that $\hat{t}$ outputs $o$ when reading in input $\texttt{in} \in \RR$.
+\end{defn}
+
+
+\begin{obs}[Transition Probabilities]
+    Let $\hat{t} = ((q, x), (q', x'), c, \sigma, \tau)$ be an instantiated transition and let $o$ be a possible output of $\hat{t}$. 
+
+    Then $\PP[\hat{t}, \texttt{in}, o] = \begin{cases}
+        0 & \tau=0\land x \neq x'\\
+        \PP[c\text{ is satisfied}] & \tau=0\land x=x'\land  \sigma \in \Gamma\\
+        \PP[c\text{ is satisfied}\land \texttt{insample}\in o]& \tau=0\land x=x'\land \sigma =\texttt{insample}\\
+        \PP[\texttt{insample}'\in o]\PP[c\text{ is satisfied}]& \tau=0\land x=x'\land \sigma =\texttt{insample}'\\
+        \PP[c\text{ is satisfied}\land \texttt{insample}=x'] & \tau=1\land \sigma \in \Gamma\\
+        \PP[c\text{ is satisfied}\land \texttt{insample}\in o\land \texttt{insample}=x']& \tau=1\land \sigma =\texttt{insample}\\
+        \PP[\texttt{insample}'\in o]\PP[c\text{ is satisfied}\land \texttt{insample}=x']& \tau=1\land \sigma =\texttt{insample}'
+    \end{cases}$
+
+    Let $X\sim \Lap(\mu, \frac{1}{d_x\varepsilon})$ be a random variable representing the initial value of $\texttt{x}$. 
+
+    Consider a transition $t = (q, q', c, \sigma, \tau)$. Let $\hat{t}_{z, z'}$ be the instantiated transition $\hat{t}_x = ((q, z), (q, z'), c, \sigma, \tau)$.
+    Then the probability that $t$ outputs $\sigma$ is \[\PP[t, X, \texttt{in}, o] = \begin{cases}   
+        \int_{-\infty}^\infty\PP[X=z]\PP[\hat{t}_{z, z}, \texttt{in}, o]dz & \tau=0\\
+        \int_{-\infty}^\infty\int_{-\infty}^\infty\PP[\texttt{insample} = z']\PP[X=z]\PP[\hat{t}_{z, z'}, \texttt{in}, o| \texttt{insample}=z']dz'dz & \tau=1
+    \end{cases}\]
+\end{obs}
+
+
+\hrulefill Trying explicitly including $x$
+
+
 We will model programs as finite state automata, with each state of the automaton representing a possible program state. Under this paradigm, we begin with the simplest possible program: a single transition between two program states. 
 
 \begin{defn}[Transitions]
@@ -267,6 +357,8 @@ We will model programs as finite state automata, with each state of the automato
 
     Then given two states $q, q'\in Q$, a \textbf{transition} from $q$ to $q'$ is defined as the tuple $t = (q, q', c, \sigma,\tau)$ where $c\in \mathcal{C}$, $\sigma\in \Gamma\cup\{\texttt{insample}, \texttt{insample}'\}$, and $\tau$ is a boolean value denoting whether or not the stored value of $\texttt{x}$ will be updated. At all times, we will assume that there exists most one transition from $q\in Q$ to $q'\in Q$. 
 \end{defn}
+
+
 
 \begin{defn}[Taking a transition]
     Fix some $\varepsilon>0$, which we will treat as a program parameter.
@@ -322,6 +414,7 @@ More precisely, if $(u, v), (u', v')\in \RR_{\infty}$ is defined as follows:
         \end{cases}
     \]
     where $\Lap_{\mu, s}(x)$ is the PDF of a Laplace distribution with mean $\mu$ and spread parameter $s$.
+    
 \hrulefill
 
 
@@ -478,7 +571,7 @@ We can naturally  extend the definition of probability on a single transition to
     We may additionally use the notation $\rho_{i:j}$ to represent the subexecution $q_i\to q_{i+1}\to \ldots \to q_j$ of $\rho$. Using this notation, $tail(\rho) = \rho_{i:} = \rho_{i:n}$.
 \end{defn}
 
-\begin{defn}[execution probabilities]
+\begin{defn}[Execution Probabilities]
     Consider a execution $\rho = q_0\to q_1\to \ldots \to q_n$ of length $n$. Let $t_0=(q_0, q_1, c_0, \sigma_0, \tau_0)$ between states $q$ and $q'$. Additionally, let $\texttt{x}_0$ be the initial value of $\texttt{x}$ at $q_0$. 
     
     If $\sigma_0 \in \{\texttt{insample}, \texttt{insample}'\}$, then let $\sigma_0 = (\texttt{insample}, a, b)$ or $\sigma_0 = (\texttt{insample}', a', b')$ as appropriate. 
@@ -692,6 +785,7 @@ We can do no better than assigning coupling strategies for each execution indepe
     Optimal cost is dependent on execution (Vishnu)
 \end{prop}
 
+{\color{red} is this still necessary?}
 As previously noted, we use a finite union of complete executions to model an underlying program with branching, in part due to proposition \ref{costDependsExecutionProp}. We now formally define that underlying model:
 
 \begin{defn}
@@ -760,12 +854,11 @@ Note that given a complete execution $\rho'$ in a lasso $L_\rho$, a coupling str
 \begin{lemma}\label{finiteCostConstraintLemma}
     For a lasso $L_\rho$, given adjacent input sequences $\texttt{in}\brangle{1}\sim \texttt{in}\brangle{2}$, a valid coupling strategy $C_{L_\rho} = (\mathbf{\gamma}, \mathbf{\gamma}')$ has finite cost $cost(C_{L_\rho})<\infty$ if and only if the following constraint applies for all $i$:
     \begin{itemize}
-        \item If $t_i$ is in a cycle and $c_i\neq\texttt{true}$, then $\gamma_i = -\texttt{in}\brangle{1}_i+\texttt{in}\brangle{2}_i$ and $\gamma_i' = -\texttt{in}\brangle{1}_i+\texttt{in}\brangle{2}_i$.
+        \item If $t_i$ is in a cycle, then $\gamma_i = -\texttt{in}\brangle{1}_i+\texttt{in}\brangle{2}_i$ and $\gamma_i' = -\texttt{in}\brangle{1}_i+\texttt{in}\brangle{2}_i$.
     \end{itemize}
 \end{lemma}
 
 \begin{proof}
-    {\color{red} TODO: check the $c_i\neq \texttt{true}$ condition}
 
     ($\impliedby$)
 
@@ -817,11 +910,19 @@ Note that given a complete execution $\rho'$ in a lasso $L_\rho$, a coupling str
     If a valid finite cost coupling strategy $C = (\gamma, \gamma')$ exists for a lasso $L_\rho$, then there exists a valid finite cost coupling strategy $C^*= (\gamma^*, \gamma^{*\prime})$ such that for all $i\in AT(L_\rho)$, $\gamma_i^*\in \{-1, 0, 1\}$. 
 \end{lemma}
 \begin{proof}
-    TBD
+    Note that because $C$ is valid and has finite cost, there cannot be any assignment transitions in the cycle in $\rho$. 
+
+    Further, there cannot be both a transition with guard $\lguard[\texttt{x}]$ and guard $\gguard[\texttt{x}]$ in the cycle in $\rho$ by the previous lemma. 
+
+    Let $t_{at(k)}$ be the final assignment transition before the cycle in $\rho$. 
+
+    By the previous lemma, $\gamma_{at(k)} \in \{-1, 1\}$ already. 
+
+    - every previous assignment transition can either be changed without caring about $\gamma_{at(k)}$ or 
+
 \end{proof}
 
 \subsection{Programs}
-
 
 
 \begin{defn}
@@ -991,20 +1092,42 @@ Perhaps surprisingly, we prove that coupling proofs are \textbf{complete} for pr
 \begin{lemma}
     If there exists a valid coupling strategy with cost $d>0$ for a program $P$, then $P$ is $d\varepsilon$-differentially private. 
 \end{lemma}
-\begin{proof}
-    [follows from all previous results]
-\end{proof}
 
 
 \subsection{DiPA}
 
-\begin{defn}[DiPA]
-    A DiPA $A$ is a tuple (...) [copy this def]
+We now discuss a previously defined program model, DiPA, which is perhaps surprisingly exactly equivalent to our defined model. 
+
+\begin{defn}[\cite{chadhaLinearTimeDecidability2021}]
+    A Differentiall Private Automaton (DiPA) $A$ is a 7-tuple $(Q, \Sigma, C, \Gamma, q_{init}, X, P, \delta)$ where
+    \begin{itemize}
+        \item $Q$ is a finite set of states partitioned into input states $Q_{in}$ and non-input states $Q_{non}$. 
+        \item $\Sigma = \RR$ is the input alphabet
+        \item $C = \{\texttt{true}, \lguard, \gguard\}$ is a set of guard conditions
+        \item $\Gamma$ is a finite output alphabet
+        \item $q_{init}\in Q$ is the initial state
+        \item $X = \{\texttt{x}, \texttt{insample}, \texttt{insample}'\}$ is a set of variables
+        \item $P: Q\to \QQ\times \QQ^{\geq 0}\times \QQ\times  \QQ^{\geq 0}$ is a parameter function that assigns sampling parameters for the Laplace distribution for each state
+        \item $\delta:(Q\times C)\to (Q\times (\Gamma \cup \{\texttt{insample}, \texttt{insample}'\})\times \{\texttt{true}, \texttt{false}\})$ is a partial transition function. 
+    \end{itemize}
+    In addition, $\delta$ must satisfy some additional conditions:
+    \begin{itemize}
+        \item \textbf{Determinism:} For any state $q\in Q$, if $\delta(q,\texttt{true})$ is defined, then $\delta(q,\lguard)$ and $\delta(q,\gguard)$ are not defined. 
+
+        \item \textbf{Output Distinction:} For any state $q\in Q$, if $\delta(q, \gguard) = (q_1, o_1, b_1)$ and $\delta(q, \lguard) = (q_2, o_2, b_2)$, then $o_1\neq o_2$ and at least one of $o_1\in \Gamma$ and $o_2\in \Gamma$ is true.
+
+        \item \textbf{Initialization:} The initial state $q_0$ has only one outgoing transition of the form $\delta(q_0, \texttt{true}) = (q, o, \texttt{true})$.
+
+        \item \textbf{Non-input transition:} From any $q\in Q_{non}$, if $\delta(q, c)$ is defined, then $c=\texttt{true}$.
+    \end{itemize}
 \end{defn}
 
 \begin{defn}
-    A DiPA $A$ is differentially private if [copy this def]
+    A DiPA $A$ is $d\varepsilon$-differentially private if [copy this def]
 \end{defn}
+
+The privacy of a DiPA can be characterized by the presenece of certain graph-theoretic structures
+
 
 \begin{prop}[informal]
     There is a bijection between the set $S_P$ of all possible programs $P$ and the set of all possible DiPAs $S_D$. [that preserves coupling proofs etc]
@@ -1027,8 +1150,8 @@ Note that for any path in $A$, we have a list of constraints that a coupling str
     \item If $c_i = \gguard[\texttt{x}]$, then $\gamma_i\geq\gamma_{at(i)}$
     \item If $\sigma_i = \texttt{insample}$, then $\gamma_i=0$
     \item If $\sigma_i = \texttt{insample}'$, then $\gamma_i'=0$
-    \item If $t_i$ is in a cycle and $c_i\neq \texttt{true}$, then $\gamma_i = -\texttt{in}\brangle{1}_i+\texttt{in}\brangle{2}_i$
-    \item If $t_i$ is in a cycle and $c_i\neq \texttt{true}$, then $\gamma_i' = -\texttt{in}\brangle{1}_i+\texttt{in}\brangle{2}_i$
+    \item If $t_i$ is in a cycle, then $\gamma_i = -\texttt{in}\brangle{1}_i+\texttt{in}\brangle{2}_i$
+    \item If $t_i$ is in a cycle, then $\gamma_i' = -\texttt{in}\brangle{1}_i+\texttt{in}\brangle{2}_i$
 \end{enumerate}
 
 If all constraints are statisfied, then $A$ is private. 
@@ -1049,7 +1172,7 @@ If all constraints are statisfied, then $A$ is private.
     
     In this case, $c_i = \lguard[\texttt{x}]$ and $\gamma_i > \gamma_{at(i)}$. Note that $\gamma_{at(i)} \neq 1$. 
 
-    We can assume that for all assignment transitions $t_at(k)$ in $\rho$ that $t_{at(k)}$ is not in a cycle, since otherwise there would be a leaking cycle in $A$. 
+    We can assume that for all assignment transitions $t_{at(k)}$ in $\rho$ that $t_{at(k)}$ is not in a cycle, since otherwise there would be a leaking cycle in $A$. 
 
     \textbf{Case 1.1: $t_i$ is in a cycle}
 
@@ -1312,10 +1435,6 @@ If all constraints are statisfied, then $A$ is private.
     Then $t_i$ is a transition in a cycle that outputs $\texttt{insample}'$, so $A$ has a disclosing cycle.
 \end{proof}
 
-
-\begin{thm}
-    A DiPA $A$ is $d\varepsilon$-differentially private for some $d>0$ if and only if there exists some valid coupling strategy $S$ for $A$ with $cost(S)<\infty$. 
-\end{thm}
 
 \subsection{An algorithm for deciding privacy}
 
