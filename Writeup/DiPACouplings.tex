@@ -789,7 +789,14 @@ For a looping branch $L$, we will use $R_L$ to denote the minimal union-free reg
     \end{align*}
 \end{defn}
 
-Now that cycles have been introduced into our model, it is possible for lassos to fail to be private for \textit{any} $d>0$; i.e. every coupling strategy for a lasso has infinite cost. We can characterize whether or not a coupling strategy has infinite cost through another constraint:
+One natural question that arises is whether it could be more efficient with regards to cost to 
+
+\begin{prop}\label{ClassCouplingStrategiesAreEnoughProp}
+    If there exists a valid coupling strategy $C_\rho$ with cost $cost(C_\rho)$ for every path $\rho$ of an path class $[\rho]$ in a program $A$ and $\sup_{\rho\in [\rho]}cost(C_\rho)< \infty$, then there exists a class coupling strategy $C'$ for $[\rho]$ of $A$ that is valid such that $cost(C') \leq \sup_{\rho\in [\rho]}cost(C_\rho)$. 
+\end{prop}
+
+
+Note that, because of the introduction of stars (or, equivalently, cycles) to our model, it is possible for a looping branch to fail to be private for \textit{any} $d>0$; i.e. every coupling strategy for a looping branch has infinite cost. We can characterize whether or not a coupling strategy has infinite cost through another constraint:
 
 \begin{lemma}\label{finiteCostConstraintLemma}
     For a looping branch $L$, a valid coupling strategy $C = (\mathbf{\gamma}, \mathbf{\gamma}')$ has finite cost $cost(C)<\infty$ if and only if the following constraint applies for all $i$:
@@ -798,7 +805,63 @@ Now that cycles have been introduced into our model, it is possible for lassos t
     \end{itemize}
 \end{lemma}
 
-Intuitively, a finite-cost coupling strategy must assign shifts such that every cycle transition has 0 privacy cost. 
+
+In other words, a finite-cost coupling strategy must assign shifts such that every cycle transition has 0 privacy cost. 
+
+\begin{proof}
+
+    ($\impliedby$)
+
+    Let $T$ be the set of transitions $t_i$ in $L$ such that $t_i$ is \textbf{not} found under a star in $R_L$. 
+
+    Fix a complete path $\rho\in L$ and let $C_\rho$ be the coupling strategy for $\rho$ induced by $C$. 
+
+    Let $D_\rho$ be the set of transitions $t_i\in \rho$ such that $t_i$ is under a star in $R_L$, i.e., $t_i\notin T$.  
+
+    If the given constraint holds, then we know that $\max_{\texttt{in}\brangle{1}\sim\texttt{in}\brangle{2}}\sum_{i: t_i\in D_\rho}(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i|)d_i+(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i'|)d_i' = 0$
+
+    So \begin{align*}
+        cost(C_\rho) = \max_{\texttt{in}\brangle{1}\sim\texttt{in}\brangle{2}}&\sum_{i: t_i\in D_\rho}(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i|)d_i+(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i'|)d_i'\\
+        &+\sum_{i: t_i\notin D_\rho}(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i|)d_i+(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i'|)d_i'\\
+        = \max_{\texttt{in}\brangle{1}\sim\texttt{in}\brangle{2}}&\sum_{i: t_i\in T}(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i|)d_i+(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i'|)d_i'\\
+        \leq \sum_{i:t_i\in T}(2d_i& + 2d_i')\\
+        \leq |T|\max_{i:t_i\in T}&(2d_i + 2d_i')
+    \end{align*}
+
+    Thus, $cost(C)\leq |T|\max_{i:t_i\in T}(2d_i + 2d_i') <\infty$.
+
+    ($\implies$)
+
+    Let $t_i$ be a transition in $L$ under a star in $R_L$ such that $\gamma_i\neq -\texttt{in}\brangle{1}_i+\texttt{in}\brangle{2}_i$ or $\gamma_i'\neq  -\texttt{in}\brangle{1}_i+\texttt{in}\brangle{2}_i$.     Thus, $\exists \texttt{in}\brangle{1}\sim \texttt{in}\brangle{2}$ such that $(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i|)d_i+(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i'|)d_i'>0$.
+    Fix such a $\texttt{in}\brangle{1}\sim \texttt{in}\brangle{2}$. 
+
+    Then there exists some complete path $\rho$ in $L$ of the form $a(bt_ic)^*d$ for some $a, b, c, d\in \Sigma_T^*$.
+    
+    Let $\rho_k=a(bt_ic)^kd$ be the corresponding complete path in $L$ with $(bt_ic)$ iterated $k$ times. This is equivalent to iterating the cycle containing $t_i$ $k$ times. Then for all $k\in \NN$, \begin{align*}
+        cost(\rho_k) \geq k((|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i|)d_i+(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i'|)d_i'),
+    \end{align*}
+    so for all $M\in \RR$, $\exists \rho_k$ such that $cost(\rho_k) > M$.
+\end{proof}
+
+In particular, we can combine this constraint that gives us \textit{finite cost} class coupling strategies with the four constraints that ensure that coupling strategies are valid. 
+
+\begin{defn}[Privacy Constraint System]
+    Let $L$ be a looping branch over a valid transition alphabet $\Sigma_T$. If, for a candidate coupling strategy $C_L = (\gamma, \gamma')$ for $L$, the following constraints are satisfied for all $i$: \begin{enumerate}
+        \item If $c_i = \lguard[\texttt{x}]$, then $\gamma_i\leq\gamma_{at(i)}$
+        \item If $c_i = \gguard[\texttt{x}]$, then $\gamma_i\geq\gamma_{at(i)}$
+        \item If $\sigma_i = \texttt{insample}$, then $\gamma_i=0$
+        \item If $\sigma_i = \texttt{insample}'$, then $\gamma_i'=0$
+        \item If $t_i$ is in a cycle, then $\gamma_i = -\texttt{in}\brangle{1}_i+\texttt{in}\brangle{2}_i$
+        \item If $t_i$ is in a cycle, then $\gamma_i' = -\texttt{in}\brangle{1}_i+\texttt{in}\brangle{2}_i$
+    \end{enumerate}
+    then we say that $C$ satisfies the privacy constraint system for $L$. 
+\end{defn}
+
+This provides a useful tool for the decision problem of privacy, which we will discuss in more depth later. 
+
+\begin{prop}\label{privacyFiniteCostProp}
+    If there exists a coupling strategy $C$ for a looping branch $L$ that satisfies the privacy constraint system, then there exists a finite $d>0$ such that $L$ is $d\varepsilon$-differentially private. 
+\end{prop}
 
 \subsection{Programs}
 
@@ -813,63 +876,26 @@ Naturally, this means that $P$ is a language described by a regular expression i
     If, for every looping branch $L$ in $P$, there exists a valid coupling strategy $C_L$, then $P$ is $(\max_{L\in P} cost(C_L))\varepsilon$-differentially private. 
 \end{lemma}
 
-\begin{lemma}
-    If there exists some looping branch $L$ in $P$ such that there does not exist a valid coupling strategy for $L$ with finite cost, then $P$ is not $d\varepsilon$-differentially private for any $d>0$. 
-\end{lemma}
-
-\begin{thm}
-    A program $P$ has finite coupling cost if and only if there exists some finite $d>0$ such that $P$ is $d\varepsilon$-differentially private. 
-\end{thm}
 
 
-
-\begin{prop}\label{ClassCouplingStrategiesAreEnoughProp}
-    If there exists a valid coupling strategy $C_\rho$ with cost $cost(C_\rho)$ for every path $\rho$ of an path class $[\rho]$ in a program $A$ and $\sup_{\rho\in [\rho]}cost(C_\rho)< \infty$, then there exists a class coupling strategy $C'$ for $[\rho]$ of $A$ that is valid such that $cost(C') \leq \sup_{\rho\in [\rho]}cost(C_\rho)$. 
-\end{prop}
 
 \subsection{Deciding Privacy}
 
-We are primarily(?) concerned with the boolean question of privacy; that is, whether or not there exists \textit{any} finite $d>0$ such that a program is $d\varepsilon$-differentially private. 
+We are primarily(?) concerned with the boolean question of privacy; that is, deciding whether or not there exists \textit{any} finite $d>0$ such that a program is $d\varepsilon$-differentially private. 
 
-Perhaps surprisingly, we show that coupling proofs are \textbf{complete} for programs of this form; while producing a valid and finite cost coupling proof is clearly sufficient for a program to be private, it is also necessary for such a coupling proof to exist for a program to be differentially private. 
-
-\begin{lemma}
-    If there exists a valid class coupling strategy with cost $d>0$ for a program $P$, then $P$ is $d\varepsilon$-differentially private. 
-\end{lemma}
-\begin{proof}
-    Follows from the construction of coupling strategies. 
-\end{proof}
-
-\begin{cor}\label{programFiniteCostCor}
-    A program $P$ is $d\varepsilon$-differentially private for some $d<\infty$ if, for all path classes $[\rho]$ of $P$, there exists a valid class coupling strategy $C_{[\rho]} = (\gamma, \gamma')$ such that the following constraint holds for all $i$:
-    \begin{itemize}
-        \item If $t_i$ is in a cycle in $[\rho]$ and $c_i\neq\texttt{true}$, then $\gamma_i = -\texttt{in}\brangle{1}_i+\texttt{in}\brangle{2}_i$ and $\gamma_i' = -\texttt{in}\brangle{1}_i+\texttt{in}\brangle{2}_i$.
-    \end{itemize}
-\end{cor}
-
-In particular, we can combine this constraint that gives us \textit{finite cost} class coupling strategies with the four constraints that ensure that coupling strategies are valid. 
-
-\begin{defn}[Privacy Constraint System]
-    Consider a program $P$ and path class $[\rho]$ of $P$. If, for a candidate class coupling strategy $C = (\gamma, \gamma')$ for $[\rho]$, the following constraints are satisfied for all $i$: \begin{enumerate}
-        \item If $c_i = \lguard[\texttt{x}]$, then $\gamma_i\leq\gamma_{at(i)}$
-        \item If $c_i = \gguard[\texttt{x}]$, then $\gamma_i\geq\gamma_{at(i)}$
-        \item If $\sigma_i = \texttt{insample}$, then $\gamma_i=0$
-        \item If $\sigma_i = \texttt{insample}'$, then $\gamma_i'=0$
-        \item If $t_i$ is in a cycle, then $\gamma_i = -\texttt{in}\brangle{1}_i+\texttt{in}\brangle{2}_i$
-        \item If $t_i$ is in a cycle, then $\gamma_i' = -\texttt{in}\brangle{1}_i+\texttt{in}\brangle{2}_i$
-    \end{enumerate}
-    then we say that $C$ satisfies the privacy constraint system for $[\rho]$ in $P$. 
-\end{defn}
+Clearly, we can algorithmically show that at least some subset of differentially private programs are private through the use of couplings and coupling strategies. 
 
 \begin{lemma}
-    If, for every path class $[\rho]$ in a program $P$, there exists a class coupling strategy $C_{[\rho]}$ that satisfies the privacy constraint system, then there exists some finite $d>0$ such that $P$ is $d\varepsilon$-differentially private.    
+    If, for every looping branch $L\subseteq P$ in a program $P$, there exists a coupling strategy $C_L$ that satisfies the privacy constraint system, then there exists some finite $d>0$ such that $P$ is $d\varepsilon$-differentially private.    
 \end{lemma}
 \begin{proof}
-    Follows immediately from corollary \ref{programFiniteCostCor}.
+    Follows immediately from proposition \ref{privacyFiniteCostProp}.
 \end{proof}
+
+Perhaps surprisingly though, we show that coupling proofs are \textbf{complete} for programs of this form; every differentially private program can be proved to be private using couplings. 
 
 \begin{lemma}\label{ProgramCounterexampleLemma}
-    If for some path class $[\rho]$ in a program $P$ there does not exist a class coupling strategy $C_{[\rho]}$ that satisfies the privacy constraint system, then there does not exist any finite $d>0$ such that $P$ is $d\varepsilon$-differentially private.
+    If, for some looping branch $L\subseteq P$ in a program $P$, there does not exist a coupling strategy $C_L$ that satisfies the privacy constraint system, then there does not exist any finite $d>0$ such that $P$ is $d\varepsilon$-differentially private.
 \end{lemma}
 
 \subsection{DiPA}
@@ -877,7 +903,7 @@ In particular, we can combine this constraint that gives us \textit{finite cost}
 We now discuss a previously defined program model, DiPA, which turns out to be exactly equivalent to our own program model. 
 
 \begin{defn}[\cite{chadhaLinearTimeDecidability2021}]
-    A Differentially Private Automaton (DiPA) $A$ is a 7-tuple $(Q, \Sigma, C, \Gamma, q_{init}, X, P, \delta)$ where
+    A Differentially Private Automaton (DiPA) $A$ is an 8-tuple $(Q, \Sigma, C, \Gamma, q_{init}, X, P, \delta)$ where
     \begin{itemize}
         \item $Q$ is a finite set of states partitioned into input states $Q_{in}$ and non-input states $Q_{non}$. 
         \item $\Sigma = \RR$ is the input alphabet
@@ -907,6 +933,8 @@ We now discuss a previously defined program model, DiPA, which turns out to be e
     Then $\texttt{Pr}[x, \rho, \texttt{in}, o]$ is the probability of $\rho$ being taken with input sequence $\texttt{in}$ and outputting $o$. If the first state in $\rho$ is $q_{init}$, then $\texttt{Pr}[x, \rho, \texttt{in}, o]$ may be shortened to $\texttt{Pr}[\rho, \texttt{in}, o]$, since the initial value of $\texttt{x}$ is irrelevant.
 \end{defn}
 
+For a full numerical definition, we refer back to the original work. 
+
 \begin{defn}
     A DiPA $A$ is $d\varepsilon$-differentially private for some $d>0$ if for all paths $\rho$ in $A$, for all possible outputs $o$ of $\rho$ and valid adjacent input sequences $\texttt{in}\brangle{1}\sim \texttt{in}\brangle{2}$, \[
         \PP[\rho, \texttt{in}\brangle{1}, o]\leq e^{d\varepsilon} \PP[\rho, \texttt{in}\brangle{2}, o]
@@ -916,63 +944,45 @@ We now discuss a previously defined program model, DiPA, which turns out to be e
 We can draw a direct equivalence between programs and DiPAs.
 
 \begin{prop}
-    Every path $\rho$ through a DiPA $A$ is a word comprised of transitions from a valid finite alphabet $\Sigma_T$; further, the set of all possible paths through $A$ is a regular language over $\Sigma_T$.
-\end{prop}
-
-\begin{prop}
-    
-\end{prop}
-
-\begin{prop}
-    There exists a bijection $F$ between the set of all DiPAs and the set of all programs such that if $F(A) = P$, then $\mathcal{L}(A) = P$. 
+    Every path $\rho$ through a DiPA $A$ is represented by a complete path $\hat{\rho}$ comprised of transitions from a valid transition alphabet $\Sigma_T$; further, the set of all possible paths through $A$ is a regular language over $\Sigma_T$.
 \end{prop}
 \begin{proof}
-    $(\implies)$
-    $A$ recognizes a regular language over a valid finite alphabet $\Sigma_T$. In addition, every word in the language is of the form $t_0\cdot \Sigma_T^*$. Every regular language can be described as a finite union of union-free regular expressions. This is $P$. 
+    Let $\rho = q_0\to q_1\to\ldots \to q_n$ be a path in $A=(Q, \RR, C, \Gamma, q_0, X, P, \delta)$. 
 
-    $(\impliedby)$
-    We can directly construct an automaton from transitions. 
+    For all $i\in 0\ldots n-1$, there must be some $c_i$ such that $\delta(q_i, c_i) = (q_{i+1}, \sigma_i, \tau_i)$. Let $t_i = (q_i, q_{i+1}, c_i, \sigma_i, \tau_i)$ and let $\Sigma_\rho = \{t_i: i\in 0\ldots n-1\}$ be the set of all such transitions. Note that because $\delta$ satisfies the conditions of determinism, output distinction, initialization, and non-input transition, $\Sigma_\rho$ must as well. 
+    Then let $\hat{\rho} = t_0\cdot t_1\cdot \ldots\cdot t_{i-1}$ be the representation of $\rho$ as a word over $\Sigma_\rho$. 
+
+    Let $\Sigma_T = \bigcup_{\rho\in A}\Sigma_\rho$. Note that $\Sigma_T$ must have finite size because $A$ is a finite automaton and must still be a valid transition alphabet.
+
+    Let $D = (Q, \Sigma_T, \delta_D, q_0, F=Q)$ be an NFA defined over the set of program locations $Q$ such that $\delta_D$ is defined as follows:
+    Let $q\in Q$ be an arbitrary state. If $\delta(q, c) = (q', \sigma, \tau)$ is defined for some $c\in C$, let $\delta_D(q, (q, q', c, \sigma, \tau)) = q'$.
+
+    Then clearly every path in $A$ is also a path in $D$ and vice versa; since every state in $D$ is an accepting state, $\mathcal{L}(D) = \{\hat{\rho}: \rho\in A\}$. Thus, the set of (representations of) all paths in $A$ must be a regular language. 
 \end{proof}
 
-Interestingly, the privacy of any DiPA $A$ is completely characterized by four graph-theoretic structures. 
+\begin{prop}
+    For all input sequences $\texttt{in}$ and possible outputs $\sigma$, and for all paths $\rho$ in a DiPA $A$, $\PP[\rho, \texttt{in}, \sigma] = \PP[\hat{\rho}, \texttt{in}, \sigma]$.
+\end{prop}
+\begin{proof}
+    Follows immediately from definitions. 
+\end{proof}
+
+\begin{prop}
+    For every program $P$ over a valid transition alphabet $\Sigma_T$, there exists a corresponding DiPA $A$ such that there exists a path $\rho$ in $A$ if and only if its representation is in $P$. 
+\end{prop}
+\begin{proof}
+    The DiPA can be directly constructed from $P$.
+\end{proof}
+
+Interestingly, the privacy of any DiPA $A$ is completely characterized by four graph-theoretic structures (we omit the precise definitions here). 
 
 \begin{thm}[\cite{chadhaLinearTimeDecidability2021}]\label{DiPACounterexamplesThm}
     A DiPA $A$ does not have a leaking cycle, leaking pair, disclosing cycle, or privacy violating path if and only if there exists some $d>0$ such that for all $\varepsilon>0$, $A$ is $d\varepsilon$-differentially private. 
 \end{thm}
 
-
-{\color{red} Move these definitions to appendix?}
-
-\begin{defn}[Leaking Cycles \cite{chadhaLinearTimeDecidability2021}]
-    A path $\rho = q_0\to\ldots \to q_n$ in a DiPA $A$ is a leaking path if there exist indices $i, j$ where $0\leq i < j < n$ such that the $i$'th transition $q_i\to q_{i+1}$ in $\rho$ is an assignment transition and the guard of the transition $q_j \to q_{j+1}$ is not $\texttt{true}$. If $\rho$ is also a cycle, then we call it a leaking cycle.
-\end{defn}
-
-\begin{defn}[\cite{chadhaLinearTimeDecidability2021}]
-    A cycle $\rho$ in a DiPA $A$ is an \lcycle~if for some transition $q_i\to q_{i+1}$ in $\rho$, $\guard(q_i\to q_{i+1}) = \lguard[\texttt{x}]$. Similarly, $\rho$ is a \gcycle~if for some transition $q_i\to q_{i+1}$ in $\rho$, $\guard(q_i\to q_{i+1}) = \gguard[\texttt{x}]$.
-    
-    Additionally, a path $\rho$ of a DiPA $A$ is an \texttt{AL}-path (respectively, \texttt{AG}-path) if all assignment transitions in $\rho$ have guard $\lguard[\texttt{x}]$ (respectively, $\gguard[\texttt{x}]$)
-\end{defn}
-
-\begin{defn}[Leaking Pairs \cite{chadhaLinearTimeDecidability2021}]
-    A pair of cycles $(C, C')$ is called a leaking pair if one of the following two conditions is satisfied.
-    \begin{enumerate}
-        \item $C$ is an \lcycle, $C'$ is a \gcycle~ and there is an \texttt{AG}-path from a state in $C$ to a state in $C'$.
-        \item $C$ is a \gcycle, $C'$ is an \lcycle~and there is an \texttt{AL}-path from a state in $C$ to a state in $C'$.
-    \end{enumerate}
-\end{defn}
-
-\begin{defn}[Disclosing Cycles \cite{chadhaLinearTimeDecidability2021}]
-    A cycle $C = q_0\to \ldots \to q_n \to q_0$ of a DiPA $A$ is a disclosing cycle if there is an $i$, $0 \leq i < |C|$ such that $q_i\in Q_{in}$ and the transition $q_i\to q_{i+1}$ that outputs either \texttt{insample} or \texttt{insample}'.
-\end{defn}
-
-\begin{defn}[Privacy Violating Paths \cite{chadhaLinearTimeDecidability2021}]
-    We say that a path $\rho = q_0\to\ldots \to q_n $ of a DiPA $A$ is a privacy violating path if one of the following conditions hold:
-    \begin{itemize}
-        \item  $tail(\rho)$ is an \texttt{AG}-path (resp., \texttt{AL}-path) such that $last(\rho)$ is in a \gcycle~(resp., \lcycle) and the 0th transition $q_0\to q_1$ is an assignment transition that outputs \texttt{insample}.
-        \item $\rho$ is an \texttt{AG}-path (resp., \texttt{AL}-path) such that $q_n$ is in a \gcycle~(resp., \lcycle) and the first transition $q_0\to q_1$ has guard $\lguard[\texttt{x}]$ (resp., $\gguard[\texttt{x}]$) and outputs \texttt{insample}
-        \item $\rho$ is an \texttt{AG}-path (resp., \texttt{AL}-path) such that $q_0$ is in an \lcycle~(resp., \gcycle) and the last transition $q_{n-1}\to q_n$ has guard $\gguard[\texttt{x}]$ (resp., $\lguard[\texttt{x}]$) and outputs \texttt{insample}
-    \end{itemize}
-\end{defn}
+\begin{cor}
+    If the corresponding DiPA $A$ to a program $P$ contains a leaking cycle, leaking pair, disclosing cycle, or privacy violating path, then does not exist a finite $d>0$ such that $P$ is $d\varepsilon$-differentially private. 
+\end{cor}
 
 
 \subsection{An algorithm for deciding privacy}
@@ -1038,6 +1048,9 @@ We discovered that every DiPA equipped with a counter can be rewritten as a stan
 However, there are other, non-trivial, extensions that warrant further study. In particular, we describe one extension of DiPA that allows for two real-valued program variables $\texttt{x}, \texttt{y}$.
 
 \subsection{Two-Threshold Programs: GDiPA}
+
+\subsubsection{Multivariable Transitions}
+
 
 \begin{defn}
     A GDiPA $A$ is a tuple ().
@@ -1557,5 +1570,36 @@ A full exploration of approximate liftings can be found in \cite{HsuThesis2017}.
     Then $t_i$ is a transition in a cycle that outputs $\texttt{insample}'$, so $A$ has a disclosing cycle.
 \end{proof}
 
+
+\begin{defn}[Leaking Cycles \cite{chadhaLinearTimeDecidability2021}]
+    A path $\rho = q_0\to\ldots \to q_n$ in a DiPA $A$ is a leaking path if there exist indices $i, j$ where $0\leq i < j < n$ such that the $i$'th transition $q_i\to q_{i+1}$ in $\rho$ is an assignment transition and the guard of the transition $q_j \to q_{j+1}$ is not $\texttt{true}$. If $\rho$ is also a cycle, then we call it a leaking cycle.
+\end{defn}
+
+\begin{defn}[\cite{chadhaLinearTimeDecidability2021}]
+    A cycle $\rho$ in a DiPA $A$ is an \lcycle~if for some transition $q_i\to q_{i+1}$ in $\rho$, $\guard(q_i\to q_{i+1}) = \lguard[\texttt{x}]$. Similarly, $\rho$ is a \gcycle~if for some transition $q_i\to q_{i+1}$ in $\rho$, $\guard(q_i\to q_{i+1}) = \gguard[\texttt{x}]$.
+    
+    Additionally, a path $\rho$ of a DiPA $A$ is an \texttt{AL}-path (respectively, \texttt{AG}-path) if all assignment transitions in $\rho$ have guard $\lguard[\texttt{x}]$ (respectively, $\gguard[\texttt{x}]$)
+\end{defn}
+
+\begin{defn}[Leaking Pairs \cite{chadhaLinearTimeDecidability2021}]
+    A pair of cycles $(C, C')$ is called a leaking pair if one of the following two conditions is satisfied.
+    \begin{enumerate}
+        \item $C$ is an \lcycle, $C'$ is a \gcycle~ and there is an \texttt{AG}-path from a state in $C$ to a state in $C'$.
+        \item $C$ is a \gcycle, $C'$ is an \lcycle~and there is an \texttt{AL}-path from a state in $C$ to a state in $C'$.
+    \end{enumerate}
+\end{defn}
+
+\begin{defn}[Disclosing Cycles \cite{chadhaLinearTimeDecidability2021}]
+    A cycle $C = q_0\to \ldots \to q_n \to q_0$ of a DiPA $A$ is a disclosing cycle if there is an $i$, $0 \leq i < |C|$ such that $q_i\in Q_{in}$ and the transition $q_i\to q_{i+1}$ that outputs either \texttt{insample} or \texttt{insample}'.
+\end{defn}
+
+\begin{defn}[Privacy Violating Paths \cite{chadhaLinearTimeDecidability2021}]
+    We say that a path $\rho = q_0\to\ldots \to q_n $ of a DiPA $A$ is a privacy violating path if one of the following conditions hold:
+    \begin{itemize}
+        \item  $tail(\rho)$ is an \texttt{AG}-path (resp., \texttt{AL}-path) such that $last(\rho)$ is in a \gcycle~(resp., \lcycle) and the 0th transition $q_0\to q_1$ is an assignment transition that outputs \texttt{insample}.
+        \item $\rho$ is an \texttt{AG}-path (resp., \texttt{AL}-path) such that $q_n$ is in a \gcycle~(resp., \lcycle) and the first transition $q_0\to q_1$ has guard $\lguard[\texttt{x}]$ (resp., $\gguard[\texttt{x}]$) and outputs \texttt{insample}
+        \item $\rho$ is an \texttt{AG}-path (resp., \texttt{AL}-path) such that $q_0$ is in an \lcycle~(resp., \gcycle) and the last transition $q_{n-1}\to q_n$ has guard $\gguard[\texttt{x}]$ (resp., $\lguard[\texttt{x}]$) and outputs \texttt{insample}
+    \end{itemize}
+\end{defn}
 
 \end{document} 
