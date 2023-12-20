@@ -1050,95 +1050,49 @@ However, there are other, non-trivial, extensions that warrant further study. In
 
 \subsubsection{Multivariable Transitions}
 
+\begin{defn}
+    A two-variable transition is a tuple $(q, q', c, \sigma, \tau)$ where \begin{itemize}
+        \item $q\in Q$ is the initial state
+        \item $q'\in Q$ is the destination state
+        \item $c\in C^{(2)}$ is a transition guard
+        \item $\sigma\in\Gamma\cup\{\texttt{insample}^{(x)}, \texttt{insample}^{(x)\prime}, \texttt{insample}^{(y)}, \texttt{insample}^{(y)\prime}\}$ is the output of the transition
+        \item $\tau \in \{0, 1, 2\}$ indicates whether to assign into no variable, $\texttt{x}$, or $\texttt{y}$. In particular, note that only a single variable can be assigned into at a time. 
+    \end{itemize}
+\end{defn}
 
+{\color{red} Semantics here}
+
+- in particular, the noise for the input compared to each program variable is fresh/independent 
+
+
+
+\subsubsection{Multivariable Couplings}
+
+- combining independent couplings together
+
+- new type of coupling
+
+{\color{red} Valid coupling strategies}
+
+- coupling strategy is a series of shifts - 
+
+\subsubsection{Couplings for GDiPA}
 
 \begin{defn}
     A GDiPA $A$ is a tuple ().
 \end{defn}
 
-
-\section{Multivariable DiPA}
-
-In this section, we explore a natural extension of the DiPA model to demonstrate the utility of using couplings as proof infrastructure. Specifically, we introduce Generalized DiPAs (GDiPAs), which allow for an arbitrary finite set of variables and an expanded alphabet where multiple variables can be compared to the input simultaneously to determine transitions. 
-This would, for example, allow for SVT-style algorithms that check for membership between or outside of two thresholds or indeed, membership within any finite union of intersections of halves\footnote{think there's a term for this I'm forgetting} of $\RR$. 
-
-\subsection{GDiPA}
-
-A GDiPA $A$ is a generalization of DiPA whose primary characteristics are that:
-\begin{itemize}
-	\item At every state, a (real-valued) input is read. Additionally, Laplace noise (with parameters set by the user) is added to the input. 
-	\item The automaton has a stored finite set of (real-valued) variables $\mathcal{X}$. At each transition, the value of each variable can be updated with the noisy input value read in. 
-	\item A transition can optionally assign the (noisy) input value read at the previous state into at most one program variable.
-	\item The automaton will take transitions based on a boolean combination of comparisons between the noisy input and a subset of the stored variables. Importantly, noise is added independently to the input for each separate variable comparison. Alternatively, there can be exactly one guaranteed (\texttt{true}) transition out of a state. 
-	\item At every transition, the automaton will output either \begin{enumerate}
-		\item A symbol from a pre-defined finite alphabet ($\Gamma$)
-		\item The noisy input value as compared to one of the input variables ($\texttt{insample}$)
-		\item The input value with fresh Laplace noise ($\texttt{insample}'$)
-	\end{enumerate}
-	As with DiPAs, the output sequence of any GDiPA must uniquely determine a path through the automaton.
-\end{itemize}
-
-\subsection{Combining Separate Variable Couplings}
-Consider a GDiPA $A$ with program variables $\mathcal{X}$. For each program variable $x\in \mathcal{X}$, we can define coupling strategies similar to with single variables. That is, for two runs of the automaton with adjacent inputs, we must ensure that if the first run takes a certain transition, the other run does as well. In particular, for real outputs, we must ensure that the outputs are equal. 
-
-For each variable in $A$, we can consider a ``shadow'' automaton in a single variable that only has a single program variable. Such a shadow automaton would have the same underlying graph structure as $A$, but would only contain the transition guards and assignments that pertained to a single variable. 
-For example, if we were considering such an automaton $A_x$ with respect to the variable $x$, a transition with guard ``$\lguard[x]$ and $\gguard[y]$'' would correspond to a transition with guard $\lguard[x]$ in $A_x$; a transition with guard ``$\gguard[y]$'' would correspond to a transition with guard $\texttt{true}$ in $A_x$.
-
-Note that these automata are not, strictly speaking, DiPAs, since it is possible for a state to have multiple transitions with guard $\texttt{true}$ leaving it. 
-
-Thus, each segment can be assigned a coupling strategy $S^N, S^L$, or $S^G$ as before based on these ``shadow'' automata, with similar constraints. 
-
-\begin{const}\label{generalizedconstraintsystem}
-    Consider a GDiPA $A$ with program variables $\mathcal{X}$. Let $\{s_i^{(x)}\}$ be the segments of $A$ for each variable $x\in \mathcal{X}$. 
-
-    For each $x\in \mathcal{X}$ and segment $s_i^{(x)}$ for $x$, we can assign one of three coupling strategies $S_i^{(x)} \in \{S^L, S^G, S^N\}$. We would like to find an assignment of coupling strategies for each segment of each variable, subject to the following constraints: 
-
-    \begin{enumerate}
-        \item Constraints for valid couplings\begin{enumerate}
-            \item For all $s_i^{(x)}$, if $\trans(s_i^{(x)})$ outputs $\texttt{insample}$, then $S_i^{(x)} = S^N$.
-            \item For all $s_i^{(x)}, s_j^{(x)}$ such that $s_i^{(x)}$ is immediately followed by $s_j^{(x)}$, \begin{enumerate}
-                \item If $\guard(s_j^{(x)})=\lguard$ and $S_i^{(x)} = S^G$, then $S_j^{(x)} = S^G$. 
-                \item If $\guard(s_j^{(x)}) = \gguard$ and $S_i^{(x)} = S^L$, then $S_j^{(x)} = S^L$.
-                \item If $\guard(s_j^{(x)}) = \lguard$ and $S_i^{(x)} = S^N$, then $S_j^{(x)}\neq S^L$.
-                \item If $\guard(s_j^{(x)}) = \gguard$ and $S_i^{(x)} = S^N$, then $S_j^{(x)}\neq S^G$.
-            \end{enumerate}
-            \item For all segments $s_i^{(x)}$, there is no transition $\trans(a_k)$ in $s_i^{(x)}$ that is \textit{faulty}, i.e.:\begin{enumerate}
-                \item If $s_i^{(x)}$ contains a $\lguard$ transition that outputs $\texttt{insample}$, then $S_i^{(x)} \neq S^G$.
-                \item If $s_i^{(x)}$ contains a $\gguard$ transition that outputs $\texttt{insample}$, then $S_i^{(x)} \neq S^L$.
-            \end{enumerate}
-            \item If any transition in $s_i^{(x)}$ outputs $x$, then $S_i^{(x)} = S^N$. 
-        \end{enumerate}
-        \item Constraints for finite cost\begin{enumerate}
-            \item For all $s_i^{(x)}$, no cycle in $s_i^{(x)}$ has a transition that outputs $\texttt{insample}$, $\texttt{insample}'$. 
-            \item For all $s_i^{(x)}$, if $s_i^{(x)}$ has an $\texttt{L}$-cycle with respect to $x$, then $S_i^{(x)} = S^L$.
-            \item For all $s_i^{(x)}$, if $s_i^{(x)}$ has a $\texttt{G}$-cycle with respect to $x$, then $S_i^{(x)} = S^G$. 
-        \end{enumerate}
-    \end{enumerate}
-
-    This constraint system is \textbf{satisfiable} for a GDiPA $A$ if, for all variables $x\in \mathcal{X}$, there exists an assignment of all $S_i^{(x)}$ such that all constraints are satisfied. 
-\end{const}
-
-In particular, we can independently resolve constraints for each variable and combine them together.
-\begin{thm}	
-	For a GDiPA $\mathcal{A}$, for all variables $x$, if there exist a finite number of segments $s_i$, and for all segments $s_i$, the constraint system \ref{constraintsystem} is satisfied by an assignment $S_x$, then all $S_x$ assignments together induce a valid coupling proof that $\mathcal{A}$ is $\varepsilon$-DP. 
+\begin{thm}
+    A GDiPA $A$ is $d\varepsilon$-differentially private for some $d>0$ if and only if there exists a valid and finite cost coupling strategy for every looping branch of $A$. 
 \end{thm}
 
-\begin{proof}
-	
-	Fix some variable $x\in \mathcal{X}$. From before, we know that if \ref{generalizedconstraintsystem} is satisfied with respect to $x$, then the coupling 
-	\[\mathcal{A}(X)(\mathcal{A}(X)\text{ takes transitions }T\text{ wrt }x\implies \mathcal{A}(X')\text{ takes transitions }T\text{ wrt }x)^{\#(\varepsilon_x, 0)}\mathcal{A}(X')\]
-	is valid for some finite $\varepsilon_x$. 
-		
-	Because the noises on $\texttt{insample}$ are independent, and $((a \implies c) \land (b \implies d)) \implies ((a \land b) \implies (c \land d))$ and $((a \implies c) \lor (b \implies d)) \implies ((a \lor b) \implies (c \lor d))$,for every combined guard, we can construct the lifting 
-	\[\mathcal{A}(X)(\mathcal{A}(X)\text{ takes transitions }T\implies \mathcal{A}(X')\text{ takes transitions }T)^{\#(\sum_{x\in\mathcal{X}}\varepsilon_x, 0)}\mathcal{A}(X')\]
-	which gives us the lifting
-	\[\mathcal{A}(X)(\mathcal{A}(X)=\sigma\implies \mathcal{A}(X')=\sigma)^{\#(\sum_{x\in\mathcal{X}}\varepsilon_x, 0)}\mathcal{A}(X')\]
-\end{proof}
+\begin{lemma}
+    If there does not exist a valid and finite cost coupling strategy for every looping branch of $A$, then there must exist either a leaking cycle, disclosing cycle, or privacy violating path in a single variable or a non-cancelling leaking pair. 
+\end{lemma}
 
-
-\begin{thm}[optimistically]
-    A GDiPA $A$ is $d\varepsilon$-differentially private if and only if, there exists a valid assignment of coupling strategies over all segments of $A$.
-\end{thm}
+\begin{lemma}
+    If there exists a leaking cycle, disclosing cycle, or privacy violating path in a single variable or a non-cancelling leaking pair in a single variable in a GDiPA $A$, then $A$ is not $d\varepsilon$-differentially private for any $d>0$. 
+\end{lemma}
 
 \section{Conclusion}
 We have shown how to use coupling techniques to prove privacy for a class of SVT-like programs first defined in \cite{chadhaLinearTimeDecidability2021} and discovered that couplings additionally characterize this class. We additionally showed that this can be done tractably, and that couplings can help provide lower bounds on privacy costs of these algorithms. 
