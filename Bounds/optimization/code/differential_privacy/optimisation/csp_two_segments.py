@@ -1,7 +1,9 @@
 import cvxpy as cp
+import numpy as np 
 
-weights_1 = [1, 1, 5000]
-weights_2 = [1, 3, 1]
+weights_1 = [1, 1, 1]
+weights_2 = [1, 1, 1]
+
 gammas_1 = [cp.Variable() for _ in range(3)]
 gammas_2 = [cp.Variable() for _ in range(3)]
 deltas_1 = [1, 1, -1]

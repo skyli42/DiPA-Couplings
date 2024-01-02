@@ -248,52 +248,52 @@ def flipped_problem(n, inequalities, l, g):
     return gammas.value, problem.value
 
 
-# n = 1
-# data = []
-#
-# for i in range(1):
-#     l = np.array([2])
-#     g = np.array([1])
-#     # print(l)
-#     # print(g)
-#
-#     inequalities = generate_inequalities(n)
-#     gammas, val_1 = flipped_problem(n, inequalities, l, g)
-#     print(val_1)
-#
-#     print(gammas)
-#
-#     val_2 = compute_best_bound(n, l, g, inequalities)
-#     print(val_2)
-#     # print(val_1)
-#     # print(val_2)
-#     data.append(np.round(val_1 - val_2, 5))
-#
-#     if val_1 != val_2:
-#         print(l)
-#         print(g)
-#         break
-#
-#     # if i + 1 % 10 == 0:
-#     #     print(f"Done {i + 1} iterations")
-#     #     print(f"Min: {np.mean(data)}")
-#     #     print(f"Max: {np.max(data)}")
-#
-# plt.hist(data)
-# plt.show()
+n = 5
+data = []
+
+for i in range(1000):
+    l = 20 * np.random.random(n)
+    g = 20 * np.random.random(n)
+    # print(l)
+    # print(g)
+
+    inequalities = generate_inequalities(n)
+    gammas, val_1 = flipped_problem(n, inequalities, l, g)
+    print(val_1)
+
+    print(gammas)
+
+    val_2 = compute_best_bound(n, l, g, inequalities)
+    print(val_2)
+    # print(val_1)
+    # print(val_2)
+    data.append(np.round(val_1 - val_2, 5))
+
+    # if val_1 != val_2:
+    #     print(l)
+    #     print(g)
+    #     break
+
+    # if i + 1 % 10 == 0:
+    #     print(f"Done {i + 1} iterations")
+    #     print(f"Min: {np.mean(data)}")
+    #     print(f"Max: {np.max(data)}")
+
+plt.hist(data, bins=20)
+plt.show()
 
 
-n = 3
-l = np.array([1, 5, 7])
-g = np.array([2, 2, 2])
-inequalities = generate_inequalities(n)
+# n = 8
+# l = np.array([1, 5, 7, 3, 2, 4, 6, 8])
+# g = np.array([2, 2, 2, 2, 2, 2, 2, 2])
+# inequalities = generate_inequalities(n)
 
-constants = g - l
-additivity = sum(g + l + 1)
+# constants = g - l
+# additivity = sum(g + l + 1)
 
-deltas, gammas = determine_worst_deltas_gammas(n, constants, inequalities, step_size=1)
+# deltas, gammas = determine_worst_deltas_gammas(n, constants, inequalities, step_size=1)
 
-print(deltas)
-print(gammas)
+# print(deltas)
+# print(gammas)
 
-print(evaluate(constants, gammas, deltas) + additivity)
+# print(evaluate(constants, gammas, deltas) + additivity)
