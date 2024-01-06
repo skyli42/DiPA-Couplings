@@ -1194,6 +1194,7 @@ However, there are other, non-trivial, extensions that warrant further study. In
 
 \subsubsection{Multivariable Transitions}
 
+{\color{red} notation for guards}
 
 \begin{defn}[2v-transitions]
     A two-variable transition (2v-transition) is a tuple $(q, q', c, \sigma, \tau)$ where \begin{itemize}
@@ -1267,8 +1268,8 @@ We introduce a new type of coupling strategy for a single (2v-)transition:
       \]
 
     The following four statements hold:\begin{enumerate}
-        \item If $c = \lguard[\texttt{x}] \land \gguard[\texttt{y}]$, then $\forall \varepsilon>0$, the lifting $o\brangle{1}\{(a, b): a=\sigma\implies b=\sigma\}^{\#d\varepsilon}o\brangle{2}$ is valid for $d = $. 
-        \item If $c = \gguard[\texttt{x}] \land \lguard[\texttt{y}]$, then $\forall \varepsilon>0$, the lifting $o\brangle{1}\{(a, b): a=\sigma\implies b=\sigma\}^{\#d\varepsilon}o\brangle{2}$ is valid for $d = $. 
+        \item If $c = \lguard[\texttt{x}] \land \gguard[\texttt{y}]$, then $\forall \varepsilon>0$, the lifting $o\brangle{1}\{(a, b): a=\sigma\implies b=\sigma\}^{\#d\varepsilon}o\brangle{2}$ is valid for $d = |\min(\mu_y\brangle{1}-\mu_x\brangle{1}, 0)|+(|\hat{\mu_q}\brangle{1}-\hat{\mu_q}\brangle{2}+\gamma_x|)\hat{d_q}+(|-\texttt{in}\brangle{1}+\texttt{in}\brangle{2}-\gamma_q|)d_q+(|-\texttt{in}\brangle{1}+\texttt{in}\brangle{2}-\gamma_q'|)d_q'$. 
+        \item If $c = \gguard[\texttt{x}] \land \lguard[\texttt{y}]$, then $\forall \varepsilon>0$, the lifting $o\brangle{1}\{(a, b): a=\sigma\implies b=\sigma\}^{\#d\varepsilon}o\brangle{2}$ is valid for $d = |\min(\mu_x\brangle{1}-\mu_y\brangle{1}, 0)|+(|\hat{\mu_q}\brangle{1}-\hat{\mu_q}\brangle{2}+\gamma_x|)\hat{d_q}+(|-\texttt{in}\brangle{1}+\texttt{in}\brangle{2}-\gamma_q|)d_q+(|-\texttt{in}\brangle{1}+\texttt{in}\brangle{2}-\gamma_q'|)d_q'$. 
         \item If $c = \lguard[\texttt{x}] \lor \gguard[\texttt{y}]$, then $\forall \varepsilon>0$, the lifting $o\brangle{1}\{(a, b): a=\sigma\implies b=\sigma\}^{\#d\varepsilon}o\brangle{2}$ is valid for $d = $. 
         \item If $c = \gguard[\texttt{x}] \lor \lguard[\texttt{y}]$, then $\forall \varepsilon>0$, the lifting $o\brangle{1}\{(a, b): a=\sigma\implies b=\sigma\}^{\#d\varepsilon}o\brangle{2}$ is valid for $d = $. 
     \end{enumerate}
@@ -1289,10 +1290,11 @@ We introduce a new type of coupling strategy for a single (2v-)transition:
         \item $\texttt{insample}^{(y)\prime}\brangle{1} +\gamma_q^{(y)\prime}{(=)}^{\#(|-\texttt{in}\brangle{1}+\texttt{in}\brangle{2}-\gamma_q^{(y)\prime}|)d_q'\varepsilon}\texttt{insample}^{(y)\prime}\brangle{2}$
     \end{itemize}
 
+    \textbf{Case 1:}
 
     Create the lifting $\zeta_x\brangle{1} +\gamma_{xy}(=)^{\#|\gamma_{xy}|\varepsilon}\zeta_y\brangle{1}$ where $\gamma_{xy} = -\min(\mu_y\brangle{1}-\mu_x\brangle{1}, 0)$.
 
-    Then observe that if $\mu_x\brangle{1}\geq \mu_y\brangle{1}$, then \begin{align*}
+    Then observe that if $\mu_x\brangle{1}\geq \mu_y\brangle{1}$, \begin{align*}
         X\brangle{1}&= \mu_x\brangle{1} + \zeta_x\brangle{1}\\
         &= \mu_x\brangle{1} + \zeta_y\brangle{1}+\mu_y\brangle{1}-\mu-x\brangle{1}\\
         &=Y\brangle{1}
@@ -1318,9 +1320,81 @@ We introduce a new type of coupling strategy for a single (2v-)transition:
     \end{itemize}
     are true, then the lifting holds as desired. 
 
-
+    \textbf{Case 3:}
     
+    Create the lifting $\zeta_x\brangle{1} + \gamma_{xy} (=)^{\#|\gamma_{xy}|\varepsilon} \zeta_y\brangle{1}$ where $\gamma_{xy} = -\max(0, \mu_y\brangle{1}+ \gamma_T^{(y)}-\mu_x\brangle{1}-\gamma_T^{(x)})$
+
+    Then if $\mu_x\brangle{1}+\gamma_T^{(x)}\leq \mu_y\brangle{1}+\gamma_T^{(y)}$, \begin{align*}
+        X\brangle{2} &= X\brangle{1} + \gamma_T^{(x)}\\
+        &=\mu_x\brangle{1} + \zeta_x\brangle{1} + \gamma_T^{(x)}\\
+        &=\mu_x\brangle{1} +\zeta_y\brangle{1} + \mu_y\brangle{1}+ \gamma_T^{(y)}-\mu_x\brangle{1}-\gamma_T^{(x)} +\gamma_T^{(x)}\\
+        &=Y\brangle{1} + \gamma_T^{(y)}\\
+        &= Y\brangle{2}
+    \end{align*}
+
+    Otherwise, if $\mu_x\brangle{1}+\gamma_T^{(x)}> \mu_y\brangle{1}+\gamma_T^{(y)}$, then \begin{align*}
+        X\brangle{2} &= X\brangle{1} + \gamma_T^{(x)}\\
+        &=\mu_x\brangle{1} + \zeta_x\brangle{1} + \gamma_T^{(x)}\\
+        &\geq \mu_y\brangle{1} +\gamma_T^{(y)}+\zeta_y\brangle{1}\\
+        &=Y\brangle{1} + \gamma_T^{(y)}\\
+        &= Y\brangle{2}
+    \end{align*}
+
+    Thus, $X\brangle{2}\geq Y\brangle{2}$.
+
+    Further, create the lifting $z^{(x)}\brangle{1}(=)^{\#0}z^{(y)}\brangle{1}$. Note that then $\texttt{insample}^{(x)}\brangle{1}=\texttt{in}_i\brangle{1} + z_i^{(x)}\brangle{1} =\texttt{in}_i\brangle{1} + z_i^{(y)}\brangle{1}=\texttt{insample}^{(y)}\brangle{1}$.
+
+    Then because $X\brangle{2} \leq Y\brangle{2}$, $\texttt{insample}^{(x)}\brangle{2}<x\brangle{2}\lor \texttt{insample}^{(y)}\brangle{2}\geq y\brangle{2}$ must be true. Thus, $\texttt{insample}^{(x)}\brangle{1}<x\brangle{1}\lor\texttt{insample}^{(y)}\brangle{1}\geq y\brangle{1}\implies \texttt{insample}^{(x)}<x\brangle{2}\lor\texttt{insample}^{(y)}\geq y\brangle{2}$.
+
+    As before, if any of \begin{itemize}
+        \item $\sigma \in \Gamma$
+        \item $\sigma = \texttt{insample}^{(x)}$ and $\gamma_q^{(x)}=0$ 
+        \item $\sigma = \texttt{insample}^{(x)\prime}$ and $\gamma_q^{(x)\prime}=0$ 
+        \item $\sigma = \texttt{insample}^{(y)}$ and $\gamma_q^{(y)}=0$
+        \item $\sigma = \texttt{insample}^{(y)\prime}$ and $\gamma_q^{(y)\prime}=0$
+    \end{itemize}
+    are true, then the lifting holds as desired. 
+
 \end{proof}
+
+Paths:
+{\color{red} sanity check that you can't derive contradictory inequalities}
+
+
+
+\begin{lemma}
+    Let $\rho = q_0\to \ldots \to q_n$ be a complete path of length $n$. 
+    Let $\texttt{in}\brangle{1}\sim \texttt{in}\brangle{2}$ be arbitrary adjacent valid input sequences of length $n$. Additionally, fix some potential output $\sigma$ of $\rho$ of length $n$ and let $\sigma\brangle{1}$, $\sigma\brangle{2}$ be random variables representing possible outputs of $\rho$ given inputs $\texttt{in}\brangle{1}$ and $\texttt{in}\brangle{2}$, respectively. Additionally, for all $q_i$, let $P(q_i) = (d_i, d_i')$.
+
+    Then $\forall \varepsilon>0$ and for all $\{\gamma_i, \gamma_i'\}_{i=0}^{n-1}$ that, for all $i$, satisfy the following constraints:\begin{enumerate}
+        \item If $c_i(x) = \lguard[\texttt{x}]$, then at least one of the following is true: \begin{itemize}
+            \item $\gamma_i^{(x)}\leq \gamma^{(x)}_{at_x(i)}$
+            \item $c_i = \lguard[\texttt{x}]\lor\gguard[\texttt{y}]$ and $\gamma_{(at_x(i), at_y(i))} = -\min(\texttt{in}_{at_y(i)}\brangle{1}-\texttt{in}_{at_x(i)}\brangle{1}, 0)$
+            \item $c_i = \lguard[\texttt{x}]\land\gguard[\texttt{y}]$ and $\gamma_{(at_x(i), at_y(i))} = -\max(0, \texttt{in}_{at_y(i)}\brangle{1}+ \gamma_{at_y(i)}^{(y)}-\texttt{in}_{at_x(i)}\brangle{1}-\gamma_{at_x(i)}^{(x)})$
+        \end{itemize}
+        \item If $c_i(x) = \gguard[\texttt{x}]$, then at least one of the following is true: \begin{itemize}
+            \item $\gamma_i^{(x)}\geq \gamma^{(x)}_{at_x(i)}$
+            \item $c_i = \gguard[\texttt{x}]\lor\lguard[\texttt{y}]$ and $\gamma_{(at_x(i), at_y(i))} = -\min(\texttt{in}_{at_x(i)}\brangle{1}-\texttt{in}_{at_y(i)}\brangle{1}, 0)$
+            \item $c_i = \gguard[\texttt{x}]\land\lguard[\texttt{y}]$ and $\gamma_{(at_x(i), at_y(i))} = -\max(0, \texttt{in}_{at_x(i)}\brangle{1}+ \gamma_{at_x(i)}^{(x)}-\texttt{in}_{at_y(i)}\brangle{1}-\gamma_{at_y(i)}^{(y)})$
+        \end{itemize}
+        \item If $c_i(y) = \lguard[\texttt{y}]$, then at least one of the following is true: \begin{itemize}
+            \item $\gamma_i^{(y)}\leq \gamma^{(y)}_{at_y(i)}$
+            \item $c_i = \gguard[\texttt{x}]\lor\lguard[\texttt{y}]$ and $\gamma_{(at_x(i), at_y(i))} = -\min(\texttt{in}_{at_x(i)}\brangle{1}-\texttt{in}_{at_y(i)}\brangle{1}, 0)$
+            \item $c_i = \gguard[\texttt{x}]\land\lguard[\texttt{y}]$ and $\gamma_{(at_x(i), at_y(i))} = -\max(0, \texttt{in}_{at_x(i)}\brangle{1}+ \gamma_{at_x(i)}^{(x)}-\texttt{in}_{at_y(i)}\brangle{1}-\gamma_{at_y(i)}^{(y)})$
+        \end{itemize}
+        \item If $c_i(y) = \gguard[\texttt{x}]$, then at least one of the following is true: \begin{itemize}
+            \item $\gamma_i^{(x)}\geq \gamma^{(x)}_{at_x(i)}$
+            \item $c_i = \lguard[\texttt{x}]\lor\gguard[\texttt{y}]$ and $\gamma_{(at_x(i), at_y(i))} = -\min(\texttt{in}_{at_y(i)}\brangle{1}-\texttt{in}_{at_x(i)}\brangle{1}, 0)$
+            \item $c_i = \lguard[\texttt{x}]\land\gguard[\texttt{y}]$ and $\gamma_{(at_x(i), at_y(i))} = -\max(0, \texttt{in}_{at_y(i)}\brangle{1}+ \gamma_{at_y(i)}^{(y)}-\texttt{in}_{at_x(i)}\brangle{1}-\gamma_{at_x(i)}^{(x)})$
+        \end{itemize}
+        \item If $\sigma_i = \texttt{insample}^{(x)}$, then $\gamma_i^{(x)}=0$
+        \item If $\sigma_i = \texttt{insample}^{(x)\prime}$, then $\gamma_i^{(x)\prime}=0$
+        \item If $\sigma_i = \texttt{insample}^{(y)}$, then $\gamma_i^{(y)}=0$
+        \item If $\sigma_i = \texttt{insample}^{(y)\prime}$, then $\gamma_i^{(y)\prime}=0$
+    \end{enumerate}
+      the lifting $\sigma\brangle{1}\{(a, b): a=\sigma\implies b=\sigma\}^{\#d\varepsilon}\sigma\brangle{2}$ is valid for $d = \sum_{i=0}^{n-1}(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i|)d_i+(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i'|)d_i' + \sum_{i_x, i_y}\gamma_{(i_x, i_y)}$, and therefore $t$ is $d\varepsilon$-differentially private. 
+\end{lemma}
+
 
 \subsubsection{Couplings for GDiPA}
 
@@ -1365,8 +1439,6 @@ A full exploration of approximate liftings can be found in \cite{HsuThesis2017}.
 \section{Appendix}
 
 \subsection{Proofs for section 4}
-
-
 
 {\color{red} move these two lemmas away from this section (appendix or closer to usage in main theorem)}
 
