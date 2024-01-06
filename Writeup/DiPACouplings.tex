@@ -761,7 +761,20 @@ As before, the existence of a valid coupling strategy upper bounds the privacy c
 \begin{proof}
 \end{proof}
 
-Note then, that the process of finding the optimal coupling cost of a path $\rho$ can be formulated as a linear program.
+Note then, that the process of finding the optimal coupling cost of a path $\rho$ can be formulated as a linear program as follows. 
+
+\begin{prop}
+    Let $t_i$ and $t_0$ occur in a complete path $\rho$ of length $n$ with $t_0 = t_{at(i)}$. There is an optimal coupling strategy $(\gamma, \gamma')$ for $\rho$ which has 
+
+    \begin{align*}
+        \gamma_i(\texttt{in}\brangle{1}, \texttt{in}\brangle{2}) &= \begin{cases}
+            \gamma_{at(i)}(\texttt{in}\brangle{1}, \texttt{in}\brangle{2}) & c_i = \lguard[\texttt{x}]\\
+            \gamma_{at(i)}(\texttt{in}\brangle{1}, \texttt{in}\brangle{2}) & c_i = \gguard[\texttt{x}]\\
+            0 & \sigma_i = \texttt{insample}\\
+            0 & \sigma_i = \texttt{insample}'
+        \end{cases}\\
+    \end{align*}
+\end{prop}
  
 
 \subsection{Branching}
@@ -791,8 +804,62 @@ We can do no better than assigning coupling strategies for each path independent
 \end{defn}
 
 \begin{prop}\label{costDependspathProp}
-    Optimal cost is dependent on path (Vishnu)
+    Optimal cost is dependent on path. There exists a valid transition alphabet $\Sigma_T$, a state space $Q$, and a branching program $B$ for which the optimal cost of a coupling strategy $C$ for $B$ is dependent on the path $\rho$. 
+    
+    In other words, the optimal strategy $C$ must assign different coupling strategies to occurances of the same transition in different paths. 
 \end{prop}
+
+\begin{proof}
+    Let $Q = \{q_0, q_1, q_2, q_3\}$ consist only of input states, each of which have both noise parameters equal to $1$. Let $\Sigma_T = \{t_{init}, t_{geq1}, t_{leq1}, t_{leq2}, t_{geq2}\}$ where 
+    \begin{align*}
+        t_{init} &= (q_0, q_1, \texttt{true}, \bot, 1)\\
+        t_{geq1} &= (q_1, q_2, \gguard[\texttt{x}], \top, 0)\\
+        t_{leq1} &= (q_1, q_3, \lguard[\texttt{x}], \bot, 0)\\
+        t_{geq2} &= (q_2, q_2, \gguard[\texttt{x}], \top, 0)\\
+        t_{leq2} &= (q_3, q_3, \lguard[\texttt{x}], \bot, 0)
+    \end{align*}
+    and let $B = \{t_{init}t_{geq1}t_{geq2}^n, t_{init}t_{leq1}t_{leq2}^n\}$ be the branching program consisting of two paths, each of which have $n$ repetitions of the cycle transitions $t_{geq2}$ and $t_{leq2}$, respectively.
+
+    Let $\rho_1 = t_{init}t_{geq1}t_{geq2}^n$ and $\rho_2 = t_{init}t_{leq1}t_{leq2}^n$ be the two paths in $B$. We first show that the cost of the optimal coupling strategy $C$ for $B$ is $2$, and then the desired result. 
+    
+    
+    Let $C_{\rho_1}$ be any coupling strategy for $\rho$. We show that the $cost(C_{\rho_1})$ is bounded below by $2$. 
+    \begin{align*}
+        cost(C_{\rho_1}) &= \max_{\texttt{in}\brangle{1}\sim\texttt{in}\brangle{2}}\sum_{i=0}^{n+2}(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i(\texttt{in}_i\brangle{1}, \texttt{in}_i\brangle{2}))\\&\qquad+(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i'(\texttt{in}_i\brangle{1}, \texttt{in}_i\brangle{2})|)\\
+        &\geq \max_{\texttt{in}\brangle{1}\sim\texttt{in}\brangle{2}} \sum_{i=0}^{n+2}(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i(\texttt{in}_i\brangle{1}, \texttt{in}_i\brangle{2})|)\\
+        &= \max_{\Delta \in [-1, 1]^{n+2}} \sum_{i=0}^{n+2}(|\Delta_i-\gamma_i(0, \Delta_i)|)\\
+        &\geq |1 - \gamma_0(0, 1)| + \sum_{i=1}^{n+2}|-1-\gamma_i(0, -1)|\\
+        &= 1 - \gamma_0(0, 1) + \sum_{i=1}^{n+2} (1+\gamma_i(0, -1))\\
+        &= 1 - \gamma_0(0, 1) + (n + 2) + \sum_{i=1}^{n+2}\gamma_i(0, -1)\\
+        &\geq 1 - \gamma_0(0, 1) + (n + 2) + \sum_{i=1}^{n+2}\gamma_0(0, 1) \qquad \text{(privacy constraint)}\\
+        &= (n + 3) + (n + 1) \gamma_0(0, 1)\\
+        &\geq 2
+    \end{align*}
+
+    and by a similar argument, $cost(C_{\rho_2})\geq 2$ for any coupling strategy $C_{\rho_2}$. Now, we show that there exists a coupling strategy $C_{\rho_1}$ for which $cost(C_{\rho_1}) = 2$. Since no transition outputs \texttt{insample}, we can set $\gamma_i'(\texttt{in}\brangle{1}, \texttt{in}\brangle{2}) = \texttt{in}\brangle{2} - \texttt{in}\brangle{1}$ for all $i$ with no privacy cost. Define 
+    \begin{align*}
+        \gamma_0(\texttt{in}\brangle{1}, \texttt{in}\brangle{2}) &= -1 \\
+        \gamma_i(\texttt{in}\brangle{1}, \texttt{in}\brangle{2}) &= \texttt{in}_i\brangle{2} - \texttt{in}_i\brangle{1} \qquad \text{for all $i>0$}
+    \end{align*}
+    We see that $C_{\rho_1}$ is valid, since $\gamma_i\geq \gamma_{0}$ for all $i>0$. Further, we see that 
+    \begin{align*}
+        cost(C_{\rho_1}) &= \max_{\texttt{in}\brangle{1}\sim\texttt{in}\brangle{2}}\sum_{i=0}^{n+2}(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i(\texttt{in}_i\brangle{1}, \texttt{in}_i\brangle{2}))\\&\qquad+(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i'(\texttt{in}_i\brangle{1}, \texttt{in}_i\brangle{2})|)\\
+        &= \max_{\texttt{in}\brangle{1}\sim\texttt{in}\brangle{2}} |-\texttt{in}_0\brangle{1}+\texttt{in}_0\brangle{2}-\gamma_0(\texttt{in}_0\brangle{1}, \texttt{in}_0\brangle{2})| \\
+        &= \max_{\texttt{in}\brangle{1}\sim\texttt{in}\brangle{2}} |-\texttt{in}_0\brangle{1}+\texttt{in}_0\brangle{2}+1|\\
+        &\leq 2 
+    \end{align*}
+    showing that $cost(C_{\rho_1}) = 2$. Similarly, there is a coupling strategy $C_{\rho_2}$ for which $cost(C_{\rho_2}) = 2$. This shows that there is a coupling strategy $C$, consisting of $C_{\rho_1}$ and $C_{\rho_2}$, for which $cost(C) = 2$.
+
+    Assume that there exists an optimal coupling strategy $C$ that assigns the same coupling strategy to $t_{init}$ in both $\rho_1$ and $\rho_2$. If $\gamma_0(0, 1) \neq -1$ in $C_{\rho_1}$, then $cost(C_{\rho_1}) > 2$ in the same method as the above, a contradiction. Thus, $\gamma_0(0, 1) = -1$ in $C_{\rho_1}$, which by hypothesis, means that $\gamma_0(0, 1) = -1$ in $C_{\rho_2}$. We have the privacy constraint $\gamma_i \leq \gamma_0$ on $\rho_2$, which also means that $\gamma_i = -1$ identically for all $i > 0$. However, this means that 
+    \begin{align*}
+        cost(C_{\rho_2}) &= \max_{\texttt{in}\brangle{1}\sim\texttt{in}\brangle{2}}\sum_{i=0}^{n+2}(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i(\texttt{in}_i\brangle{1}, \texttt{in}_i\brangle{2}))\\&\qquad+(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i'(\texttt{in}_i\brangle{1}, \texttt{in}_i\brangle{2})|)\\
+        &\geq \max_{\texttt{in}\brangle{1}\sim\texttt{in}\brangle{2}} \sum_{i=0}^{n+2}(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i(\texttt{in}_i\brangle{1}, \texttt{in}_i\brangle{2})|)\\
+        &\geq \max_{\Delta \in [-1, 1]^{n+2}} |\Delta_0 - \gamma_i(0, \Delta_0)| + \sum_{i=1}^{n+2}(|\Delta_i-\gamma_i(0, \Delta_i)|)\\
+        &\geq |1 - \gamma_i(0, 1)| + \sum_{i=1}^{n+2}(|1+1|)\\
+        &= 2 \cdot (n + 2)
+    \end{align*}
+    showing that $C$ is not optimal.
+\end{proof}
 
 \subsection{Loops}
 
@@ -1026,11 +1093,62 @@ In particular, this lends itself to conceptualizing complete paths by splitting 
 
 In other words, a segment is a subpath of $\rho$ between two consecutive assignment transitions (or between the last assignment transition and the end of the path). Splitting up a path into segments thus allows us to think about a single value of $\texttt{x}$ at a time.
 
-\begin{prop}
-    [Vishnu's segment graph overview here]
-\end{prop}
+
+% The segment graph overview
+
+\begin{defn}
+    Given segments $s_i$ and $s_j$ of a path $\rho$, we say that $s_j$ follows $s_i$ (written $s_i \hookrightarrow s_j$) if $s_j$ is a subpath of $\rho$ occurring immediately after $s_i$ in $\rho$.
+\end{defn}
+
+
+\begin{defn}[Segment graph of a program]
+    Given a DiPA $\mathcal{A}$, the segment graph $G_P = (V, E)$ of $\mathcal{A}$ is a directed graph where: 
+    \begin{itemize}
+        \item For every segment $s_i \in seg(\mathcal{A})$, there is a vertex $v_i \in V$ representing the coupling shift on the assignment transition of $s_i$.
+        \item For every pair of segments $(s_i, s_j)$ which have the privacy constraint $\gamma_i \leq \gamma_j$, there is an edge $(v_i, v_j) \in E$.
+        \item There are nodes ${\bf 1, -1}\ \in V$ such that: 
+        \begin{itemize}
+            \item The edges $({\bf -1}, v)$ exist for all $v \in V$.
+            \item The edges $(v, {\bf 1})$ exist for all $v \in V$.
+            \item For every segment $s_i$ with the privacy constraint $\gamma_i = 1$, there is an edge $({\bf 1}, v_i) \in E$.
+            \item For every segment $s_i$ with the privacy constraint $\gamma_i = -1$, there is an edge $(v_i, {\bf -1}) \in E$. 
+        \end{itemize}
+    \end{itemize}
+\end{defn}
+
+\begin{lemma}
+    \label{lemma:segpath}
+    Let there exist a path $v_1 \to \dots \to v_k$ in the segment graph of $\mathcal{A}$, and let the corresponding segments be $s_{i_1}, \dots, s_{i_k}$. Then we either have that 
+    
+    \[s_{i_1} \hookrightarrow s_{i_2} \hookrightarrow \dots \hookrightarrow s_{i_k} \qquad \text{ and } \qquad guard(s_{i_k}) = <\]
+    
+    or 
+    
+    \[s_{i_k} \hookrightarrow s_{i_{k - 1}} \hookrightarrow \dots \hookrightarrow s_{i_1} \qquad \text{ and } \qquad guard(s_{i_k}) = \geq\]
+\end{lemma}
+
+\begin{proof}
+    We will use induction on $k$ with base case $k = 2$. If we have $v_1 \to v_2$ in the segment  graph, then we either have that $s_{i_1} \hookrightarrow s_{i_2}$ with $guard(s_{i_2}) = <$, or that $s_{i_2} \hookrightarrow s_{i_1}$ with $guard(s_{i_2}) = \geq$. For a path with length $k + 1$ in the segment  graph, let us assume the desired result. Then apply the base case on $s_{i_{k}} \to s_{i_{k + 1}}$ to conclude. 
+\end{proof}
+
+\begin{thm}
+    \label{theorem:decide_privacy}
+    A DiPA $\mathcal{A}$ is differentially private if and only if there does not exist a path from $\bf 1$ to $\bf -1$ in the segment graph of $\mathcal{A}$.
+\end{thm}
+
+\begin{proof}
+    $(\implies)$ Suppose that $\mathcal{A}$ is differentially private. Then there exists a shift-coupling proof of privacy $\Gamma$ with finite cost. Assume that there exists a path ${\bf 1} \to v_1 \to \dots \to v_k \to {\bf -1}$ in the segment graph of $\mathcal{A}$. Without loss of generality, we have the sequence of segments $s_{i_1} \hookrightarrow \dots \hookrightarrow s_{i_k}$ corresponding to the path by Lemma \ref{lemma:segpath}. We can then extend this to a sequence of segments $s_1 \to \dots \to s_{i_1} \to \dots \to s_{i_k} \to \dots \to s_n$ that begins with the initialization segment and ends with a terminal segment. 
+
+    If we restrict the segment-shift graph to only these segments, we find that any assignment of shifts $\gamma$ would not be valid, as we would be able to construct a sequence of inequalities to conclude that $1 \leq -1$, which is false. Thus, there is no valid assignment of shifts $\gamma$ for this sequence of segments with finite cost, and so $\Gamma$ is not a shift-coupling proof of privacy with finite cost. This is a contradiction.
+
+    $(\impliedby)$ This direction follows from the fact that there is \textit{some} valid assignment of shifts $\gamma$ with finite cost on each segment, and so we can construct a shift-coupling proof of privacy $\Gamma$ with finite cost.
+\end{proof}
+
+We can construct the segment graph of a DiPA in linear time, and check for a path from $\bf 1$ to $\bf -1$ in linear time using a breadth-first search. Thus, we can decide privacy in linear time.
 
 \subsection{Minimizing a privacy budget}
+
+Note (Vishnu): I will assume here 
 
 If we have a differentially private program, we'd also like to optimize its privacy cost. We can do so via couplings: 
 
