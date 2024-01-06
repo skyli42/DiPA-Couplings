@@ -1118,9 +1118,37 @@ However, there are other, non-trivial, extensions that warrant further study. In
     If there exist coupling strategies $C_x, C_y$ that each independently satisfy the privacy constraint system for a 2v-transition $t$, then there exists a valid 2-coupling strategy $C$ for $t$ such that $cost(C) = cost(C_x)+cost(C_y)$. 
 \end{prop}
 
-- combining independent couplings together
+\begin{lemma}
+    Let $X\brangle{1}\sim \Lap(\mu_x\brangle{1}, \frac{1}{d_x\varepsilon}), X\brangle{2}\sim\Lap(\mu_x\brangle{2}, \frac{1}{d_x\varepsilon})$ be random variables be random variables representing possible initial values of $\texttt{x}$, respectively, and $Y\brangle{1}\sim \Lap(\mu_y\brangle{1}, \frac{1}{d_y\varepsilon}), Y\brangle{2}\sim\Lap(\mu_y\brangle{2}, \frac{1}{d_y\varepsilon})$ be random variables be random variables representing possible initial values of $\texttt{x}$, respectively. 
 
-- new type of coupling
+    Let $t\in \Sigma_T$ be a 2v-transition $t = (q, q^*, c, \sigma, \tau)$ from $q$ to $q^*\in Q$. Let $P(q) = (d_q, d_q')$.
+
+    Let $\texttt{in}\brangle{1}, \texttt{in}\brangle{2}$ be an arbitrary valid adjacent input pair for $t$ and let $o\brangle{1}$, $o\brangle{2}$ be random variables representing possible outputs of $t$ given inputs $\texttt{in}\brangle{1}$ and $\texttt{in}\brangle{2}$, respectively. 
+
+    Then $\forall \varepsilon>0$ and for all $\gamma_T^{(x)}, \gamma_q^{(x)}, \gamma_q^{(x)\prime},\gamma_T^{(y)}, \gamma_q^{(y)}, \gamma_q^{(y)\prime}\in [-1, 1]$ that satisfy the constraints \[
+        \begin{cases}
+          \gamma_q^{(x)}\leq\gamma_T^{(x)} & c(x) = \lguard[\texttt{x}]\\
+          \gamma_q^{(x)}\geq\gamma_T^{(x)} & c(x) = \gguard[\texttt{x}]\\
+          \gamma_q^{(x)}=0 & \sigma = \texttt{insample}^{(x)}\\
+          \gamma_q^{(x)\prime}=0 & \sigma = \texttt{insample}^{(x)\prime}\\
+          \gamma_q^{(y)}\leq\gamma_T^{(y)} & c(y) = \lguard[\texttt{y}]\\
+          \gamma_q^{(y)}\geq\gamma_T^{(y)} & c(y) = \gguard[\texttt{y}]\\
+          \gamma_q^{(y)}=0 & \sigma = \texttt{insample}^{(y)}\\
+          \gamma_q^{(y)\prime}=0 & \sigma = \texttt{insample}^{(y)\prime}
+        \end{cases},
+      \]
+      the lifting $o\brangle{1}\{(a, b): a=\sigma\implies b=\sigma\}^{\#d\varepsilon}o\brangle{2}$ is valid for 
+      $d = (|\mu_x\brangle{1}-\mu_x\brangle{2}+\gamma_T^{(x)}|)d_T^{(x)}+(|\mu_y\brangle{1}-\mu_y\brangle{2}+\gamma_T^{(y)}|)d_T^{(y)}+(|-\texttt{in}\brangle{1}+\texttt{in}\brangle{2}-\gamma_q^{(x)}|+|-\texttt{in}\brangle{1}+\texttt{in}\brangle{2}-\gamma_q^{(y)}|)d_q+(|-\texttt{in}\brangle{1}+\texttt{in}\brangle{2}-\gamma_q^{(x)\prime}|+|-\texttt{in}\brangle{1}+\texttt{in}\brangle{2}-\gamma_q^{(y)\prime}|)d_q'$, and therefore $t$ is $d\varepsilon$-differentially private. 
+\end{lemma}
+\begin{proof}
+    From lemma \ref{indTransitionCoupling}, we know that if these constraints are satisfied, we can create liftings such that \begin{itemize}
+        \item $c(x)$ is satisfied in $\brangle{1}\implies c(x)$ is satisfied in $\brangle{2}$
+        \item $c(y)$ is satisfied in $\brangle{1}\implies c(y)$ is satisfied in $\brangle{2}$
+    \end{itemize}
+    Further, $c$ being satisfied is equivalent to either $c(x)\land c(y)$ or $c(x)\lor c(y)$. In either case, we can immediately show that $c$ being satisfied in $\brangle{1}\implies c$ is satisfied in $\brangle{2}$.
+
+    Finally, as before, if $\sigma \in \{\texttt{insample}^{(x)}, \texttt{insample}^{(x)\prime}, \texttt{insample}^{(y)},\texttt{insample}^{(y)\prime}\}$, then for all $\sigma$, $o\brangle{1}=\sigma \implies o\brangle{2} = \sigma$. By simply adding up the costs from lemma \ref{indTransitionCoupling}, we complete the proof.
+\end{proof}
 
 \subsubsection{Cross-Couplings{\color{red}CHANGE NAME}}
 
@@ -1130,7 +1158,7 @@ We introduce a new type of coupling strategy for a single (2v-)transition:
 
 {\color{red} Valid coupling strategies}
 
-- coupling strategy is a series of shifts - 
+We introduce a new coupling possibility - between different 
 
 
 \begin{lemma}\label{mvIndTransitionCoupling}
@@ -1240,9 +1268,9 @@ We introduce a new type of coupling strategy for a single (2v-)transition:
 \end{proof}
 
 Paths:
-{\color{red} sanity check that you can't derive contradictory inequalities}
+{\color{red} note: need to require that you can't derive contradictory inequalities}
 
-
+We allow couplings between different assignment transitions: from an $x$ assignment to a $y$ assignment. 
 
 \begin{lemma}
     Let $\rho = q_0\to \ldots \to q_n$ be a complete path of length $n$. 
@@ -1276,7 +1304,53 @@ Paths:
     \end{enumerate}
       the lifting $\sigma\brangle{1}\{(a, b): a=\sigma\implies b=\sigma\}^{\#d\varepsilon}\sigma\brangle{2}$ is valid for $d = \sum_{i=0}^{n-1}(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i|)d_i+(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i'|)d_i' + \sum_{i_x, i_y}\gamma_{(i_x, i_y)}$, and therefore $t$ is $d\varepsilon$-differentially private. 
 \end{lemma}
+\begin{proof}
+    Follows from lemma \ref{mvIndTransitionCoupling} exactly as lemma \ref{multTransitionsCouplingProof} follows from lemma \ref{indTransitionCoupling}.
+\end{proof}
 
+
+\begin{defn}
+    Let $L$ be a 2v-looping branch over a valid transition alphabet $\Sigma_T$. If, for a candidate coupling strategy $C_L = (\gamma, \gamma')$ for $L$, the following constraints are satisfied for all possible inputs $\texttt{in}\brangle{1}\sim\texttt{in}\brangle{2}$ and all $i$: \begin{enumerate}
+        \item If $c_i(x) = \lguard[\texttt{x}]$, at least one of the following is true:\begin{enumerate}
+            \item $\gamma_i\leq\gamma_{at(i)}$
+            \item $c_i = \lguard[\texttt{x}]\lor\gguard[\texttt{y}]$ and $\gamma_{(at_x(i), at_y(i))} = -\min(\texttt{in}_{at_y(i)}\brangle{1}-\texttt{in}_{at_x(i)}\brangle{1}, 0)$
+            \item $c_i = \lguard[\texttt{x}]\land\gguard[\texttt{y}]$ and $\gamma_{(at_x(i), at_y(i))} = -\max(0, \texttt{in}_{at_y(i)}\brangle{1}+ \gamma_{at_y(i)}^{(y)}-\texttt{in}_{at_x(i)}\brangle{1}-\gamma_{at_x(i)}^{(x)})$
+        \end{enumerate}
+        \item If $c_i(x) = \gguard[\texttt{x}]$, then at least one of the following is true: \begin{enumerate}
+            \item $\gamma_i^{(x)}\geq \gamma^{(x)}_{at_x(i)}$
+            \item $c_i = \gguard[\texttt{x}]\lor\lguard[\texttt{y}]$ and $\gamma_{(at_x(i), at_y(i))} = -\min(\texttt{in}_{at_x(i)}\brangle{1}-\texttt{in}_{at_y(i)}\brangle{1}, 0)$
+            \item $c_i = \gguard[\texttt{x}]\land\lguard[\texttt{y}]$ and $\gamma_{(at_x(i), at_y(i))} = -\max(0, \texttt{in}_{at_x(i)}\brangle{1}+ \gamma_{at_x(i)}^{(x)}-\texttt{in}_{at_y(i)}\brangle{1}-\gamma_{at_y(i)}^{(y)})$
+        \end{enumerate}
+        \item If $c_i(y) = \lguard[\texttt{y}]$, then at least one of the following is true: \begin{enumerate}
+            \item $\gamma_i^{(y)}\leq \gamma^{(y)}_{at_y(i)}$
+            \item $c_i = \gguard[\texttt{x}]\lor\lguard[\texttt{y}]$ and $\gamma_{(at_x(i), at_y(i))} = -\min(\texttt{in}_{at_x(i)}\brangle{1}-\texttt{in}_{at_y(i)}\brangle{1}, 0)$
+            \item $c_i = \gguard[\texttt{x}]\land\lguard[\texttt{y}]$ and $\gamma_{(at_x(i), at_y(i))} = -\max(0, \texttt{in}_{at_x(i)}\brangle{1}+ \gamma_{at_x(i)}^{(x)}-\texttt{in}_{at_y(i)}\brangle{1}-\gamma_{at_y(i)}^{(y)})$
+        \end{enumerate}
+        \item If $c_i(y) = \gguard[\texttt{x}]$, then at least one of the following is true: \begin{enumerate}
+            \item $\gamma_i^{(x)}\geq \gamma^{(x)}_{at_x(i)}$
+            \item $c_i = \lguard[\texttt{x}]\lor\gguard[\texttt{y}]$ and $\gamma_{(at_x(i), at_y(i))} = -\min(\texttt{in}_{at_y(i)}\brangle{1}-\texttt{in}_{at_x(i)}\brangle{1}, 0)$
+            \item $c_i = \lguard[\texttt{x}]\land\gguard[\texttt{y}]$ and $\gamma_{(at_x(i), at_y(i))} = -\max(0, \texttt{in}_{at_y(i)}\brangle{1}+ \gamma_{at_y(i)}^{(y)}-\texttt{in}_{at_x(i)}\brangle{1}-\gamma_{at_x(i)}^{(x)})$
+        \end{enumerate}
+        \item If $\sigma_i = \texttt{insample}^{(x)}$, then $\gamma_i^{(x)}=0$
+        \item If $\sigma_i = \texttt{insample}^{(x)\prime}$, then $\gamma_i^{(x)\prime}=0$
+        \item If $\sigma_i = \texttt{insample}^{(y)}$, then $\gamma_i^{(y)}=0$
+        \item If $\sigma_i = \texttt{insample}^{(y)\prime}$, then $\gamma_i^{(y)\prime}=0$
+        \item If $t_i$ is in a cycle, then $\gamma_i = -\texttt{in}\brangle{1}_i+\texttt{in}\brangle{2}_i$ and for all $j$, $\gamma_{(i, j)} = 0$ and $\gamma_{(j, i)} = 0$
+        \item If $t_i$ is in a cycle, then $\gamma_i' = -\texttt{in}\brangle{1}_i+\texttt{in}\brangle{2}_i$ and for all $j$, $\gamma_{(i, j)} = 0$ and $\gamma_{(j, i)} = 0$
+    \end{enumerate}
+    then we say that $C$ satisfies the privacy constraint system for $L$. 
+\end{defn}
+
+\begin{lemma}
+    If no coupling strategy satisfies the privacy constraint system, then there exists a leaking cycle, non-cancelling leaking pair, disclosing cycle, or privacy violating path in a variable in the looping branch.
+\end{lemma}
+\begin{proof}[\proofname~(sketch)]~\\
+    - if 9/10 are violated such that the cross coupling condition is invalid, there must be a leaking cycle
+    
+    - otherwise, there must be a leaking cycle, leaking pair, disclosing cycle, or pvp in a single variable by the single variable result
+
+    - all that remains is to show that all leaking pairs must be non-cancelling, which follows pretty straightforwardly from the 
+\end{proof}
 
 \subsubsection{Couplings for GDiPA}
 
@@ -1284,13 +1358,7 @@ Paths:
     A GDiPA $A$ is a tuple ().
 \end{defn}
 
-\begin{thm}
-    A GDiPA $A$ is $d\varepsilon$-differentially private for some $d>0$ if and only if there exists a valid and finite cost coupling strategy for every looping branch of $A$. 
-\end{thm}
 
-\begin{lemma}
-    If there does not exist a single variable coupling strategy with respect to a variable $\texttt{x}$ for a looping branch $\rho$ that satisfies the privacy constraint conditions for $\texttt{x}$, then $\rho$ must contain either a leaking cycle, leaking pair, disclosing cycle, or privacy violating path in $\texttt{x}$.
-\end{lemma}
 
 \begin{lemma}
     If there does not exist a valid and finite cost coupling strategy for every looping branch of $A$, then there must exist either a leaking cycle, disclosing cycle, or privacy violating path in a single variable or a non-cancelling leaking pair. 
@@ -1299,6 +1367,10 @@ Paths:
 \begin{lemma}
     If there exists a leaking cycle, disclosing cycle, or privacy violating path in a single variable or a non-cancelling leaking pair in a single variable in a GDiPA $A$, then $A$ is not $d\varepsilon$-differentially private for any $d>0$. 
 \end{lemma}
+
+\begin{thm}
+    A GDiPA $A$ is $d\varepsilon$-differentially private for some $d>0$ if and only if there exists a valid and finite cost coupling strategy for every looping branch of $A$. 
+\end{thm}
 
 \section{Conclusion}
 We have shown how to use coupling techniques to prove privacy for a class of SVT-like programs first defined in \cite{chadhaLinearTimeDecidability2021} and discovered that couplings additionally characterize this class. We additionally showed that this can be done tractably, and that couplings can help provide lower bounds on privacy costs of these algorithms. 
