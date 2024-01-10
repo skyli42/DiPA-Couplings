@@ -805,6 +805,15 @@ We can do no better than assigning coupling strategies for each path independent
     showing that $C$ is not optimal.
 \end{proof}
 
+\begin{prop}
+    There exist a family of branching programs $\{B_n\}_{n\in \NN}$ for which the cost of any path-independent coupling strategy $C$ for $B_n$ is greater than $n^2$, but for which there exists a path-dependent coupling strategy $C'$ for $B_n$ with cost $\leq n$.
+\end{prop}
+
+\begin{proof}
+    TODO (Vishnu)
+\end{proof}
+
+
 \subsection{Loops}
 
 \begin{defn}
@@ -1109,42 +1118,80 @@ If we have a differentially private program, we'd also like to optimize its priv
     \end{align*}
 \end{prop}
 
+\begin{proof}
+    TODO (Vishnu)
+\end{proof}
+
 Note: the inner problem is convex, and so the outer problem is that of convex maximization. Standard techniques fail here -- we could not do better than brute force, which scales exponentially in $n$.
 
 \begin{defn}
-    Define the approximate privacy cost of a looping branch $L$ to be the solution to the following optimization problem: 
-    \begin{align*}
-        approx(L) = \min_{\gamma, \gamma' \in [-1, 1]^n} &\max_{\Delta \in [-1, 1]^n} \sum_{i = 1}^n \left(|\Delta_i - \gamma_i| d_i + |\Delta_i - \gamma_i'|d_i' \right)\\ 
+    Define the approximate privacy cost of a looping branch $L$ to be as follows.  
+    \[approx(L) = approx_\gamma(L) + approx_{\gamma'}(L)\]
+    where
+    \begin{align*} 
+        approx_\gamma(L) = \min_{\gamma \in [-1, 1]^n} &\sum_{i = 1}^n \left(1 + |\gamma_i| \right) d_i \\ 
             \text{subject to } 
             &\ \gamma_{at(i)} \leq \gamma_i \text{ if } c_i = \lguard, \\
             &\ \gamma_{at(i)} \geq \gamma_i \text{ if } c_i = \gguard, \\
             &\ \gamma_i = 0 \text{ if } \sigma_i = \texttt{insample}, \\
-            &\ \gamma_i' = 0 \text{ if } \sigma_i = \texttt{insample}'\\
-            &\ \gamma_i = \gamma_i'= 1 \text{ if } t_i \text{ is in a cycle and has } c_i = \lguard,\\ 
-            &\ \gamma_i = \gamma_i'= -1 \text{ if } t_i \text{ is in a cycle and has } c_i = \gguard
+            &\ \gamma_i = 1 \text{ if } t_i \text{ is in a cycle and has } c_i = \lguard,\\ 
+            &\ \gamma_i = -1 \text{ if } t_i \text{ is in a cycle and has } c_i = \gguard
     \end{align*}
-    which constructs a coupling proof of privacy in which $\gamma$ and $\gamma'$ are constant with respect to $\texttt{in}\brangle{1}$ and $\texttt{in}\brangle{2}$ on each transition. 
+    \begin{align*} 
+        approx_{\gamma'}(L) = \begin{cases}
+            \infty &\text{ if } \exists t_i \text{ appearing in a cycle with } \sigma_i = \texttt{insample}'\\
+            \sum_{t_j \text{ outputs insample}} d_j' &\text{ otherwise} 
+        \end{cases}
+    \end{align*}
+    which is the cost of a coupling strategy in which $\gamma$ and $\gamma'$ are constant with respect to $\texttt{in}\brangle{1}$ and $\texttt{in}\brangle{2}$ on each transition. 
 \end{defn}
 
 \begin{prop}
-    We are able to compute the inner maximum explicitly, and thus the approximate privacy cost can be written as a linear program. 
+    Given a looping branch $L$, there exists a coupling strategy $C_L$ for $L$ such that $cost(C_L) = approx(L)$.
 \end{prop}
+
+\begin{proof}
+    TODO (Vishnu)
+\end{proof}
+
+\begin{prop}
+    The approximate privacy cost of $L$ can be computed in time  polynomial  in $n$, the number of transitions in $L$.
+\end{prop}
+
+\begin{proof}
+    We can compute $approx_{\gamma'}(L)$ in linear time. To compute $approx_\gamma(L)$, we can set up the following linear program: 
+    \begin{align*}
+        \min_{\gamma, v_i \in [-1, 1]^n} &\sum_{i = 1}^n \left(1 + v_i \right) d_i \\ 
+            \text{subject to } 
+            &\ \gamma_{at(i)} \leq \gamma_i \text{ if } c_i = \lguard, \\
+            &\ \gamma_{at(i)} \geq \gamma_i \text{ if } c_i = \gguard, \\
+            &\ \gamma_i = 0 \text{ if } \sigma_i = \texttt{insample}, \\
+            &\ \gamma_i = 1 \text{ if } t_i \text{ is in a cycle and has } c_i = \lguard,\\ 
+            &\ \gamma_i = -1 \text{ if } t_i \text{ is in a cycle and has } c_i = \gguard,\\
+            &\ \gamma_i \leq v_i, -\gamma_i \leq v_i \text{ for all } i \in \{1, \dots, n\} 
+    \end{align*}
+    whose solution is exactly $approx_\gamma(L)$. This program can be solved using the ellipsoid method in polynomial time.
+\end{proof}
 
 \begin{prop}
     For a looping branch $L$ with $n$ distinct transitions, we have 
-    \[cost(L) \leq approx(L) \leq cost(L) + \sum_{i = 1}^n (d_i + d_i')\]
+    \[opt(L) \leq approx(L) \leq opt(L) + \sum_{i = 1}^n d_i \]
 \end{prop}
 
-\begin{prop}
-    Approximate version can be solved in polytime
-\end{prop}
+\begin{proof}
+    TODO (Vishnu)
+\end{proof}
 
 \begin{conj}
-    Optimal coupling cost $\leq$ cost given by original DiPA analysis. [Vishnu says he almost certainly has a proof of this]
+    Optimal coupling cost $\leq$ cost given by original DiPA analysis.
 \end{conj}
 
 \begin{conj}
-    Optimal coupling cost = ``true'' optimal privacy cost
+    The optimal coupling cost is the ``true'' privacy cost of a looping branch. That is, 
+    \begin{align*}
+        opt(L) = \sup_{\rho \in L} \sup_{\texttt{in}\brangle{1} \sim \texttt{in}\brangle{2}} D_\infty(\PP[\rho, \texttt{in}\brangle{1}, o]\; ||\; \PP[\rho, \texttt{in}\brangle{2}, o])
+    \end{align*}
+    representing the worst-case privacy loss over all possible paths in $L$ and all possible adjacent inputs.
 \end{conj}
 
 
