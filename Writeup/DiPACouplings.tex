@@ -1148,24 +1148,45 @@ We can construct the segment graph of a DiPA in linear time, and check for a pat
 
 \subsection{Minimizing a privacy budget}
 
-Note (Vishnu): I will assume here 
-
-If we have a differentially private program, we'd also like to optimize its privacy cost. We can do so via couplings: 
+If we have a differentially private program, we'd also like to optimize its privacy cost. We can do so via couplings. We can partition a program into a finite set of looping branches, and then optimize the privacy cost of each looping branch individually.
 
 \begin{prop}
-    Introduce linear program here - maybe this is a definition?
+    Let $L$ be a looping branch in a program $P$ consisting of $n$ transitions. The optimal {\color{red} (shift?)} coupling privacy bound on $L$ can be computed by the following optimization problem: 
+    \begin{align*}
+        opt(L) = \max_{\Delta \in [-1, 1]^n} &\min_{\gamma, \gamma' \in [-1, 1]^n} \sum_{i = 1}^n \left(|\Delta_i - \gamma_i| d_i + |\Delta_i - \gamma_i'|d_i' \right)\\ 
+            \text{subject to }
+            &\ \gamma_{at(i)} \leq \gamma_i \text{ if } c_i = \lguard, \\
+            &\ \gamma_{at(i)} \geq \gamma_i \text{ if } c_i = \gguard, \\
+            &\ \gamma_i = 0 \text{ if } \sigma_i = \texttt{insample}, \\
+            &\ \gamma_i' = 0 \text{ if } \sigma_i = \texttt{insample}'\\
+            &\ \gamma_i = \gamma_i'= \Delta_i \text{ if } t_i \text{ is in a cycle}
+    \end{align*}
+\end{prop}
+
+Note: the inner problem is convex, and so the outer problem is that of convex maximization. Standard techniques fail here -- we could not do better than brute force, which scales exponentially in $n$.
+
+\begin{defn}
+    Define the approximate privacy cost of a looping branch $L$ to be the solution to the following optimization problem: 
+    \begin{align*}
+        approx(L) = \min_{\gamma, \gamma' \in [-1, 1]^n} &\max_{\Delta \in [-1, 1]^n} \sum_{i = 1}^n \left(|\Delta_i - \gamma_i| d_i + |\Delta_i - \gamma_i'|d_i' \right)\\ 
+            \text{subject to } 
+            &\ \gamma_{at(i)} \leq \gamma_i \text{ if } c_i = \lguard, \\
+            &\ \gamma_{at(i)} \geq \gamma_i \text{ if } c_i = \gguard, \\
+            &\ \gamma_i = 0 \text{ if } \sigma_i = \texttt{insample}, \\
+            &\ \gamma_i' = 0 \text{ if } \sigma_i = \texttt{insample}'\\
+            &\ \gamma_i = \gamma_i'= 1 \text{ if } t_i \text{ is in a cycle and has } c_i = \lguard,\\ 
+            &\ \gamma_i = \gamma_i'= -1 \text{ if } t_i \text{ is in a cycle and has } c_i = \gguard
+    \end{align*}
+    which constructs a coupling proof of privacy in which $\gamma$ and $\gamma'$ are constant with respect to $\texttt{in}\brangle{1}$ and $\texttt{in}\brangle{2}$ on each transition. 
+\end{defn}
+
+\begin{prop}
+    We are able to compute the inner maximum explicitly, and thus the approximate privacy cost can be written as a linear program. 
 \end{prop}
 
 \begin{prop}
-    Introduce approximate version here
-\end{prop}
-
-\begin{prop}
-    Optimal linear program always has cost at worst approx version; there is indeed a separation between the optimal + approx
-\end{prop}
-
-\begin{prop}
-    Approximate version is an approximation of the optimal by a factor linear in the number of segments. 
+    For a looping branch $L$ with $n$ distinct transitions, we have 
+    \[cost(L) \leq approx(L) \leq cost(L) + \sum_{i = 1}^n (d_i + d_i')\]
 \end{prop}
 
 \begin{prop}
