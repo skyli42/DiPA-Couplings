@@ -1278,27 +1278,37 @@ However, there are other, non-trivial, extensions that warrant further study. In
     \end{itemize}
 \end{defn}
 
-{\color{red} Semantics here}
+\subsubsection{Two Variable Program Semantics}
 
-- in particular, the noise for the input compared to each program variable is fresh/independent 
+Two variable transitions semantically operate extremely similarly to single variable transitions: given some threshold values $\texttt{x}$ and $\texttt{y}$, each transition $t = (q, q', c, \sigma, \tau)$ will first read in a real number input $\texttt{in}$, 
+sample two random variables $z^{(x)}\sim\Lap(0, \frac{1}{d\varepsilon})$ and $z^{(x)\prime}\sim\Lap(0, \frac{1}{d'\varepsilon})$ for comparing the input to $\texttt{x}$ and two more random variables $z^{(y)}\sim\Lap(0, \frac{1}{d\varepsilon})$ and $z^{(y)\prime}\sim\Lap(0, \frac{1}{d'\varepsilon})$ for comparing the input to $\texttt{y}$.
+Using these noise variables, the transition then assigns four variables $\texttt{insample}^{(x)} = \texttt{in} + z^{(x)}$, $\texttt{insample}^{(x\prime)} = \texttt{in} + z^{(x)\prime}$, $\texttt{insample}^{(y)} = \texttt{in} + z^{(y)}$, and $\texttt{insample}^{(x)\prime} = \texttt{in} + z^{(y)\prime}$. 
+If the guard $c$ is satisfied when comparing $\texttt{insample}^{(x)}$ to $\texttt{x}$ and $\texttt{insample}^{(y)}$ to $\texttt{y}$, then we transition to state $q'$, outputting $\sigma$ and, depending on $\tau$, optionally reassigning $\texttt{x} = \texttt{insample}^{(x)}$ or $\texttt{x} = \texttt{insample}^{(y)}$.
+
+In particular, note that the noisy input that the threshold variables are compared to is independent for $\texttt{x}$ and $\texttt{y}$.
+
+More formally, a program state is a tuple consisting of a program location and values for $\texttt{x}$ and $\texttt{y}$ Let $S = Q\times\RR\times \RR$ be the set of all possible program states. As expected, every possible input is simply an element of $\RR$. 
+As before, the set of all possible output events is $\Gamma \cup \Sigma$, where $\Sigma$ is the standard $\sigma$-algebra of all Lebesgue measurable sets. 
+
+Then the semantics of a 2v-transition $t$ can be defined as a function $\Phi((q, \texttt{x}), \texttt{in}): S\to dist(S\times (\Gamma\cup\Sigma\cup \lambda))$ that maps an initial program state and an input to a distribution of subsequent program states and an output event following the expected semantics; $\lambda$ here denotes the empty string (i.e. no output). 
+
+The precise semantics are defined exactly analogously to the single variable case. 
+
+We again denote the probability that a transition ``succeeds'' as $\PP[\texttt{x}, \texttt{y}, t, \texttt{in}, o]$, where $\texttt{x}, \texttt{y}\in \RR$ are the initial values of $\texttt{x}$ and $\texttt{y}$, respectively, $t$ is a 2v-transition, $\texttt{in}\in \RR$ is a real-valued input, and $o\in \Gamma\cup\Sigma$ is a possible output of $t$.
 
 \begin{defn}[Valid Transition Alphabets]
     A finite 2v-transition alphabet $\Sigma_T$ is valid if it satisfies the following conditions: 
     \begin{itemize}
         \item \textbf{Initialization:} There exist some $t_{init}^{(x)}, t_{init}^{(y)}\in \Sigma_T$ such that $t_{init}^{(x)} = (q_0, q_1, \texttt{true}, \sigma_0, 1)$ and $t_{init}^{(y)} = (q_1, q_2, \texttt{true}, \sigma_1, 2)$ for some $q_0, q_1, q_2\in Q$, $\sigma_0, \sigma_1 \in \Gamma\cup\{\texttt{insample}, \texttt{insample}'\}$. 
         \item \textbf{Determinism}: If $\Sigma_T$ contains transition $t, t'$ such that $t=(q, q', c, \sigma, \tau)$ and $t'= (q, q^*, c', \sigma', \tau')$, then $c$ and $c'$ must be disjoint events. 
-        \item \textbf{Output distinction}: If there exist some $\sigma, \sigma', \tau, \tau'$ such that $(q, q', \lguard[\texttt{x}], \sigma, \tau)\in \Sigma_T$  and $(q, q^*, \gguard[\texttt{x}], \sigma', \tau') \in \Sigma_T$, then $\sigma \neq \sigma'$. Additionally, at least one of $\sigma\in \Gamma$, $\sigma'\in \Gamma$ is true.
+        \item \textbf{Output distinction}: If there exist some $\sigma, \sigma', \tau, \tau'$ such that $(q, q', c, \sigma, \tau)\in \Sigma_T$  and $(q, q^*, c', \sigma', \tau') \in \Sigma_T$ for distinct guards $c, c'$, then $\sigma \neq \sigma'$. Additionally, at least one of $\sigma\in \Gamma$, $\sigma'\in \Gamma$ is true.
         \item \textbf{Non-input state condition}: For all states $q\in Q_{non}$, if there exists a transition $t=(q, q', c, \sigma, \tau)$ such that $t\in \Sigma_T$, then $c = \texttt{true}$.
     \end{itemize}
 \end{defn}
 
-\begin{defn}
-    Let $\Sigma_T$ be a valid 2v-transition alphabet. A 2v-path over $\Sigma_T$ is a sequence of transitions $t_0\cdot t_1\cdot \ldots \cdot t_{n-1}$ such that for all $i$ there exists a state $q_i\in Q$ such that $t_i = (q_i, q_{i+1}, c_i, \sigma_i, \tau_i)$. A 2v-path is \textbf{complete} if it is in the form $t_{init}^{(x)}t_{init}^{(y)}\cdot \rho$ for some $\rho\in \Sigma_T^*$.
-\end{defn}
+
 
 \subsubsection{Multivariable Couplings}
-
-
 
 \begin{lemma}
     Let $X\brangle{1}\sim \Lap(\mu_x\brangle{1}, \frac{1}{d_x\varepsilon}), X\brangle{2}\sim\Lap(\mu_x\brangle{2}, \frac{1}{d_x\varepsilon})$ be random variables be random variables representing possible initial values of $\texttt{x}$, respectively, 
@@ -1365,10 +1375,10 @@ We introduce a new coupling possibility - between different variable assignments
       \]
 
     The following four statements hold:\begin{enumerate}
-        \item If $c = \lguard[\texttt{x}] \land \gguard[\texttt{y}]$, then $\forall \varepsilon>0$, the lifting $o\brangle{1}\{(a, b): a=\sigma\implies b=\sigma\}^{\#d\varepsilon}o\brangle{2}$ is valid for $d = |\min(\mu_y\brangle{1}-\mu_x\brangle{1}, 0)|+(|\hat{\mu_q}\brangle{1}-\hat{\mu_q}\brangle{2}+\gamma_x|)\hat{d_q}+(|-\texttt{in}\brangle{1}+\texttt{in}\brangle{2}-\gamma_q|)d_q+(|-\texttt{in}\brangle{1}+\texttt{in}\brangle{2}-\gamma_q'|)d_q'$. 
-        \item If $c = \gguard[\texttt{x}] \land \lguard[\texttt{y}]$, then $\forall \varepsilon>0$, the lifting $o\brangle{1}\{(a, b): a=\sigma\implies b=\sigma\}^{\#d\varepsilon}o\brangle{2}$ is valid for $d = |\min(\mu_x\brangle{1}-\mu_y\brangle{1}, 0)|+(|\hat{\mu_q}\brangle{1}-\hat{\mu_q}\brangle{2}+\gamma_x|)\hat{d_q}+(|-\texttt{in}\brangle{1}+\texttt{in}\brangle{2}-\gamma_q|)d_q+(|-\texttt{in}\brangle{1}+\texttt{in}\brangle{2}-\gamma_q'|)d_q'$. 
-        \item If $c = \lguard[\texttt{x}] \lor \gguard[\texttt{y}]$, then $\forall \varepsilon>0$, the lifting $o\brangle{1}\{(a, b): a=\sigma\implies b=\sigma\}^{\#d\varepsilon}o\brangle{2}$ is valid for $d = $. 
-        \item If $c = \gguard[\texttt{x}] \lor \lguard[\texttt{y}]$, then $\forall \varepsilon>0$, the lifting $o\brangle{1}\{(a, b): a=\sigma\implies b=\sigma\}^{\#d\varepsilon}o\brangle{2}$ is valid for $d = $. 
+        \item If $c = \lguard[\texttt{x}] \land \gguard[\texttt{y}]$, then $\forall \varepsilon>0$, the lifting $o\brangle{1}\{(a, b): a=\sigma\implies b=\sigma\}^{\#d\varepsilon}o\brangle{2}$ is valid for $d = |\min(\mu_y\brangle{1}-\mu_x\brangle{1}, 0)|+(|\mu\brangle{1}-\mu\brangle{2}+\gamma_x|)d_x+(|-\texttt{in}\brangle{1}+\texttt{in}\brangle{2}-\gamma_q|)d_q+(|-\texttt{in}\brangle{1}+\texttt{in}\brangle{2}-\gamma_q'|)d_q'$. 
+        \item If $c = \gguard[\texttt{x}] \land \lguard[\texttt{y}]$, then $\forall \varepsilon>0$, the lifting $o\brangle{1}\{(a, b): a=\sigma\implies b=\sigma\}^{\#d\varepsilon}o\brangle{2}$ is valid for $d = |\min(\mu_x\brangle{1}-\mu_y\brangle{1}, 0)|+(|\mu\brangle{1}-\mu\brangle{2}+\gamma_x|)d_x+(|-\texttt{in}\brangle{1}+\texttt{in}\brangle{2}-\gamma_q|)d_q+(|-\texttt{in}\brangle{1}+\texttt{in}\brangle{2}-\gamma_q'|)d_q'$. 
+        \item If $c = \lguard[\texttt{x}] \lor \gguard[\texttt{y}]$, then $\forall \varepsilon>0$, the lifting $o\brangle{1}\{(a, b): a=\sigma\implies b=\sigma\}^{\#d\varepsilon}o\brangle{2}$ is valid for $d = |\max(0, \mu_y\brangle{1}+ \gamma_T^{(y)}-\mu_x\brangle{1}-\gamma_T^{(x)})|+(|\mu\brangle{1}-\mu\brangle{2}+\gamma_x|)d_x+(|-\texttt{in}\brangle{1}+\texttt{in}\brangle{2}-\gamma_q|)d_q+(|-\texttt{in}\brangle{1}+\texttt{in}\brangle{2}-\gamma_q'|)d_q'$. 
+        \item If $c = \gguard[\texttt{x}] \lor \lguard[\texttt{y}]$, then $\forall \varepsilon>0$, the lifting $o\brangle{1}\{(a, b): a=\sigma\implies b=\sigma\}^{\#d\varepsilon}o\brangle{2}$ is valid for $d = |\max(0, \mu_x\brangle{1}+ \gamma_T^{(x)}-\mu_y\brangle{1}-\gamma_T^{(y)})|+(|\mu\brangle{1}-\mu\brangle{2}+\gamma_x|)d_x+(|-\texttt{in}\brangle{1}+\texttt{in}\brangle{2}-\gamma_q|)d_q+(|-\texttt{in}\brangle{1}+\texttt{in}\brangle{2}-\gamma_q'|)d_q'$. 
     \end{enumerate}
 \end{lemma}
 \begin{proof}
@@ -1439,9 +1449,9 @@ We introduce a new coupling possibility - between different variable assignments
 
     Thus, $X\brangle{2}\geq Y\brangle{2}$.
 
-    Further, create the lifting $z^{(x)}\brangle{1}(=)^{\#0}z^{(y)}\brangle{1}$. Note that then $\texttt{insample}^{(x)}\brangle{1}=\texttt{in}_i\brangle{1} + z_i^{(x)}\brangle{1} =\texttt{in}_i\brangle{1} + z_i^{(y)}\brangle{1}=\texttt{insample}^{(y)}\brangle{1}$.
+    Further, create the lifting $z^{(x)}\brangle{2}(=)^{\#0}z^{(y)}\brangle{2}$. Note that then $\texttt{insample}^{(x)}\brangle{2}=\texttt{in}_i\brangle{2} + z_i^{(x)}\brangle{2} =\texttt{in}_i\brangle{2} + z_i^{(y)}\brangle{2}=\texttt{insample}^{(y)}\brangle{2}$.
 
-    Then because $X\brangle{2} \leq Y\brangle{2}$, $\texttt{insample}^{(x)}\brangle{2}<x\brangle{2}\lor \texttt{insample}^{(y)}\brangle{2}\geq y\brangle{2}$ must be true. Thus, $\texttt{insample}^{(x)}\brangle{1}<x\brangle{1}\lor\texttt{insample}^{(y)}\brangle{1}\geq y\brangle{1}\implies \texttt{insample}^{(x)}<x\brangle{2}\lor\texttt{insample}^{(y)}\geq y\brangle{2}$.
+    Then because $X\brangle{2} \geq Y\brangle{2}$, $\texttt{insample}^{(x)}\brangle{2}<x\brangle{2}\lor \texttt{insample}^{(y)}\brangle{2}\geq y\brangle{2}$ must be true. Thus, $\texttt{insample}^{(x)}\brangle{1}<x\brangle{1}\lor\texttt{insample}^{(y)}\brangle{1}\geq y\brangle{1}\implies \texttt{insample}^{(x)}<x\brangle{2}\lor\texttt{insample}^{(y)}\geq y\brangle{2}$.
 
     As before, if any of \begin{itemize}
         \item $\sigma \in \Gamma$
@@ -1454,13 +1464,17 @@ We introduce a new coupling possibility - between different variable assignments
 
 \end{proof}
 
-\begin{defn}[Two Variable Paths]
-    
+In essence, this allows us to construct liftings for certain transitions ``for free'' in a manner compatible with existing liftings. In particular, this construction applies to transitions whose guards intuitively correspond to checking if an input is within either the empty set or the entire real line. 
+
+\begin{defn}
+    Let $\Sigma_T$ be a valid 2v-transition alphabet. A 2v-path over $\Sigma_T$ is a sequence of transitions $\rho=t_0\cdot t_1\cdot \ldots \cdot t_{n-1}$ such that for all $i$ there exists a state $q_i\in Q$ such that $t_i = (q_i, q_{i+1}, c_i, \sigma_i, \tau_i)$. A 2v-path is \textbf{complete} if it is in the form $t_{init}^{(x)}t_{init}^{(y)}\cdot \rho$ for some $\rho\in \Sigma_T^*$.
 \end{defn}
+
+The semantics of a 2v-path are again defined exactly analogously to the single variable case; we denote the probability of a path $\rho$``succeeding'' as $\PP[\texttt{x}, \texttt{y}, \rho, \texttt{in}, \sigma]$ for initial values $\texttt{x}, \texttt{y}\in \RR$, input sequence $\texttt{in}$ and output sequence $\sigma$. 
 
 
 Paths:
-{\color{red} note: need to require that you can't derive contradictory inequalities}
+{\color{red} note: do we need to require that you can't derive contradictory inequalities???}
 
 We allow couplings between different assignment transitions: from an $x$ assignment to a $y$ assignment. 
 
@@ -1505,7 +1519,7 @@ We allow couplings between different assignment transitions: from an $x$ assignm
 \end{defn}
 
 \begin{defn}[Two Variable Looping Branches]
-    
+    A 2v-looping branch is simply a looping branch over a valid 2v-transition alphabet $\Sigma_T$.
 \end{defn}
 
 \begin{defn}
@@ -1554,12 +1568,31 @@ We allow couplings between different assignment transitions: from an $x$ assignm
 \subsubsection{Couplings for GDiPA}
 
 \begin{defn}
-    A GDiPA $A$ is a tuple ().
+    A GDiPA $A$ is an 8-tuple $(Q, \Sigma, \mathcal{C}, \Gamma, q_{init}, X, P, \delta)$ where
+    \begin{itemize}
+        \item $Q$ is a finite set of states partitioned into input states $Q_{in}$ and non-input states $Q_{non}$. 
+        \item $\Sigma = \RR$ is the input alphabet
+        \item $\mathcal{C} = \mathcal{C}^{(2)}$ is a set of guard conditions
+        \item $\Gamma$ is a finite output alphabet
+        \item $q_{init}\in Q$ is the initial state
+        \item $X = \{\texttt{x}, \texttt{y}, \texttt{insample}^{(x)}, \texttt{insample}^{(x)}\prime, \texttt{insample}^{(y)}, \texttt{insample}^{(y)}\prime\}$ is a set of variables
+        \item $P: Q\to \QQ\times \QQ^{\geq 0}\times \QQ\times  \QQ^{\geq 0}$ is a parameter function that assigns sampling parameters for the Laplace distribution for each state
+        \item $\delta:(Q\times \mathcal{C})\to (Q\times (\Gamma \cup \{\texttt{insample}^{(x)}, \texttt{insample}^{(x)}\prime, \texttt{insample}^{(y)}, \texttt{insample}^{(y)}\prime\})\times \{0, 1, 2\})$ is a partial transition function. 
+    \end{itemize}
+    In addition, $\delta$ must satisfy some additional conditions:
+    \begin{itemize}
+        \item \textbf{Determinism:} For any state $q\in Q$, if $\delta(q, c)$ and $\delta(q, c')$ are defined for distinct guards $c, c'$,  then $c$ and $c'$ must be logically disjoint events.
 
-    Equivalently, as with DiPAs and Programs, a GDiPA is a regular language that can be described as a finite union of 2-variable looping branches. 
+        \item \textbf{Output Distinction:} For any state $q\in Q$, if $\delta(q, c) = (q_1, o_1, b_1)$ and $\delta(q, c') = (q_2, o_2, b_2)$, for distinct guards $c, c'$, then $o_1\neq o_2$ and at least one of $o_1\in \Gamma$ and $o_2\in \Gamma$ is true.
+
+        \item \textbf{Initialization:} The initial state $q_0$ has only one outgoing transition of the form $\delta(q_0, \texttt{true}) = (q_1, o, 1)$ and $q_1$ has only one outgoing transition of the form $\delta(q_1, \texttt{true}) = (q, o', 2)$.
+
+        \item \textbf{Non-input transition:} From any $q\in Q_{non}$, if $\delta(q, c)$ is defined, then $c=\texttt{true}$.
+    \end{itemize}
 \end{defn}
 
 
+Just as with DiPAs and Programs, we can equivalently define a GDiPA as regular language that can be described as a finite union of 2-variable looping branches over a valid 2v-transition alphabet $\Sigma_T$. 
 
 
 \begin{lemma}
