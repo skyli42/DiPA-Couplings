@@ -695,30 +695,34 @@ As before, the existence of a valid coupling strategy upper bounds the privacy c
 \end{proof}
 
 
-\begin{prop}
-    The cost of a coupling strategy over a fixed path $\rho$ is maximized when, for every transition, the difference between the input values is $1$. In other words,
-    \begin{align*}
-        &\max_{\texttt{in}\brangle{1}\sim \texttt{in}\brangle{2}} \sum_{i=0}^{n-1}(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i|)d_i+(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i'|)d_i' \\
-        = &\max_{\Delta\in \{-1, 1\}} \sum_{i=0}^{n-1}(|\Delta-\gamma_i|)d_i+(|\Delta-\gamma_i'|)d_i'
-    \end{align*}
-\end{prop}
-\begin{proof}
-\end{proof}
+% \begin{prop}
+%     The cost of a coupling strategy over a fixed path $\rho$ can be written as 
+%     \begin{align*}
+%         &\max_{\texttt{in}\brangle{1}\sim \texttt{in}\brangle{2}} \sum_{i=0}^{n-1}(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i|)d_i+(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i'|)d_i' \\
+%         = &\max_{\Delta\in \{-1, 1\}} \sum_{i=0}^{n-1}(|\Delta-\gamma_i|)d_i+(|\Delta-\gamma_i'|)d_i'
+%     \end{align*}
+% \end{prop}
+% \begin{proof}
+%     Notice that the function $f: [-1, 1]^n \to \RR$ defined by 
+%     \begin{align*}
+%         f(\Delta) &= \sum_{i=0}^{n-1}(|\Delta-\gamma_i|)d_i+(|\Delta-\gamma_i'|)d_i'
+%     \end{align*}
+%     is a sum of absolute values of linear functions in $\Delta$, and so is a convex function of $n$ variables. Thus, the maximum of $f$ over $[-1, 1]^n$ occurs at one of the vertices of $[-1, 1]^n$. TODO: Complete if necessary
+% \end{proof}
 
-Note then, that the process of finding the optimal coupling cost of a path $\rho$ can be formulated as a linear program as follows. 
 
-\begin{prop}
-    Let $t_i$ and $t_0$ occur in a complete path $\rho$ of length $n$ with $t_0 = t_{at(i)}$. There is an optimal coupling strategy $(\gamma, \gamma')$ for $\rho$ which has 
+% \begin{prop}
+%     Let $t_i$ and $t_0$ occur in a complete path $\rho$ of length $n$ with $t_0 = t_{at(i)}$. There is an optimal coupling strategy $(\gamma, \gamma')$ for $\rho$ which has 
 
-    \begin{align*}
-        \gamma_i(\texttt{in}\brangle{1}, \texttt{in}\brangle{2}) &= \begin{cases}
-            \gamma_{at(i)}(\texttt{in}\brangle{1}, \texttt{in}\brangle{2}) & c_i = \lguard[\texttt{x}]\\
-            \gamma_{at(i)}(\texttt{in}\brangle{1}, \texttt{in}\brangle{2}) & c_i = \gguard[\texttt{x}]\\
-            0 & \sigma_i = \texttt{insample}\\
-            0 & \sigma_i = \texttt{insample}'
-        \end{cases}\\
-    \end{align*}
-\end{prop}
+%     \begin{align*}
+%         \gamma_i(\texttt{in}\brangle{1}, \texttt{in}\brangle{2}) &= \begin{cases}
+%             \gamma_{at(i)}(\texttt{in}\brangle{1}, \texttt{in}\brangle{2}) & c_i = \lguard[\texttt{x}]\\
+%             \gamma_{at(i)}(\texttt{in}\brangle{1}, \texttt{in}\brangle{2}) & c_i = \gguard[\texttt{x}]\\
+%             0 & \sigma_i = \texttt{insample}\\
+%             0 & \sigma_i = \texttt{insample}'
+%         \end{cases}\\
+%     \end{align*}
+% \end{prop}
  
 
 \subsection{Branching} 
@@ -909,6 +913,15 @@ This provides a useful tool for the decision problem of privacy, which we will d
 \begin{prop}\label{privacyFiniteCostProp}
     If there exists a coupling strategy $C$ for a looping branch $L$ that satisfies the privacy constraint system, then there exists a finite $d>0$ such that $L$ is $d\varepsilon$-differentially private. 
 \end{prop}
+
+\begin{prop}
+    Let $L$ be a looping branch with $n$ transitions. If $C = (\gamma, \gamma')$ is a coupling strategy for $L$ that satisfies the privacy constraint system, then
+    \[cost(C) = \max_{\texttt{in}\brangle{1}\sim \texttt{in}\brangle{2}}\sum_{i=1}^{n}(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i(\texttt{in}_i\brangle{1}, \texttt{in}_i\brangle{2})|d_i+|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i'(\texttt{in}_i\brangle{1}, \texttt{in}_i\brangle{2})|d_i')\]
+\end{prop}
+
+\begin{proof}
+    TODO: (Vishnu) Essentially we can forget about paths and just sum over transitions
+\end{proof}
 
 \subsection{Programs}
 
@@ -1106,7 +1119,7 @@ We can construct the segment graph of a DiPA in linear time, and check for a pat
 If we have a differentially private program, we'd also like to optimize its privacy cost. We can do so via couplings. We can partition a program into a finite set of looping branches, and then optimize the privacy cost of each looping branch individually.
 
 \begin{prop}
-    Let $L$ be a looping branch in a program $P$ consisting of $n$ transitions. The optimal {\color{red} (shift?)} coupling privacy bound on $L$ can be computed by the following optimization problem: 
+    Let $L$ be a looping branch in a program $P$ consisting of $n$ transitions. The cost $opt(L)$ of the optimal coupling strategy for $L$ can be computed by the following optimization problem: 
     \begin{align*}
         opt(L) = \max_{\Delta \in [-1, 1]^n} &\min_{\gamma, \gamma' \in [-1, 1]^n} \sum_{i = 1}^n \left(|\Delta_i - \gamma_i| d_i + |\Delta_i - \gamma_i'|d_i' \right)\\ 
             \text{subject to }
@@ -1119,10 +1132,46 @@ If we have a differentially private program, we'd also like to optimize its priv
 \end{prop}
 
 \begin{proof}
-    TODO (Vishnu)
+    Assume that $L$ is differentially private. Then the constraints above are satisfied by any valid coupling strategy $C$ for $L$. (TODO: Check the cycle constraint)
+
+    We will specify a valid coupling strategy $C^* = (\gamma^*, {\gamma'}^*)$ for $L$ with the cost stated above, and then show it is optimal. Define $\Gamma: [-1, 1]^n \to [-1, 1]^n \times [-1, 1]^n$ as follows, where $\Gamma(\Delta)$ is a pair $(\gamma, \gamma')$: 
+    \begin{align*}
+        \Gamma(\Delta) = &\argmin_{\gamma, \gamma' \in [-1, 1]^n} \sum_{i = 1}^n \left(|\Delta_i - \gamma_i| d_i + |\Delta_i - \gamma_i'|d_i' \right)\\ 
+        \text{subject to }
+        &\ \gamma_{at(i)} \leq \gamma_i \text{ if } c_i = \lguard, \\
+        &\ \gamma_{at(i)} \geq \gamma_i \text{ if } c_i = \gguard, \\
+        &\ \gamma_i = 0 \text{ if } \sigma_i = \texttt{insample}, \\
+        &\ \gamma_i' = 0 \text{ if } \sigma_i = \texttt{insample}'\\
+        &\ \gamma_i = \gamma_i'= \Delta_i \text{ if } t_i \text{ is in a cycle}
+    \end{align*}
+    Then define \[(\gamma^*(\texttt{in}\brangle{1}, \texttt{in}\brangle{2}), {\gamma'}^*(\texttt{in}\brangle{1}, \texttt{in}\brangle{2})) = \Gamma(\texttt{in}\brangle{1} - \texttt{in}\brangle{2})\]
+
+    Notice the following: 
+
+    \begin{enumerate}
+        \item $C^*$ is a valid coupling strategy for $L$, since the privacy constraints on $\gamma^*$ and ${\gamma'}^*$ are satisfied by construction.
+        \item $C^*$ has the cost given by the solution to the optimization problem, since 
+        \begin{align*}
+            cost(C^*) &= \max_{\texttt{in}\brangle{1}\sim \texttt{in}\brangle{2}} \sum_{i = 1}^n  |\texttt{in}_i\brangle{1} - \texttt{in}_i\brangle{2} - \gamma_i^*(\texttt{in}\brangle{1}, \texttt{in}\brangle{2})| d_i \\ 
+            \phantom{cost(C^*)} &\phantom{=\max_{\texttt{in}\brangle{1}\sim \texttt{in}\brangle{2}}\qquad } + |\texttt{in}_i\brangle{1} - \texttt{in}_i\brangle{2} - {\gamma'}_i^*(\texttt{in}\brangle{1}, \texttt{in}\brangle{2})|d_i' \\
+            &= \max_{\texttt{in}\brangle{1}\sim \texttt{in}\brangle{2}} \sum_{i = 1}^n  |\texttt{in}_i\brangle{1} - \texttt{in}_i\brangle{2} - \Gamma_1(\texttt{in}\brangle{1} - \texttt{in}\brangle{2})_i| d_i \\ 
+            \phantom{cost(C^*)} &\phantom{=\max_{\texttt{in}\brangle{1}\sim \texttt{in}\brangle{2}}\qquad } + |\texttt{in}_i\brangle{1} - \texttt{in}_i\brangle{2} - \Gamma_2(\texttt{in}\brangle{1} - \texttt{in}\brangle{2})_i|d_i' \\
+            &= \max_{\Delta \in [-1, 1]^n} \sum_{i = 1}^n  |\Delta_i - \Gamma_1(\Delta)_i| d_i + |\Delta_i - \Gamma_2(\Delta)_i|d_i' \\
+            &= \max_{\Delta \in [-1, 1]^n} \min_{\gamma, \gamma' \in [-1, 1]^n} \sum_{i = 1}^n  |\Delta_i - \gamma_i| d_i + |\Delta_i - \gamma_i'|d_i'
+        \end{align*}
+        \item $C^*$ is optimal, since for any valid coupling strategy $C = (\delta, \delta')$ for $L$, we have
+        \begin{align*}
+            cost(C) &= \max_{\texttt{in}\brangle{1}\sim \texttt{in}\brangle{2}} \sum_{i = 1}^n  |\texttt{in}_i\brangle{1} - \texttt{in}_i\brangle{2} - \delta_i(\texttt{in}\brangle{1}, \texttt{in}\brangle{2})| d_i \\
+            \phantom{cost(C)} &\phantom{=\max_{\texttt{in}\brangle{1}\sim \texttt{in}\brangle{2}}\qquad } + |\texttt{in}_i\brangle{1} - \texttt{in}_i\brangle{2} - \delta_i'(\texttt{in}\brangle{1}, \texttt{in}\brangle{2})|d_i' \\
+            &\geq \max_{\Delta \in [-1, 1]^n} \sum_{i = 1}^n  |\Delta_i - \delta_i(0, \Delta_i)| d_i + |\Delta_i - \delta_i'(0, \Delta_i)|d_i' \\
+            &\geq \max_{\Delta \in [-1, 1]^n} \min_{\gamma, \gamma' \in [-1, 1]^n} \sum_{i = 1}^n \left(|\Delta_i - \gamma_i| d_i + |\Delta_i - \gamma_i'|d_i' \right)\\
+            &= cost(C^*)
+        \end{align*}
+    \end{enumerate}
+    which shows that the optimization problem computes the optimal cost of a coupling strategy for $L$ that satisfies the privacy constraints.
 \end{proof}
 
-Note: the inner problem is convex, and so the outer problem is that of convex maximization. Standard techniques fail here -- we could not do better than brute force, which scales exponentially in $n$.
+Note: the inner problem is convex, and so the outer problem is that of convex maximization. 
 
 \begin{defn}
     Define the approximate privacy cost of a looping branch $L$ to be as follows.  
@@ -1147,11 +1196,11 @@ Note: the inner problem is convex, and so the outer problem is that of convex ma
 \end{defn}
 
 \begin{prop}
-    Given a looping branch $L$, there exists a coupling strategy $C_L$ for $L$ such that $cost(C_L) = approx(L)$.
+    Given a differentially private looping branch $L$, there exists a valid coupling strategy $C_L$ for $L$ such that $cost(C_L) = approx(L)$.
 \end{prop}
 
 \begin{proof}
-    TODO (Vishnu)
+    
 \end{proof}
 
 \begin{prop}
