@@ -1119,12 +1119,13 @@ We can construct the segment graph of a DiPA in linear time, and check for a pat
 If we have a differentially private program, we'd also like to optimize its privacy cost. We can do so via couplings. We can partition a program into a finite set of looping branches, and then optimize the privacy cost of each looping branch individually.
 
 \begin{prop}
+    \label{prop:compute_opt_cost}
     Let $L$ be a looping branch in a program $P$ consisting of $n$ transitions. The cost $opt(L)$ of the optimal coupling strategy for $L$ can be computed by the following optimization problem: 
     \begin{align*}
         opt(L) = \max_{\Delta \in [-1, 1]^n} &\min_{\gamma, \gamma' \in [-1, 1]^n} \sum_{i = 1}^n \left(|\Delta_i - \gamma_i| d_i + |\Delta_i - \gamma_i'|d_i' \right)\\ 
             \text{subject to }
-            &\ \gamma_{at(i)} \leq \gamma_i \text{ if } c_i = \lguard, \\
-            &\ \gamma_{at(i)} \geq \gamma_i \text{ if } c_i = \gguard, \\
+            &\ \gamma_{at(i)} \leq \gamma_i \text{ if } c_i = \gguard, \\
+            &\ \gamma_{at(i)} \geq \gamma_i \text{ if } c_i = \lguard, \\
             &\ \gamma_i = 0 \text{ if } \sigma_i = \texttt{insample}, \\
             &\ \gamma_i' = 0 \text{ if } \sigma_i = \texttt{insample}'\\
             &\ \gamma_i = \gamma_i'= \Delta_i \text{ if } t_i \text{ is in a cycle}
@@ -1138,8 +1139,8 @@ If we have a differentially private program, we'd also like to optimize its priv
     \begin{align*}
         \Gamma(\Delta) = &\argmin_{\gamma, \gamma' \in [-1, 1]^n} \sum_{i = 1}^n \left(|\Delta_i - \gamma_i| d_i + |\Delta_i - \gamma_i'|d_i' \right)\\ 
         \text{subject to }
-        &\ \gamma_{at(i)} \leq \gamma_i \text{ if } c_i = \lguard, \\
-        &\ \gamma_{at(i)} \geq \gamma_i \text{ if } c_i = \gguard, \\
+        &\ \gamma_{at(i)} \leq \gamma_i \text{ if } c_i = \gguard, \\
+        &\ \gamma_{at(i)} \geq \gamma_i \text{ if } c_i = \lguard, \\
         &\ \gamma_i = 0 \text{ if } \sigma_i = \texttt{insample}, \\
         &\ \gamma_i' = 0 \text{ if } \sigma_i = \texttt{insample}'\\
         &\ \gamma_i = \gamma_i'= \Delta_i \text{ if } t_i \text{ is in a cycle}
@@ -1174,23 +1175,15 @@ If we have a differentially private program, we'd also like to optimize its priv
 Note: the inner problem is convex, and so the outer problem is that of convex maximization. 
 
 \begin{defn}
-    Define the approximate privacy cost of a looping branch $L$ to be as follows.  
-    \[approx(L) = approx_\gamma(L) + approx_{\gamma'}(L)\]
-    where
+    Define the approximate privacy cost of a differentially private looping branch $L$ to be as follows. Let $I$ be the set of transitions in $L$ that do $\textit{not}$ appear in a cycle.  
     \begin{align*} 
-        approx_\gamma(L) = \min_{\gamma \in [-1, 1]^n} &\sum_{i = 1}^n \left(1 + |\gamma_i| \right) d_i \\ 
+        approx(L) = &\sum_{t_i \text{outputs \texttt{insample}}} d_i' + \min_{\gamma \in [-1, 1]^n} \sum_{i \in I} \left(1 + |\gamma_i| \right) d_i  \\
             \text{subject to } 
-            &\ \gamma_{at(i)} \leq \gamma_i \text{ if } c_i = \lguard, \\
-            &\ \gamma_{at(i)} \geq \gamma_i \text{ if } c_i = \gguard, \\
+            &\ \gamma_{at(i)} \leq \gamma_i \text{ if } c_i = \gguard, \\
+            &\ \gamma_{at(i)} \geq \gamma_i \text{ if } c_i = \lguard, \\
             &\ \gamma_i = 0 \text{ if } \sigma_i = \texttt{insample}, \\
             &\ \gamma_i = 1 \text{ if } t_i \text{ is in a cycle and has } c_i = \lguard,\\ 
             &\ \gamma_i = -1 \text{ if } t_i \text{ is in a cycle and has } c_i = \gguard
-    \end{align*}
-    \begin{align*} 
-        approx_{\gamma'}(L) = \begin{cases}
-            \infty &\text{ if } \exists t_i \text{ appearing in a cycle with } \sigma_i = \texttt{insample}'\\
-            \sum_{t_j \text{ outputs insample}} d_j' &\text{ otherwise} 
-        \end{cases}
     \end{align*}
     which is the cost of a coupling strategy in which $\gamma$ and $\gamma'$ are constant with respect to $\texttt{in}\brangle{1}$ and $\texttt{in}\brangle{2}$ on each transition. 
 \end{defn}
@@ -1200,15 +1193,51 @@ Note: the inner problem is convex, and so the outer problem is that of convex ma
 \end{prop}
 
 \begin{proof}
-    
+    Let 
+    \[\gamma = \argmin_{\gamma \in [-1, 1]^n} \sum_{i \in I} \left(1 + |\gamma_i| \right) d_i\]
+    subject to the constraints above. Define $C_L = (\gamma^*, {\gamma'}^*)$ where
+    \begin{align*}
+        \gamma_i^*(\texttt{in}\brangle{1}, \texttt{in}\brangle{2}) &= \begin{cases}
+            \texttt{in}\brangle{1}_i - \texttt{in}\brangle{2}_i &\text{ if } t_i \text{ is in a cycle} \\
+            \gamma_i &\text{ otherwise}
+        \end{cases} \\[1em]
+        {\gamma'}_i^*(\texttt{in}\brangle{1}, \texttt{in}\brangle{2}) &= \begin{cases}
+            0 &\text{ if } t_i \text{ outputs \texttt{insample}} \\
+            \texttt{in}\brangle{1}_i - \texttt{in}\brangle{2}_i &\text{ otherwise}
+        \end{cases}
+    \end{align*}
+    Notice the following: 
+
+    \begin{itemize}
+        \item $C_L$ satisfies the privacy constraints, and so is valid.
+        
+        If $t_i$ is in a cycle with $c_i = \lguard$, then the constraints on $\gamma$ require that $\gamma_i = 1$, and so $1 = \gamma_i \leq \gamma_{at(i)} = 1$. As a result, we will satisfy the privacy constraint $\gamma_{at(i)}^* \geq \gamma_i^*$: 
+        \[\gamma_i^* = \texttt{in}\brangle{1}_i - \texttt{in}\brangle{2}_i \leq 1 = \gamma_{at(i)}^*\]
+        A similar argument holds for if $t_i$ is in a cycle with $c_i = \gguard$.
+
+        All other privacy constraints are satisfied by construction.
+
+        \item $C_L$ has the cost given by the solution to the optimization problem, since
+        
+        \begin{align*}
+            cost(C_L) &= \max_{\texttt{in}\brangle{1}\sim \texttt{in}\brangle{2}} \sum_{i = 1}^n  |\texttt{in}_i\brangle{1} - \texttt{in}_i\brangle{2} - \gamma_i^*(\texttt{in}\brangle{1}, \texttt{in}\brangle{2})| d_i \\ 
+            \phantom{cost(C_L)} &\phantom{=\max_{\texttt{in}\brangle{1}\sim \texttt{in}\brangle{2}}\qquad } + |\texttt{in}_i\brangle{1} - \texttt{in}_i\brangle{2} - {\gamma'}_i^*(\texttt{in}\brangle{1}, \texttt{in}\brangle{2})|d_i' \\
+            &= \max_{\texttt{in}\brangle{1}\sim \texttt{in}\brangle{2}} \left(\sum_{i \in I} |\texttt{in}_i\brangle{1} - \texttt{in}_i\brangle{2} - \gamma_i^*(\texttt{in}\brangle{1}, \texttt{in}\brangle{2})| d_i\right) \\
+            \phantom{cost(C_L)} &\phantom{=\max_{\texttt{in}\brangle{1}\sim \texttt{in}\brangle{2}}\qquad } + \left(\sum_{t_i \text{outputs \texttt{insample}}}|\texttt{in}_i\brangle{1} - \texttt{in}_i\brangle{2} - {\gamma'}_i^*(\texttt{in}\brangle{1}, \texttt{in}\brangle{2})|d_i'\right)\\
+            &= \max_{\texttt{in}\brangle{1}\sim \texttt{in}\brangle{2}} \left(\sum_{i \in I} |\texttt{in}_i\brangle{1} - \texttt{in}_i\brangle{2} - \gamma_i| d_i\right) \\
+            \phantom{cost(C_L)} &\phantom{=\max_{\texttt{in}\brangle{1}\sim \texttt{in}\brangle{2}}\qquad } + \left(\sum_{t_i \text{outputs \texttt{insample}}}|\texttt{in}_i\brangle{1} - \texttt{in}_i\brangle{2}|d_i'\right)\\
+            &= \sum_{i \in I} (1 + |\gamma_i|) d_i + \sum_{t_i \text{outputs \texttt{insample}}} d_i' \\
+            &= approx(L)
+        \end{align*}
+    \end{itemize}
 \end{proof}
 
 \begin{prop}
-    The approximate privacy cost of $L$ can be computed in time  polynomial  in $n$, the number of transitions in $L$.
+    The approximate privacy cost of $L$ can be computed in time polynomial in $n$, the number of transitions in $L$.
 \end{prop}
 
 \begin{proof}
-    We can compute $approx_{\gamma'}(L)$ in linear time. To compute $approx_\gamma(L)$, we can set up the following linear program: 
+    To compute the solution to the minimization problem, we can set up the following linear program: 
     \begin{align*}
         \min_{\gamma, v_i \in [-1, 1]^n} &\sum_{i = 1}^n \left(1 + v_i \right) d_i \\ 
             \text{subject to } 
@@ -1224,11 +1253,22 @@ Note: the inner problem is convex, and so the outer problem is that of convex ma
 
 \begin{prop}
     For a looping branch $L$ with $n$ distinct transitions, we have 
-    \[opt(L) \leq approx(L) \leq opt(L) + \sum_{i = 1}^n d_i \]
+    \[opt(L) \leq approx(L) \leq opt(L) + \sum_{i \in I }^n d_i + \sum_{t_i \text{outputs \texttt{insample}}} d_i'\]
+    where $I$ is the set of transitions in $L$ that do $\textit{not}$ appear in a cycle.
 \end{prop}
 
 \begin{proof}
-    TODO (Vishnu)
+    We have $opt(L) \leq approx(L)$ by Proposition \ref{prop:compute_opt_cost}. Let $I$ be the set of transitions in $L$ that do $\textit{not}$ appear in a cycle. Then we have
+    \begin{align*}
+        opt(L) &= \max_{\Delta \in [-1, 1]^n} \min_{\gamma, \gamma' \in [-1, 1]^n} \sum_{i = 1}^n \left(|\Delta_i - \gamma_i| d_i + |\Delta_i - \gamma_i'|d_i' \right)\\
+        &= \max_{\Delta \in [-1, 1]^n} \min_{\gamma, \gamma' \in [-1, 1]^n} \sum_{i \in I} \left(|\Delta_i - \gamma_i| d_i + |\Delta_i - \gamma_i'|d_i' \right)\\
+        &= \max_{\Delta \in [-1, 1]^n} \min_{\gamma, \gamma' \in [-1, 1]^n} \left(\sum_{i \in I} \left(|\Delta_i - \gamma_i| d_i \right) + \sum_{t_i \text{outputs \texttt{insample}}} |\Delta_i| d_i' \right)\\
+        &\geq \max_{\Delta \in [-1, 1]^n} \min_{\gamma, \gamma' \in [-1, 1]^n} \left(\sum_{i \in I} \left(|\gamma_i| - |\Delta_i| \right) d_i  + \sum_{t_i \text{outputs \texttt{insample}}} |\Delta_i| d_i' \right)\\
+        &= \max_{\Delta \in [-1, 1]^n} \left(- \sum_{i \in I} |\Delta_i| d_i + \sum_{t_i \text{outputs \texttt{insample}}} |\Delta_i| d_i' + \min_{\gamma, \gamma' \in [-1, 1]^n} \sum_{i \in I}|\gamma_i| d_i \right)\\
+        &\geq \min_{\gamma, \gamma' \in [-1, 1]^n} \sum_{i \in I}|\gamma_i| d_i \\
+        &= approx(L) - \sum_{t_i \text{outputs \texttt{insample}}} d_i' - \sum_{i \in I} d_i'
+    \end{align*}
+    showing the second inequality.
 \end{proof}
 
 \begin{conj}
