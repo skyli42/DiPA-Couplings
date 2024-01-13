@@ -798,6 +798,7 @@ We can do no better than assigning coupling strategies for each path independent
 
 For a looping branch $L$, we will use $R_L$ to denote the minimal union-free regular expression that defines $L$. 
 
+{\color{red} change to be still $\texttt{in}$}
 \begin{defn}[Coupling strategy for a looping branch]
     Let $r$ be the union-free regular expression describing paths in a looping branch $L$. Let $T_r$ be the set of all transitions that appear in $r$. Then a coupling strategy $C = (\gamma, \gamma')$ for a looping branch is a function $C:T_r\times[-1, 1] \to [-1, 1]\times[-1, 1]$ that computes shifts for each transition in $L$ as a function of the difference between two adjacent inputs. 
 \end{defn}
@@ -1479,10 +1480,6 @@ In essence, this allows us to construct liftings for certain transitions ``for f
 
 The semantics of a 2v-path are again defined exactly analogously to the single variable case; we denote the probability of a path $\rho$``succeeding'' as $\PP[\texttt{x}, \texttt{y}, \rho, \texttt{in}, \sigma]$ for initial values $\texttt{x}, \texttt{y}\in \RR$, input sequence $\texttt{in}$ and output sequence $\sigma$. 
 
-
-Paths:
-{\color{red} note: do we need to require that you can't derive contradictory inequalities???}
-
 We allow couplings between different assignment transitions: from an $x$ assignment to a $y$ assignment. 
 
 \begin{lemma}
@@ -1524,7 +1521,11 @@ We allow couplings between different assignment transitions: from an $x$ assignm
 This leads to a natural definition of two variable coupling strategies for paths:
 
 \begin{defn}[Two Variable Coupling Strategies]
-    
+    A (2v)-coupling strategy for a 2v-path $\rho$ is a collection of shifts $(\gamma^{(x)}, \gamma^{(x)\prime}, \gamma^{(y)}, \gamma^{(y)\prime}, \gamma_{(i, j)})$ such that \begin{itemize}
+        \item $\gamma^{(x)}, \gamma^{(x)\prime}, \gamma^{(y)}$, and $\gamma^{(y)\prime}$ are functions of a transition $t_i$ in $\rho$ as well as two adjacent inputs $\texttt{in}_i\brangle{1}$ and $\texttt{in}_i\brangle{2}$ that output a shift in the range [-1, 1]. 
+        \item $\gamma_{(i, j)}$ is a function of an $\texttt{x}$-assignment transition $t_i$ and a $\texttt{y}$-assignment transition $t_j$ as well as the inputs $\texttt{in}_{i}\brangle{1}$ and $\texttt{in}_j\brangle{1}$ that outputs a real-valued shift. 
+        \item In particular, we require that $\gamma_{(i, j)}(\texttt{in}_{i}\brangle{1},\texttt{in}_{j}\brangle{1}) \in \{-\min(\texttt{in}_{j}\brangle{1}-\texttt{in}_{i}\brangle{1}, 0),-\max(0, \texttt{in}_{j}\brangle{1}+ \gamma_{j}^{(y)}-\texttt{in}_{i}\brangle{1}-\gamma_{i}^{(x)}), -\min(\texttt{in}_{i}\brangle{1}-\texttt{in}_{j}\brangle{1}, 0), -\max(0, \texttt{in}_{i}\brangle{1}+ \gamma_{i}^{(x)}-\texttt{in}_{j}\brangle{1}-\gamma_{j}^{(y)})\}$
+    \end{itemize}
 \end{defn}
 
 \begin{defn}[Two Variable Looping Branches]
