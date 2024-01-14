@@ -739,37 +739,46 @@ We can do no better than assigning coupling strategies for each path independent
     \end{align*}
     and let $B = \{t_{init}t_{geq1}t_{geq2}^n, t_{init}t_{leq1}t_{leq2}^n\}$ be the branching program consisting of two paths, each of which have $n$ repetitions of the cycle transitions $t_{geq2}$ and $t_{leq2}$, respectively.
 
-    Let $\rho_1 = t_{init}t_{geq1}t_{geq2}^n$ and $\rho_2 = t_{init}t_{leq1}t_{leq2}^n$ be the two paths in $B$. We first show that the cost of the optimal coupling strategy $C$ for $B$ is $2$, and then the desired result. 
+    Let $\rho_1 = t_{init}t_{geq1}t_{geq2}^n$ and $\rho_2 = t_{init}t_{leq1}t_{leq2}^n$ be the two paths in $B$. Notice the following: 
     
-    
-    Let $C_{\rho_1}$ be any coupling strategy for $\rho$. We show that the $cost(C_{\rho_1})$ is bounded below by $2$. 
-    \begin{align*}
-        cost(C_{\rho_1}) &= \max_{\texttt{in}\brangle{1}\sim\texttt{in}\brangle{2}}\sum_{i=0}^{n+2}(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i(\texttt{in}_i\brangle{1}, \texttt{in}_i\brangle{2}))\\&\qquad+(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i'(\texttt{in}_i\brangle{1}, \texttt{in}_i\brangle{2})|)\\
-        &\geq \max_{\texttt{in}\brangle{1}\sim\texttt{in}\brangle{2}} \sum_{i=0}^{n+2}(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i(\texttt{in}_i\brangle{1}, \texttt{in}_i\brangle{2})|)\\
-        &= \max_{\Delta \in [-1, 1]^{n+2}} \sum_{i=0}^{n+2}(|\Delta_i-\gamma_i(0, \Delta_i)|)\\
-        &\geq |1 - \gamma_0(0, 1)| + \sum_{i=1}^{n+2}|-1-\gamma_i(0, -1)|\\
-        &= 1 - \gamma_0(0, 1) + \sum_{i=1}^{n+2} (1+\gamma_i(0, -1))\\
-        &= 1 - \gamma_0(0, 1) + (n + 2) + \sum_{i=1}^{n+2}\gamma_i(0, -1)\\
-        &\geq 1 - \gamma_0(0, 1) + (n + 2) + \sum_{i=1}^{n+2}\gamma_0(0, 1) \qquad \text{(privacy constraint)}\\
-        &= (n + 3) + (n + 1) \gamma_0(0, 1)\\
-        &\geq 2
-    \end{align*}
+    \begin{itemize}
+        \item The cost of any coupling strategy for $B$ must be at least $2$.
+        
+        Let $C_{\rho_1}$ be a coupling strategy for $\rho_1$. We can bound its cost as follows: 
+        \begin{align*}
+            cost(C_{\rho_1}) &= \max_{\texttt{in}\brangle{1}\sim\texttt{in}\brangle{2}}\sum_{i=0}^{n+2}(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i(\texttt{in}_i\brangle{1}, \texttt{in}_i\brangle{2}))\\&\qquad+(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i'(\texttt{in}_i\brangle{1}, \texttt{in}_i\brangle{2})|)\\
+            &\geq \max_{\texttt{in}\brangle{1}\sim\texttt{in}\brangle{2}} \sum_{i=0}^{n+2}(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i(\texttt{in}_i\brangle{1}, \texttt{in}_i\brangle{2})|)\\
+            &= \max_{\Delta \in [-1, 1]^{n+2}} \sum_{i=0}^{n+2}(|\Delta_i-\gamma_i(0, \Delta_i)|)\\
+            &\geq |1 - \gamma_0(0, 1)| + \sum_{i=1}^{n+2}|-1-\gamma_i(0, -1)|\\
+            &= 1 - \gamma_0(0, 1) + \sum_{i=1}^{n+2} (1+\gamma_i(0, -1))\\
+            &= 1 - \gamma_0(0, 1) + (n + 2) + \sum_{i=1}^{n+2}\gamma_i(0, -1)\\
+            &\geq 1 - \gamma_0(0, 1) + (n + 2) + \sum_{i=1}^{n+2}\gamma_0(0, 1) \qquad \text{(privacy constraint)}\\
+            &= (n + 3) + (n + 1) \gamma_0(0, 1)\\
+            &\geq 2
+        \end{align*}
 
-    and by a similar argument, $cost(C_{\rho_2})\geq 2$ for any coupling strategy $C_{\rho_2}$. Now, we show that there exists a coupling strategy $C_{\rho_1}$ for which $cost(C_{\rho_1}) = 2$. Since no transition outputs \texttt{insample}, we can set $\gamma_i'(\texttt{in}\brangle{1}, \texttt{in}\brangle{2}) = \texttt{in}\brangle{2} - \texttt{in}\brangle{1}$ for all $i$ with no privacy cost. Define 
+    and by a similar argument, $cost(C_{\rho_2})\geq 2$ for any coupling strategy $C_{\rho_2}$.
+
+    \item There exists a coupling strategy $C^*$ for $B$ such that $cost(C^*) = 2$.
+    
+    We will first describe $C_{\rho_1}^* = (\gamma, \gamma')$. Since no transition outputs \texttt{insample}, we can set $\gamma_i'(\texttt{in}\brangle{1}, \texttt{in}\brangle{2}) = \texttt{in}\brangle{2} - \texttt{in}\brangle{1}$ for all $i$ with no privacy cost. Define 
     \begin{align*}
         \gamma_0(\texttt{in}\brangle{1}, \texttt{in}\brangle{2}) &= -1 \\
         \gamma_i(\texttt{in}\brangle{1}, \texttt{in}\brangle{2}) &= \texttt{in}_i\brangle{2} - \texttt{in}_i\brangle{1} \qquad \text{for all $i>0$}
     \end{align*}
-    We see that $C_{\rho_1}$ is valid, since $\gamma_i\geq \gamma_{0}$ for all $i>0$. Further, we see that 
+    We see that $C^*_{\rho_1}$ is valid, since $\gamma_i\geq \gamma_{0}$ for all $i>0$. Further, we see that 
     \begin{align*}
-        cost(C_{\rho_1}) &= \max_{\texttt{in}\brangle{1}\sim\texttt{in}\brangle{2}}\sum_{i=0}^{n+2}(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i(\texttt{in}_i\brangle{1}, \texttt{in}_i\brangle{2}))\\&\qquad+(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i'(\texttt{in}_i\brangle{1}, \texttt{in}_i\brangle{2})|)\\
+        cost(C^*_{\rho_1}) &= \max_{\texttt{in}\brangle{1}\sim\texttt{in}\brangle{2}}\sum_{i=0}^{n+2}(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i(\texttt{in}_i\brangle{1}, \texttt{in}_i\brangle{2}))\\&\qquad+(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i'(\texttt{in}_i\brangle{1}, \texttt{in}_i\brangle{2})|)\\
         &= \max_{\texttt{in}\brangle{1}\sim\texttt{in}\brangle{2}} |-\texttt{in}_0\brangle{1}+\texttt{in}_0\brangle{2}-\gamma_0(\texttt{in}_0\brangle{1}, \texttt{in}_0\brangle{2})| \\
         &= \max_{\texttt{in}\brangle{1}\sim\texttt{in}\brangle{2}} |-\texttt{in}_0\brangle{1}+\texttt{in}_0\brangle{2}+1|\\
         &\leq 2 
     \end{align*}
-    showing that $cost(C_{\rho_1}) = 2$. Similarly, there is a coupling strategy $C_{\rho_2}$ for which $cost(C_{\rho_2}) = 2$. This shows that there is a coupling strategy $C$, consisting of $C_{\rho_1}$ and $C_{\rho_2}$, for which $cost(C) = 2$.
+    showing that $cost(C^*_{\rho_1}) = 2$. Similarly, there is a coupling strategy $C^*_{\rho_2}$ for which $cost(C^*_{\rho_2}) = 2$. This shows that there is a coupling strategy $C^*$, consisting of $C^*_{\rho_1}$ and $C^*_{\rho_2}$, for which $cost(C^*) = 2$.
+    
+    \item Any coupling strategy $C$ that assigns the same coupling strategy to $t_{init}$ in both $\rho_1$ and $\rho_2$ must have cost $>2$.
+    
+    Let $C$ be as described, and assume that $C$ has optimal cost, ie. $cost(C) = 2$. If $\gamma_0(0, 1) \neq -1$ in $C_{\rho_1}$, then $cost(C_{\rho_1}) > 2$ in the same method as the above, a contradiction.  
 
-    Assume that there exists an optimal coupling strategy $C$ that assigns the same coupling strategy to $t_{init}$ in both $\rho_1$ and $\rho_2$. If $\gamma_0(0, 1) \neq -1$ in $C_{\rho_1}$, then $cost(C_{\rho_1}) > 2$ in the same method as the above, a contradiction. 
     Thus, $\gamma_0(0, 1) = -1$ in $C_{\rho_1}$, which by hypothesis, means that $\gamma_0(0, 1) = -1$ in $C_{\rho_2}$. We have the privacy constraint $\gamma_i \leq \gamma_0$ on $\rho_2$, which also means that $\gamma_i = -1$ identically for all $i > 0$. However, this means that 
     \begin{align*}
         cost(C_{\rho_2}) &= \max_{\texttt{in}\brangle{1}\sim\texttt{in}\brangle{2}}\sum_{i=0}^{n+2}(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i(\texttt{in}_i\brangle{1}, \texttt{in}_i\brangle{2}))\\&\qquad+(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i'(\texttt{in}_i\brangle{1}, \texttt{in}_i\brangle{2})|)\\
@@ -778,7 +787,11 @@ We can do no better than assigning coupling strategies for each path independent
         &\geq |1 - \gamma_i(0, 1)| + \sum_{i=1}^{n+2}(|1+1|)\\
         &= 2 \cdot (n + 2)
     \end{align*}
-    showing that $C$ is not optimal.
+    showing that $C$ is not optimal, a contradiction. Therefore $cost(C) > 2$.
+
+    \end{itemize}
+    
+    The above observations show that the optimal coupling strategy for $B$ must necessarily assign different coupling strategies to $t_{init}$ in $\rho_1$ and $\rho_2$.
 \end{proof}
 
 \begin{prop}
@@ -1100,10 +1113,11 @@ If we have a differentially private program, we'd also like to optimize its priv
             &\ \gamma_i' = 0 \text{ if } \sigma_i = \texttt{insample}'\\
             &\ \gamma_i = \gamma_i'= \Delta_i \text{ if } t_i \text{ is in a cycle}
     \end{align*}
+    If a looping branch $L$ is not differentially private, a solution to this optimization problem does not exist, and we write $opt(L) = \infty$.
 \end{prop}
 
 \begin{proof}
-    Assume that $L$ is differentially private. Then the constraints above are satisfied by any valid coupling strategy $C$ for $L$. (TODO: Check the cycle constraint)
+    Assume that $L$ is differentially private. Then there exists a valid coupling strategy for $L$ with finite cost, showing that the constraints above are feasible, and a finite solution to the optimization problem exists.  
 
     We will specify a valid coupling strategy $C^* = (\gamma^*, {\gamma'}^*)$ for $L$ with the cost stated above, and then show it is optimal. Define $\Gamma: [-1, 1]^n \to [-1, 1]^n \times [-1, 1]^n$ as follows, where $\Gamma(\Delta)$ is a pair $(\gamma, \gamma')$: 
     \begin{align*}
@@ -1218,7 +1232,7 @@ Note: the inner problem is convex, and so the outer problem is that of convex ma
             &\ \gamma_i = -1 \text{ if } t_i \text{ is in a cycle and has } c_i = \gguard,\\
             &\ \gamma_i \leq v_i, -\gamma_i \leq v_i \text{ for all } i \in \{1, \dots, n\} 
     \end{align*}
-    whose solution is exactly $approx_\gamma(L)$. This program can be solved using the ellipsoid method in polynomial time.
+    This program can be solved using the ellipsoid method in polynomial time.
 \end{proof}
 
 \begin{prop}
@@ -1249,6 +1263,41 @@ Note: the inner problem is convex, and so the outer problem is that of convex ma
     \end{align*}
     representing the worst-case privacy loss over all possible paths in $L$ and all possible adjacent inputs.
 \end{conj}
+
+\subsection{Deciding Privacy II}
+
+We can check whether a looping branch is differentially private by checking whether the approximate privacy cost of the looping branch is finite. This is true if and only if the \textit{approximate privacy constraints} {(\color{red} Is this the right name?)} are feasible.
+
+
+\begin{prop}
+    We can check whether the approximate privacy constraints are feasible in linear time in $n$, the number of transitions in the looping branch.
+\end{prop}
+
+\begin{proof} (Sketch)
+
+    (If there is a transition in a cycle that outputs \texttt{insample}, then the approximate privacy constraints are not feasible, and we can return false. There is a way to encode this also into 2-SAT, but is it really worth it? So we'll only consider $\gamma$ in this sketch). 
+    
+    We will construct a reduction to 2-SAT.
+
+    \begin{itemize}
+        \item For every transition $t_i$ in the looping branch, construct the variable $x_i$, which represents whether $\gamma_i = 1$ ($x_i$ = 1) or $\gamma_i = -1$ ($x_i$ = 0).
+        \item For every constraint $\gamma_j \leq \gamma_i$, construct 
+        \begin{equation}
+            \lnot x_j \lor x_i
+        \end{equation}
+        essentially encoding $\gamma_j = 1 \implies \gamma_i = 1$.
+        \item For every constrint $\gamma_i = 1$, construct the clause
+        \begin{equation}
+            x_i
+        \end{equation}
+        and for every constraint $\gamma_i = -1$, construct the clause
+        \begin{equation}
+            \lnot x_i
+        \end{equation}
+    \end{itemize}
+
+    We can check whether the constraints are feasible by checking whether the resulting 2-SAT instance is satisfiable. This can be done in linear time in $n$ using the algorithm described in (TODO: Cite 2-SAT algorithm).
+\end{proof}
 
 \section{Program Model Extensions}
 
