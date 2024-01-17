@@ -794,12 +794,14 @@ We can do no better than assigning coupling strategies for each path independent
     The above observations show that the optimal coupling strategy for $B$ must necessarily assign different coupling strategies to $t_{init}$ in $\rho_1$ and $\rho_2$.
 \end{proof}
 
+The proposition below shows that the cost of a coupling strategy that assigns the same shift to each transition (path-independent strategies) can be arbitrarily larger than the optimal cost. 
+
 \begin{prop}
     There exist a family of branching programs $\{B_n\}_{n\in \NN}$ for which the cost of any path-independent coupling strategy $C$ for $B_n$ is greater than $n^2$, but for which there exists a path-dependent coupling strategy $C'$ for $B_n$ with cost $\leq n$.
 \end{prop}
 
 \begin{proof}
-    TODO (Vishnu)
+    (Sketch) One path is $t_{true} t_{geq}^n$, where all transitions are assignments. There are other paths which are like $t_{init} t_{loop}^* t_{geq}$ that force the shift on $t_{geq}$ to be $1$ instead of $-1$ for a path independent coupling strategy. This causes the cost of the $t_{true} t_{geq}^n$ path to be $n^2$, but a coupling strategy that considers this path separately can have cost $n$. 
 \end{proof}
 
 
