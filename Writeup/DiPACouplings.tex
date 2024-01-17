@@ -23,14 +23,14 @@
 \newcommand{\PP}{\mathbb{P}}
 \newcommand{\EE}{\mathbb{E}}
 \newcommand{\notimplies}{\;\not\!\!\!\implies}
-\newcommand{\gguard}[1][x]{\texttt{insample}\geq #1}
+\newcommand{\gguard}[1][x]{\texttt{insample}\geq#1}
 \newcommand{\lguard}[1][x]{\texttt{insample} < #1}
-\newcommand{\gaguard}{n<N \text{ AND } \texttt{insample} \geq \texttt{x}}
+\newcommand{\gaguard}{n<N \text{ AND } \texttt{insample} \geq\ \texttt{x}}
 \newcommand{\laguard}{n<N\text{ AND }\texttt{insample} < \texttt{x}}
-\newcommand{\itgguard}{\texttt{input}\neq\tau \text{ AND } \texttt{insample} \geq \texttt{x}}
-\newcommand{\itlguard}{\texttt{input}\neq\tau \text{ AND }\texttt{insample} < \texttt{x}}
+\newcommand{\itgguard}{\texttt{input}\neq\tau\text{ AND } \texttt{insample}\geq\texttt{x}}
+\newcommand{\itlguard}{\texttt{input}\neq\tau\text{ AND }\texttt{insample} < \texttt{x}}
 \newcommand{\range}{\texttt{range}}
-\newcommand{\brangle}[1]{\langle #1 \rangle}
+\newcommand{\brangle}[1]{\langle#1 \rangle}
 \newcommand{\guard}{\texttt{guard}}
 \newcommand{\trans}{\texttt{trans}}
 \newcommand{\Lap}{\texttt{Lap}}
@@ -43,11 +43,14 @@
 
 \newcommand{\im}{\texttt{im}}
 
+\newcommand{\todo}[2]{\textcolor{#1}{\textbf{#2}}}
+\newcommand{\sasho}[1]{\todo{blue}{Sasho: <<#1>>}}
+\newcommand{\sky}[1]{\todo{green}{Sky: <<#1>>}}
 
 \DeclareMathOperator*{\argmax}{arg\,max}
 \DeclareMathOperator*{\argmin}{arg\,min}
 
-\providecommand{\floor}[1]{ \lfloor #1 \rfloor }
+\providecommand{\floor}[1]{\lfloor #1 \rfloor}
 \newtheorem{thm}{Theorem}[section]
 \newtheorem{lemma}[thm]{Lemma}
 \newtheorem{prop}[thm]{Proposition}
@@ -70,19 +73,19 @@
 
 \section{Introduction}
 
-Differential privacy is a framework for privacy that gives rigorous guarantees on the amount of data leakage any one person's data can be subjected to when releasing statistical data. Since being introduced in 2006 \cite{DP2006}, differential privacy has become the gold standard for private statistical analysis. 
+Differential privacy is a framework for privacy that gives rigorous guarantees on the amount of data leakage any one person's data can be subjected to when releasing statistical data. Since being introduced in 2006~\cite{DP2006}, differential privacy has become the gold standard for private statistical analysis. 
 Differentially private algorithms, whose efficacy are characterized by a ``privacy cost'' $\varepsilon$, primarily rely on the addition of statistical noise, ensuring that statistical results remain approximately correct while preventing any one person's information from being revealed. 
 
-Differentially private algorithms are notoriously tricky to analyze for correctness; most famously, the Sparse Vector Technique (SVT) algorithm has gone through multiple iterations, some of which were later shown to completely fail at protecting privacy\cite{10.14778/3055330.3055331}. Previous implementations of differential privacy by Apple have similarly been shown to have an increase from the claimed privacy cost by a factor of up to 16 \cite{appleleakprivacy}. 
+Differentially private algorithms are notoriously tricky to analyze for correctness; most famously, the Sparse Vector Technique (SVT) algorithm has gone through multiple iterations, some of which were later shown to completely fail at protecting privacy~\cite{10.14778/3055330.3055331}. Previous implementations of differential privacy by Apple have similarly been shown to have an increase from the claimed privacy cost by a factor of up to 16~\cite{appleleakprivacy}. 
 
 Thus, much work has been done on developing methods for automatic verification of differentially private algorithms, both in their overall privacy and in the specific privacy costs they claim to achieve. 
 Because even for limited programs the problem of determining if a program is differentially private is undecidable\cite{barthe.etal2020decidingdp}, previous work tends to focus on semi-decidability or further restricting program models. 
 
-Recently, a line of work has emerged around \textbf{approximate liftings} \cite{BartheEtAl2016,bartheKopfOlmedo2012ProbabilisticRelationalReasoningforDifferentialPriv,BartheOlmedo2013,HsuThesis2017}. Approximate liftings are a generalization of probabilistic couplings, themselves a well-known technique in probability theory for analyzing relationships between random variables. 
-Approximate liftings allow for a more structured proof approach to many algorithms that themselves are not conducive to a standard compositional analysis, such as SVT. Because of their structure, liftings also lend themselves to automated proof construction~\cite{AlbarghouthiHsu2018}. 
+Recently, a line of work has emerged around \textbf{approximate liftings}~\cite{BartheEtAl2016,bartheKopfOlmedo2012ProbabilisticRelationalReasoningforDifferentialPriv,BartheOlmedo2013,HsuThesis2017}. Approximate liftings are a generalization of probabilistic couplings, themselves a well-known technique in probability theory for analyzing relationships between random variables. 
+Approximate liftings allow for a more structured proof approach to many algorithms that themselves are not conducive to a standard compositional analysis, such as SVT.\@ Because of their structure, liftings also lend themselves to automated proof construction~\cite{AlbarghouthiHsu2018}. 
 
 We first rewrite the major results of approximate liftings in \{not program logic\}\footnote{not sure how to describe this, also not sure if worth mentioning}. 
-We then use approximate liftings to demonstrate that a certain limited class of programs, first described in \cite{chadhaLinearTimeDecidability2021}, are differentially private; interestingly, we show that our class of liftings completely characterizes this class of programs. Additionally, we demonstrate that the privacy of a natural generalization of this class of programs can be proven using liftings and almost immediately follows from the privacy of the smaller class. 
+We then use approximate liftings to demonstrate that a certain limited class of programs, first described in~\cite{chadhaLinearTimeDecidability2021}, are differentially private; interestingly, we show that our class of liftings completely characterizes this class of programs. Additionally, we demonstrate that the privacy of a natural generalization of this class of programs can be proven using liftings and almost immediately follows from the privacy of the smaller class. 
 
 \section{Differential Privacy}
 
@@ -241,13 +244,13 @@ However, re-analyzing SVT using approximate liftings can be relatively simple.
 
     Let $S_i = q_i(\mathcal{X}) + z_i$, so $S_i \sim\Lap(q_i(\mathcal{X}), \frac{2c\Delta}{\varepsilon_2})$.
 
-    For all $i$ such that $0\leq i < n$, $i\notin A$, we construct the lifting $z_i\langle 1\rangle (=)^{\#0}z_i\langle 2\rangle$. 
+    For all $i$ such that $0\leq i < n$, $i\notin A$, we construct the lifting $z_i\brangle{1} (=)^{\#0}z_i\brangle{2}$. 
 
     Then note that $\tilde{T}\brangle{1}+\Delta = \tilde{T}\brangle{2}\land z_i\brangle{1} = z_i \brangle{2} \implies (S_i\brangle{1} < \tilde{T}\brangle{1} \implies S_i\brangle{2} < \tilde{T}\brangle{2} )$.
 
     For all $i\in A$, create the lifting $z_i\brangle{1}(=)^{\#\frac{\varepsilon_2}{c}}z_i\brangle{2} - q_i(\mathcal{X})+q_i(\mathcal{X}')-\Delta$, or equivalently, \\$S_i\brangle{1} +\Delta (=)^{\#\frac{\varepsilon_2}{c}} S_i\brangle{2}$. Note that this costs $\frac{\varepsilon_2}{c}$ since $|q_i(\mathcal{X})-q_i(\mathcal{X}')|\leq \Delta$.
 
-    Then \[\tilde{T}\brangle{1} +\Delta = \tilde{T}\brangle{2} \land S_i\brangle{1} + \Delta = S_i\brangle{2} \implies (S_i\brangle{1} \geq \tilde{T}\brangle{1} \implies S_i\langle 2\rangle \geq \tilde{T}\brangle{2})\]
+    Then \[\tilde{T}\brangle{1} +\Delta = \tilde{T}\brangle{2} \land S_i\brangle{1} + \Delta = S_i\brangle{2} \implies (S_i\brangle{1} \geq \tilde{T}\brangle{1} \implies S_i\brangle{2} \geq \tilde{T}\brangle{2})\]
 
     Thus, for all $i$, $SVT(\mathcal{X}, T, Q, c)_i = \sigma_i \implies SVT(\mathcal{X}', T, Q, c)_i = \sigma_i$, so $SVT(\mathcal{X}, T, Q, c)\{(a, b): a=\sigma \implies b=\sigma\}^{\#\varepsilon_1+\varepsilon_2}SVT(\mathcal{X}', T, Q, c)$.
 
@@ -256,59 +259,59 @@ However, re-analyzing SVT using approximate liftings can be relatively simple.
 
 \section{Automatically Proving Privacy using Couplings}
 
-We begin by building up a program model for SVT-style algorithms. There are three major components of SVT: taking in a threshold value and adding Laplace noise to it, taking in input and adding Laplace noise to it, and comparing the noisy threshold to the noisy input. 
+Our approach is to build up a program model through the lens of regular languages. In this view, a program is simply a regular language comprised of possible program executions or paths, where each path corresponds to a word in the language. This approach allows us to simultaneously build approximate liftings for each path that prove the overall privacy of a program.
 
+We begin with single transitions between two program locations, which correspond directly to characters in an alphabet. 
 
 \subsection{Individual Transitions}
 
+Transitions in our program model are transitions between two program \textbf{location}. Naturally then, we must fix some underlying location space for our transitions. 
 
-\begin{defn}
-    Let $Q$ be a finite set of program states partitioned into input states $Q_{in}$ and non-input states $Q_{non}$. Then $P_Q(q): Q\to \RR^{\geq 0}\times \RR^{\geq 0}$ is a function that associates each state state with two \textbf{noise parameters} $P(q) = (d_q, d_q')$.
+\begin{defn}[Program locations]
+    $Q$ is a finite set of program locations partitioned into input locations $Q_{in}$ and non-input locations $Q_{non}$. We will also associate each program location with two \textbf{noise parameters} with the function $P(q): Q\to \RR^{\geq 0}\times \RR^{\geq 0}$.
 \end{defn}
 
-In our program model, we have a singular persistent real-valued variable $\texttt{x}$, which can be thought of as analogous to the threshold in algorithms like SVT. 
+In our program model, we have a singular persistent real-valued variable $\texttt{x}$, which can be thought of as a threshold value to compare input to in algorithms like SVT.\@
 
-To capture the value of $\texttt{x}$ at different states, we pair each state with possible values of $\texttt{x}$:
 
-\begin{defn}
-    Given a finite set of program states $Q$, the set $Q\times \RR$ is the set of \textbf{instantiated states} of $Q$. 
+[]
+
+
+\begin{defn}[Transition guards]
+    $\mathcal{C}=\{\texttt{true}, \lguard[\texttt{x}], \gguard[\texttt{x}]\}$ is a set of (single-variable) \textbf{transition guards}.
 \end{defn}
 
-Let $\mathcal{C}=\{\texttt{true}, \lguard[\texttt{x}], \gguard[\texttt{x}]\}$ be a set of \textbf{transition guards}.
-
-We now can define the simplest programs, individual transitions:
+We can now formally define individual transitions:
 
 \begin{defn}[Transitions]
-    Given a finite set of program states $Q$ and a set of real-valued variables $\{\texttt{x}, \texttt{insample}, \texttt{insample}'\}$. A transition is a tuple $t = (q, q', c, \sigma, \tau)$, where \begin{itemize}
-        \item $q\in Q$ is the initial state.
-        \item $q'\in Q$ is the following state.
-        \item $c\in \mathcal{C}$ is a transition guard that determines if $t$ is taken.
+    Given a finite set of program locations $Q$, a transition is a tuple $t = (q, q', c, \sigma, \tau)$, where \begin{itemize}
+        \item $q\in Q$ is the initial location.
+        \item $q'\in Q$ is the following location.
+        \item $c\in \mathcal{C}$ is a transition guard that determines if $t$ is traversed.
         \item $\sigma \in \Gamma\cup\{\texttt{insample}, \texttt{insample}'\}$ is the output of $t$.
         \item $\tau\in\{\texttt{true}, \texttt{false}\}$ is a boolean value indicating whether or not the stored value of $\texttt{x}$ will be updated.
     \end{itemize}
     Depending on context, we may also notate $t$ as $q\to q'$. 
 \end{defn}
 
-
 \subsubsection{Transition Semantics}
 
-We can think of each transition as defining an extremely small program; beginning in some state $q$, a transition takes in some real valued input $\texttt{in}$, compares it to some threshold $\texttt{x}$, and, depending on the result of the comparison, moves to a state $q'$ while outputting a value $\sigma$ and possibly updating the value of $\texttt{x}$.
+We can think of each transition as defining an extremely small program; beginning in some location $q$, a transition takes in some real valued input $\texttt{in}$, compares it to some threshold $\texttt{x}$, and, depending on the result of the comparison, moves to a location $q'$ while outputting a value $\sigma$ and possibly updating the value of $\texttt{x}$.
 
 More specifically, given some threshold value $\texttt{x}$, each transition $t = (q, q', c, \sigma, \tau)$ will first read in a real number input $\texttt{in}$, sample two random variables $z\sim\Lap(0, \frac{1}{d\varepsilon})$, $z'\sim\Lap(0, \frac{1}{d'\varepsilon})$, where $P(q) = (d, d')$, and then assign two variables $\texttt{insample} = \texttt{in} + z$ and $\texttt{insample}' = \texttt{in} + z'$. 
-If the guard $c$ is satisfied, then we transition to state $q'$, outputting $\sigma$ and, if $\tau = \texttt{true}$, reassigning $\texttt{x} = \texttt{insample}$. 
+If the guard $c$ is satisfied, then we transition to location $q'$, outputting $\sigma$ and, if $\tau = \texttt{true}$, reassigning $\texttt{x} = \texttt{insample}$. 
 
-We can describe the semantics of a transition as a function that maps an initial program \textbf{state} and a real-valued input to a distribution of subsequent program states and an output value. 
+We can describe the semantics of a transition as a function that maps an initial program \textbf{location} and a real-valued input to a distribution of subsequent program locations and an output value. 
 
-To be precise, a program state is a tuple consisting of a program location and a value for the program variable $\texttt{x}$. Let $S = Q\times\RR$ be the set of all possible program states. As expected, every possible input is simply an element of $\RR$. 
+To be precise, a program location is a tuple consisting of a program location and a value for the program variable $\texttt{x}$. Let $S = Q\times\RR$ be the set of all possible program locations. As expected, every possible input is simply an element of $\RR$. 
 An output can either be a symbol from some finite alphabet $\Gamma$ or a real number; thus, the set of all possible output events is $\Gamma \cup \Sigma$, where $\Sigma$ is some $\sigma$-algebra over $\RR$.
 In particular, we will take $\Sigma$ to be the standard $\sigma$-algebra of all Lebesgue measurable sets. 
 
-It follows that the semantics of a transition $t$ can be defined as a function $\Phi((q, \texttt{x}), \texttt{in}): S\times \RR\to dist(S\times (\Gamma\cup\Sigma\cup \lambda))$ that maps an initial program state and an input to a distribution of subsequent program states and an output event following the expected semantics; $\lambda$ here denotes the empty string (i.e. no output). 
+It follows that the semantics of a transition $t$ can be defined as a function $\Phi_t((q, \texttt{x}), \texttt{in}): S\times \RR\to dist(S\times (\Gamma\cup\RR\cup \lambda))$ that maps an initial program location and an input to a distribution of subsequent program locations and an output event following the expected semantics; $\lambda$ here denotes the empty string (i.e. no output). 
 
 {\color{red}[If we need space, just say that we use the natural semantics and move the following section to appendix]}
 
-
-Let $q\in Q$ be an initial state, $\texttt{x}\in \RR$ be an initial threshold value, and $P(q) = (d_q, d_q')$ be the distributional parameters associated with $q$. Let $t = (q, q', c, \sigma, \tau)$ be a transition whose semantics we are defining. 
+Let $q\in Q$ be an initial location, $\texttt{x}\in \RR$ be an initial threshold value, and $P(q) = (d_q, d_q')$ be the distributional parameters associated with $q$. Let $t = (q, q', c, \sigma, \tau)$ be the transition whose semantics we are defining. 
 
 Let $\texttt{in}\in \RR$ be a real-valued input and $o\in (\Gamma\cup\Sigma\cup\lambda)$ be a possible output event of $t$.
 
@@ -316,24 +319,35 @@ Let $I\sim \Lap(\texttt{in}, \frac{1}{d_q\varepsilon})$ and $I'\sim \Lap(\texttt
 
 For both $I$ and $I'$, given $o$, we say that $I$ (or $I'$, respectively) matches $o$ if $o\subseteq \RR$ and $I\in o$. 
 
-Then if $\tau = \texttt{false}$, $\Phi_t((q, \texttt{x}), \texttt{in}) = ((q', \texttt{x}), o)$ with probability equal to the probability $c$ is satisfied for $\texttt{x} = X$ and $\texttt{insample} = I$ and, if $\sigma = \texttt{insample}$ or $\sigma = \texttt{insample}'$, then $I$ matches $o$ or $I'$ matches $o$, respectively. $\Phi_t((q, \texttt{x}), \texttt{in}) = ((q_{term}, \texttt{x}), \lambda)$ with probability equal to the probability that $c$ is not satisfied. 
+Let $T$ be the event that $c$ is satisfied given $\texttt{x}$ and $\texttt{insample}=I$ and let $O$ be the event that, if $\sigma=\texttt{insample}$, then $I$ matches $o$ and if $\sigma = \texttt{insample}'$, then $I'$ matches $o$. 
 
-Similarly, if $\tau = \texttt{true}$, then $\Phi_t((q, \texttt{x}), \texttt{in}) \in ((q', I), o)$ with probability equal to the probability $c$ is satisfied for $\texttt{x} = X$ and $\texttt{insample} =I$ and,
-if $\sigma = \texttt{insample}$ or $\sigma = \texttt{insample}'$, then $I$ matches $o$ or $I'$ matches $o$, respectively. $\Phi_t((q, \texttt{x}), \texttt{in}) = ((q_{term}, I), \lambda)$ with probability equal to the probability that $c$ is not satisfied. 
+Then $\Phi_t((q, \texttt{x}), \texttt{in})$ is a distribution that assigns probabilities to output events as follows:
 
-Here, $q_{term}$ is a sink or terminal state with no transitions allowed out of it.
+If $\tau = \texttt{false}$, then $\Phi_t((q, \texttt{x}), \texttt{in})$ assigns probability 0 to all events $((q', \texttt{x}'), o)$ such that $\texttt{x}'\neq \texttt{x}$. For all other events $((q', \texttt{x}), o)$. $\Phi_t((q, \texttt{x}), \texttt{in})$ assigns probability $\PP[T\land O]$ to $((q', \texttt{x}), o)$ and probability $\PP[\lnot T]$ to the event $((q_{term}, \texttt{x}), \lambda)$.
 
-We primarily are concerned with the probability that a transition ``succeeds'', that is, the probability that from state $q$, the program defined by $t$ transitions to state $q'$ and outputs a certain value. We denote this probability as $\PP[\texttt{x}, t, \texttt{in}, o]$, where $\texttt{x} \in \RR$ is the initial value of $\texttt{x}$, $t$ is a transition, $\texttt{in}\in \RR$ is a real-valued input, and $o\in \Gamma\cup\Sigma$ is a possible output of $t$.
+
+Similarly, if $\tau = \texttt{true}$, then $\Phi_t((q, \texttt{x}), \texttt{in})$ assigns probability $\PP[T\land O] $ to the event $((q', I), o)$ and assigns probability $\PP[\lnot T]$ to the event $((q_{term}, I), \lambda)$.
+
+Here, $q_{term}$ is a sink or terminal location with no transitions allowed out of it.
+
+We primarily are concerned with the probability that a transition ``succeeds'', that is, the probability that from location $q$, the program defined by $t$ transitions to location $q'$ and outputs a certain value. 
+
+We denote this probability as $\PP[\texttt{x}, t, \texttt{in}, o]$, where $\texttt{x} \in \RR$ is the initial value of $\texttt{x}$, $t$ is a transition, $\texttt{in}\in \RR$ is a real-valued input, and $o\in \Gamma\cup\Sigma$ is a possible output of $t$. Specifically, $\PP[\texttt{x}, t, \texttt{in}, o] = \int_{-\infty}^\infty\PP[\texttt{x}\text{ is updated to have value }\texttt{x}']\Phi_t((q, \texttt{x}), \texttt{in})((q', \texttt{x}'), o)d\texttt{x}'$.
+
 Note that this is an aggregated probability over all possible final values of $\texttt{x}$ - we do not particularly care what the final value of the threshold is. 
-
 
 \subsubsection{Privacy}
 
-Recall that $\texttt{in}$, in reality, represents a \textbf{function} of some underlying dataset. This means that `closeness' in this context is defined as follows:
+We will now construct couplings for transitions with the aim of using them as building blocks for proofs of privacy. 
+
+First, we need to adapt standard privacy definitions to our specific setting; recall that $\texttt{in}$, in reality, represents a \textbf{function} of some underlying dataset. This means that `closeness' in this context is defined as follows:
+
 
 \begin{defn}[Adjacency]
     Two inputs $\texttt{in}\sim_{\Delta} \texttt{in}'$ are $\Delta$-adjacent if $|\texttt{in}-\texttt{in}'|\leq \Delta$. If $\Delta$ is not specified, we assume that $\Delta = 1$. 
 \end{defn}
+
+Additionally, recall that some program locations ($Q_{non}$) in our model do not read in any input; to model this, we require that whenever input is passed into a non-input location, the actual input value is always 0.
 
 \begin{defn}[Valid inputs]
     Let $t = (q, q', c, \sigma, \tau)$ be a transition over $Q$. A valid adjacent input pair to $t$ is a pair of real numbers $(\texttt{in}\brangle{1}, \texttt{in}\brangle{2})\in \RR^2$ such that:
@@ -341,7 +355,7 @@ Recall that $\texttt{in}$, in reality, represents a \textbf{function} of some un
         \item If $q\in Q_{in}$, then $\texttt{in}\brangle{1}\sim \texttt{in}\brangle{2}$. 
         \item If $q\notin Q_{in}$, then $\texttt{in}\brangle{1} = \texttt{in}\brangle{2} = 0$.
     \end{itemize}
-    We will abuse notation and denote that $(\texttt{in}\brangle{1}, \texttt{in}\brangle{2})$ is a valid adjacent input pair by also writing $\texttt{in}\brangle{1}\sim\texttt{in}\brangle{2}$. In general, we will assume that all inputs are valid unless explicitly otherwise stated.
+    We will abuse notation and denote that $(\texttt{in}\brangle{1}, \texttt{in}\brangle{2})$ is a valid adjacent input pair by also writing $\texttt{in}\brangle{1}\sim\texttt{in}\brangle{2}$. In general, we will assume that all inputs are valid unless explicitly otherwise locationd.
 \end{defn}
 
 In lieu of defining exactly what it means for an individual transition to be ``private'', we will define a closely related {\color{red}measure? is that the right word?}.
@@ -360,17 +374,14 @@ Max divergence is closely related to differential privacy; it should be clear th
     Then, given $X\brangle{1}, X\brangle{2}$, a transition $t=(q, q', c, \sigma, \tau)$ is \textbf{$d\varepsilon$-close} for some $d>0$ if $\forall \varepsilon> 0$, for all adjacent input pairs $\texttt{in}\brangle{1}, \texttt{in}\brangle{2}$, and $D_{\infty}(\PP[X\brangle{1}, t, \texttt{in}\brangle{1}, \cdot]||\PP[X\brangle{2}, t, \texttt{in}\brangle{2}, \cdot])\leq d\varepsilon$. Note that $d$ can be dependent on $X\brangle{1}$ and $X\brangle{2}$.
 \end{defn}
 
-Note that we slightly redefine $\varepsilon$-differential privacy as $d\varepsilon$-differential privacy, treating $\varepsilon$ as a universal scaling parameter that can be fine-tuned by users for their own purposes. 
-In particular, we argue that this definition is functionally equivalent\footnote{\cite{chadhaLinearTimeDecidability2021} notes that it is not entirely clear how this differs from standard differential privacy, but that the known decidability result does not apply here - {\color{red} maybe something to investigate}}, since if we are targeting $\varepsilon^*$-differential privacy overall, we can always take $\varepsilon = \frac{\varepsilon^*}{d}$.
 
 \subsubsection{Couplings}
 
-For every transition $t$ between two states $q$ and $q^*$, we can show that $t$ is differentially private using a series of liftings. 
+For every transition $t$ over a location space $Q$, we can construct an approximate lifting showing that $t$ is $d\varepsilon$-close. 
 
 \begin{lemma}\label{indTransitionCoupling}
-    Let $X\brangle{1}\sim \Lap(\mu\brangle{1}, \frac{1}{d_x\varepsilon}), X\brangle{2}\sim\Lap(\mu\brangle{2}, \frac{1}{d_x\varepsilon})$ be random variables be random variables representing possible initial values of $\texttt{x}$. 
-
-    Consider some transition $t = (q, q^*, c, \sigma, \tau)$ from $q$ to $q^*\in Q$. Let $P(q) = (d_q, d_q')$.
+    Let $X\brangle{1}\sim \Lap(\mu\brangle{1}, \frac{1}{d_x\varepsilon}), X\brangle{2}\sim\Lap(\mu\brangle{2}, \frac{1}{d_x\varepsilon})$ be random variables be random variables representing possible initial values of $\texttt{x}$. And let $t = (q, q^*, c, \sigma, \tau)$ be a transition from $q$ to $q^*\in Q$.
+    Let $P(q) = (d_q, d_q')$.
 
     Let $\texttt{in}\brangle{1}, \texttt{in}\brangle{2}$ be an arbitrary valid adjacent input pair and let $o\brangle{1}$, $o\brangle{2}$ be random variables representing possible outputs of $t$ given inputs $\texttt{in}\brangle{1}$ and $\texttt{in}\brangle{2}$, respectively. 
 
@@ -392,7 +403,7 @@ We will analyze the behaviour of two different \textbf{runs} of $t$, one with in
 
 Our approach to couplings will be that for every Laplace-distributed variable, we will couple the value of the variable in one run with its value in the other \textbf{shifted} by some amount. 
 
-We differentiate between the values of variables in the first and second run by using angle brackets $\brangle{k}$, so, for example, we will take $X\brangle{1}$ to be the value of $\texttt{x}$ at state $q$ in the run of $t$ with input $\texttt{in}\brangle{1}$ and $X\brangle{2}$ to be the value of $\texttt{x}$ in the run of $t$ with input $\texttt{in}\brangle{2}$. 
+We differentiate between the values of variables in the first and second run by using angle brackets $\brangle{k}$, so, for example, we will take $X\brangle{1}$ to be the value of $\texttt{x}$ at location $q$ in the run of $t$ with input $\texttt{in}\brangle{1}$ and $X\brangle{2}$ to be the value of $\texttt{x}$ in the run of $t$ with input $\texttt{in}\brangle{2}$. 
 
 We thus want to create the lifting $o\brangle{1}\{(a, b): a=\sigma\implies b=\sigma\}o\brangle{2}$. We must guarantee two things: that if the first transition is taken, then the second is also taken and that both runs output the same value $\sigma$ when taking the transition. Note that if $c = \texttt{true}$, the first condition is trivially satisfied and when $\sigma\in \Gamma$, the second condition is trivially satisfied. 
 
@@ -404,7 +415,7 @@ This is equivalent to creating the lifting $\texttt{insample}\brangle{1} +\gamma
 
 Finally, create the lifting $z'\brangle{1} (=)^{\#(|-\texttt{in}\brangle{1}+\texttt{in}\brangle{2}-\gamma_q'|)d_q'\varepsilon}z'\brangle{2} - \texttt{in}\brangle{1}+\texttt{in}\brangle{2}-\gamma_q'$. As before, this is equivalent to creating the lifting $\texttt{insample}'\brangle{1} +\gamma_q'{(=)}^{\#(|-\texttt{in}\brangle{1}+\texttt{in}\brangle{2}-\gamma_q'|)d_q'\varepsilon}\texttt{insample}'\brangle{2}$.
 
-Thus, we emerge with three key statements to leverage:\begin{itemize}
+Thus, we emerge with three key locationments to leverage:\begin{itemize}
     \item $X\brangle{1} + \gamma_x = X\brangle{2}$
     \item $z\brangle{1} = z\brangle{2} - \texttt{in}\brangle{1}+\texttt{in}\brangle{2}-\gamma_q$
     \item $z'\brangle{1} = z'\brangle{2} - \texttt{in}\brangle{1}+\texttt{in}\brangle{2}-\gamma_q'$
@@ -443,7 +454,7 @@ we have shown that the lifting $o\brangle{1}\{(a, b): a=\sigma\implies b=\sigma\
 By an application of theorem \ref{implicationcouplingthm}, $\PP[X\brangle{1}, t, \texttt{in}\brangle{1}, \sigma]\leq e^{d\varepsilon}\PP[X\brangle{2}, t, \texttt{in}\brangle{2}, \sigma]$. Because $\texttt{in}\brangle{1}\sim\texttt{in}\brangle{2}$ are arbitrary adjacent inputs and $\sigma$ is an arbitrary possible output of $t$, this implies that $t$ is $d\varepsilon$-differentially private. 
 \end{proof}
 
-We can thus think of couplings for a transition as being parameterized by $\gamma_x$, $\gamma_q$, and $\gamma_q'$. In particular, we will view choices of $\gamma_x, \gamma_q$, and $\gamma_q'$ as a \textbf{strategy} for proving that a transition is differentially private. 
+We can thus think of couplings for a transition as being \textbf{parameterized} by $\gamma_x$, $\gamma_q$, and $\gamma_q'$. In particular, we will view choices of $\gamma_x, \gamma_q$, and $\gamma_q'$ as a \textbf{strategy} for proving that a transition is differentially private. 
 
 \begin{defn}[Coupling strategies]
     A \textbf{coupling strategy} for a transition $t_i = (q_i, q_{i+1}, c_i, \sigma_i, \tau_i)$ is a tuple $C_i = (\gamma_x^{(i)}, \gamma_i, \gamma_i')\in [-1, 1]^3$. 
@@ -461,16 +472,9 @@ We can thus think of couplings for a transition as being parameterized by $\gamm
       are all satisfied. 
 \end{defn}
 
-In particular, a valid coupling proof gives an upper bound on the privacy cost of any individual transition. 
-\begin{prop}\label{indivTransitionCouplingProp}
-    For a transition $t_i$, if there exists a valid coupling strategy $C_i=(\gamma_x^{(i)}, \gamma_i, \gamma_i')$ given initial $\texttt{x}$ values centred at $\hat{\mu_q}\brangle{1}$ and $\hat{\mu_q}\brangle{2}$, then $t_i$ is $d\varepsilon$-differentially private for some 
-    \[d\leq \max_{\texttt{in}\brangle{1}\sim\texttt{in}\brangle{2}} (|\hat{\mu_q}\brangle{1}-\hat{\mu_q}\brangle{2}+\gamma_x^{(i)}|)\hat{d_q}+(|-\texttt{in}\brangle{1}+\texttt{in}\brangle{2}-\gamma_i|)d_q+(|-\texttt{in}\brangle{1}+\texttt{in}\brangle{2}-\gamma_i'|)d_q'.\]
-\end{prop}
-\begin{proof}
-    Follows immediately from lemma \ref{indTransitionCoupling}.
-\end{proof}
-
 \subsubsection{Constructing an alphabet}
+
+{\color{red} - maybe move this earlier?}
 
 We will consider individual transitions as part of an \textit{alphabet}; we will show that there is an interesting subset of regular languages over an alphabet of transitions that we can apply the coupling framework to. 
 
@@ -483,18 +487,18 @@ We will only consider certain alphabets of transitions; the ones that generate c
         \item \textbf{Determinism}: If any transition $t\in \Sigma_T$ is of the form $t=(q, q', c, \sigma, \tau)$, then no other transitions of the form $(q, q^*, c, \sigma', \tau')$ for $q, q', q^*\in Q$ exist in $\Sigma_T$. 
         Additionally, if there exists a transition $t=(q, q', \texttt{true}, \sigma, \tau)$ such that $t\in \Sigma_T$, then transitions of the form $(q, q^*, \lguard[\texttt{x}], \sigma', \tau')$ or $(q, q^*, \lguard[\texttt{x}], \sigma', \tau')$ are not in $\Sigma_T$. 
         \item \textbf{Output distinction}: If there exist some $\sigma, \sigma', \tau, \tau'$ such that $(q, q', \lguard[\texttt{x}], \sigma, \tau)\in \Sigma_T$  and $(q, q^*, \gguard[\texttt{x}], \sigma', \tau') \in \Sigma_T$, then $\sigma \neq \sigma'$. Additionally, at least one of $\sigma\in \Gamma$, $\sigma'\in \Gamma$ is true.
-        \item \textbf{Non-input state condition}: For all states $q\in Q_{non}$, if there exists a transition $t=(q, q', c, \sigma, \tau)$ such that $t\in \Sigma_T$, then $c = \texttt{true}$.
+        \item \textbf{Non-input location condition}: For all locations $q\in Q_{non}$, if there exists a transition $t=(q, q', c, \sigma, \tau)$ such that $t\in \Sigma_T$, then $c = \texttt{true}$.
     \end{itemize}
 \end{defn}
 
-\subsection{Multiple Transitions}
+\subsection{Program Paths}
 
-Of course, in practice we would like to analyze the behaviour of programs with more than two program states.
+Of course, in practice we would like to analyze the behaviour of programs with more than two program locations.
 
-We start with \textit{paths}, comprised of a sequence of transitions. Equivalently, paths are words comprised of letters from a (valid) transition alphabet $\Sigma_T$. 
+We start with \textit{paths}, comprised of a sequence of transitions. Equivalently, paths are specific words comprised of letters from a (valid) transition alphabet $\Sigma_T$. 
 
 \begin{defn}[Program paths]
-    Let $\Sigma_T$ be a valid transition alphabet with underlying state space $Q$. A program \textbf{path} is a sequence of transitions $t_0\cdot t_1\cdot \ldots\cdot t_{n-1}$ such that for all $i\in 0\ldots n-1$, $t_i = (q_i, q_{i+1}, c_i, \sigma_i, \tau_i)$ for some $c_i, \sigma_i, \tau_i$. We will often notate an path $\rho$ as $\rho = q_0\to q_1\to \ldots \to q_n$. 
+    Let $\Sigma_T$ be a valid transition alphabet with underlying location space $Q$. A program \textbf{path} is a sequence of transitions $t_0\cdot t_1\cdot \ldots\cdot t_{n-1}$ such that for all $i\in 0\ldots n-1$, $t_i = (q_i, q_{i+1}, c_i, \sigma_i, \tau_i)$ for some $c_i, \sigma_i, \tau_i$. We will often notate an path $\rho$ as $\rho = q_0\to q_1\to \ldots \to q_n$. 
 
     If a path $\rho$ is of the form $\rho = t_{init}\cdot \rho'$ for $\rho'\in \Sigma_T^*$, then we call $\rho$ a \textbf{complete} path. 
 \end{defn}
@@ -507,62 +511,77 @@ We define some useful notation for dealing with paths and sequences more general
     We may additionally use the notation $\rho_{i:j}$ to represent the subpath (or subsequence) $q_i\to q_{i+1}\to \ldots \to q_j$ of $\rho$. Using this notation, $tail(\rho) = \rho_{1:} = \rho_{1:n}$.
 \end{defn}
 
+Whereas an individual transition read in one real-valued input and outputted one output value, a path will read in a \textbf{sequence} of inputs and output a sequence of outputs, one for each transition in the path.
 
-As before, we need to restrict the space of possible inputs to a path based on which states in the path actually read in user input.
+As before, we need to restrict the space of possible inputs to a path based on which locations in the path actually read in user input.
 \begin{defn}
-    For a path $\rho$ of length $n$, an input sequence $\texttt{in}\in \RR^n$ is valid if, for all $q_i$ in $\rho$ such that $q_i \notin Q_{in}$, $\texttt{in}_i = 0$.  
+    For a path $\rho$ of length $n$, an input sequence $\texttt{in}\in \RR^{n-1}$ is valid if, for all $q_i$ in $\rho$ such that $q_i \notin Q_{in}$, $\texttt{in}_i = 0$.  
 \end{defn} 
 
 We will assume that all input sequences are valid from now on. 
 
-Interestingly, the constraints on valid transition alphabets mean that outputs uniquely correspond to paths. 
-
-In other words, given a valid transition alphabet, knowing an output sequence uniquely determines which path must have produced the output. 
-
+Interestingly, the constraints on valid transition alphabets, specifically the constraints of determinism and output distinction, mean that outputs uniquely correspond to paths; in other words, given a valid transition alphabet, knowing an output sequence uniquely determines which path must have produced the output. 
 
 \begin{prop}
     Let $\Sigma_T$ be a valid transition alphabet and let $\Gamma$ be the finite output alphabet associated with $\Sigma_T$. Let $O\subset (\Gamma\cup\{\texttt{insample}, \texttt{insample}'\})^*$ be the set of all possible outputs of complete paths over $\Sigma_T$. There exists an injection $f: \Sigma_T\to t_{init}\Sigma_T^*$ from the set of all possible outputs to complete paths over $\Sigma_T$. 
 \end{prop}
-\begin{proof}
-    Follows immediately because $\Sigma_T$ satisfies determinism and output distinction.
-\end{proof}
 
 \textbf{Path Semantics}
 
 As with transitions, we can think of paths as very limited programs consisting of a series of transitions concatenated together with a persistent threshold variable $\texttt{x}$. Naturally, paths will now consider as input a \textbf{sequence} of real numbers, and similarly output a \textbf{sequence} of real numbers or symbols - each transition reads in an input and outputs some value.
 
-In particular, the semantics of a path $\rho = q_0\to \ldots \to q_n = t_0t_1\cdots t_{n-1}$ can be defined as the function $\tilde{\Phi}(\rho, \texttt{x}, \texttt{in}): S\times \RR^n\to S\times (\Sigma\cup\Gamma\cup\lambda)^n$ mapping a path, an initial threshold value, and a input sequence to a distribution of final states and output sequences. 
+In particular, the semantics of a path $\rho = q_0\to \ldots \to q_n = t_0t_1\cdots t_{n-1}$ can be defined as the function $\Phi_{\rho}((q, \texttt{x}), \texttt{in}): S\times \RR^n\to dist(S\times (\RR\cup\Gamma\cup\lambda)^n)$ mapping an initial program state and a input sequence to a distribution of final program states and output sequences. 
 
-$\tilde{\Phi}$ can be computed by composing the program semantics of individual transitions in the natural manner.
+$\Phi_{\rho}$ can be computed by composing the program semantics of individual transitions in the natural manner:
 
 As before, let $\texttt{in}\in \RR^n$ be a sequence of inputs and let $\sigma \in (\Sigma\cup\Gamma\cup\lambda)^n$ be a sequence of possible output events.
 Let $I\sim \Lap(\texttt{in}_0, \frac{1}{d_q\varepsilon})$ and $I'\sim \Lap(\texttt{in}_0, \frac{1}{d_q'\varepsilon})$ be independent random variables corresponding to $\texttt{insample}$ and $\texttt{insample}'$. 
 
+Let $t_0 = (q, q', c_0, \sigma_0, \tau_0)$
+
 Then \[
-    \tilde{\Phi}(\rho, \texttt{x}, \texttt{in})((q', \texttt{x}', \sigma)) = \begin{cases}
-        1 & (q', \texttt{x}', \sigma)=(q_0, \texttt{x}, \lambda)\land n = 0\\
-        \PP[c_0\text{ is not satisfied}] & (q', \texttt{x}', \sigma) = (q_{term}, \texttt{x}, \lambda)\land \tau = \texttt{false} \\
-        \PP[c_0\text{ is not satisfied}] & (q', I, \sigma) = (q_{term}, \texttt{x}, \lambda)\land \tau = \texttt{true}\\
+    \Phi_{\rho}((q, \texttt{x}), \texttt{in})((q', \texttt{x}', \sigma)) = \begin{cases}
+        1 & ((q', \texttt{x}'), \sigma)=((q_0, \texttt{x}), \lambda)\land n = 0\\
+        \PP[c_0\text{ is not satisfied}] & ((q', \texttt{x}'), \sigma) = ((q_{term}, \texttt{x}), \lambda)\land \tau_0 = \texttt{false} \\
+        \PP[c_0\text{ is not satisfied}] & ((q', I), \sigma) = ((q_{term}, \texttt{x}), \lambda)\land \tau_0 = \texttt{true}\\
+        \begin{gathered}
+            \PP[c_0\text{ is satisfied}]*\\
+            \Phi_{tail(\rho)}((q',\texttt{x}), tail(\texttt{in}))((q', \texttt{x}'), tail(\sigma))
+        \end{gathered} & \sigma_0 \in \Gamma\land \tau_0 = \texttt{false}\\[15pt]
+        \begin{gathered}
+            \PP[c_0\text{ is satisfied}]*\\
+            \Phi_{tail(\rho)}((q',I), tail(\texttt{in}))((q', \texttt{x}'), tail(\sigma))
+        \end{gathered} & \sigma_0 \in \Gamma\land\tau_0 = \texttt{true}\\[15pt]
         \begin{gathered}
             \PP[c_0\text{ is satisfied}\land I \text{ matches }\sigma_0]*\\
-            \tilde{\Phi}(tail(\rho),\texttt{x}, tail(\texttt{in}))(q', \texttt{x}', tail(\sigma))
-        \end{gathered} & \tau = \texttt{false}\\
+            \Phi_{tail(\rho)}((q',\texttt{x}), tail(\texttt{in}))((q', \texttt{x}'), tail(\sigma))
+        \end{gathered} & \sigma_0 = \texttt{insample}\land \tau_0 = \texttt{false}\\[15pt]
         \begin{gathered}
             \PP[c_0\text{ is satisfied}\land I \text{ matches }\sigma_0]*\\
-            \tilde{\Phi}(tail(\rho),I, tail(\texttt{in}))(q', \texttt{x}', tail(\sigma))
-        \end{gathered} & \tau = \texttt{true}\\
+            \Phi_{tail(\rho)}((q',I), tail(\texttt{in}))((q', \texttt{x}'), tail(\sigma))
+        \end{gathered} & \sigma_0 = \texttt{insample}\land\tau_0 = \texttt{true}\\[15pt]
+        \begin{gathered}
+            \PP[c_0\text{ is satisfied}\land I' \text{ matches }\sigma_0]*\\
+            \Phi_{tail(\rho)}((q',\texttt{x}), tail(\texttt{in}))((q', \texttt{x}'), tail(\sigma))
+        \end{gathered} & \sigma_0 = \texttt{insample}'\land \tau_0 = \texttt{false}\\[15pt]
+        \begin{gathered}
+            \PP[c_0\text{ is satisfied}\land I' \text{ matches }\sigma_0]*\\
+            \Phi_{tail(\rho)}((q',I), tail(\texttt{in}))((q', \texttt{x}'), tail(\sigma))
+        \end{gathered} & \sigma_0 = \texttt{insample}'\land\tau_0 = \texttt{true}\\[15pt]
         0 & otherwise
-    \end{cases}
+    \end{cases}.
 \]
 
-As before, we primarily care about the probability of a ``successful'' execution of a path with a particular output, which we will denote as $\PP[\texttt{x}_0, \rho, \texttt{in}, \sigma]$, where $\texttt{x} \in \RR$ is the initial value of $\texttt{x}$, $\rho$ is the path we are concerned about, $\texttt{in}\in \RR^n$ is a real-valued input sequence, and $o\in (\Gamma\cup\Sigma\cup\lambda)^n$ is a possible output sequence of $\rho$. 
+As before, we primarily care about the probability of a ``successful'' execution of a path with a particular output, which we will denote as $\PP[\texttt{x}_0, \rho, \texttt{in}, \sigma]$, where $\texttt{x} \in \RR$ is the initial value of $\texttt{x}$, $\rho$ is the path we are concerned about, $\texttt{in}\in \RR^n$ is a real-valued input sequence, and $o\in (\Gamma\cup\Sigma\cup\lambda)^n$ is a possible output sequence of $\rho$. As before $\PP[x_0, \rho, \texttt{in}, \sigma] = \Phi_\rho()$
 
 For a complete path $\rho$, note that the initial value of $\texttt{x}$ is irrelevant, so we will shorthand $\PP[\texttt{x}_0, \rho, \texttt{in}, \sigma]$ to $\PP[\rho, \texttt{in}, \sigma]$.
 
 
 \subsubsection{Privacy}
 
-Because we now read in a \textit{sequence} of real-valued inputs, we need to slightly modify our definition of adjacency.
+By leveraging the construction of couplings for individual transitions, we can construct a set of approximate liftings for entire paths 
+
+Because paths read in a \textit{sequence} of real-valued inputs, we need to slightly modify our definition of adjacency.
 
 \begin{defn}[Adjacency for a sequence of inputs]
     Two input sequences $\{\alpha_i\}_{i=1}^n, \{\beta_i\}_{i=1}^n$ of length $n$ are $\Delta$-adjacent (notated $\alpha \sim_{\Delta}\beta$) if, for all $i\in [1\ldots n]$, $|\alpha_i-\beta_i|\leq \Delta$. 
@@ -570,7 +589,7 @@ Because we now read in a \textit{sequence} of real-valued inputs, we need to sli
     As before, if $\Delta$ is not specified, we assume that $\Delta = 1$. 
 \end{defn}
 
-Thus, we get the following definition of privacy:
+Thus, we get the following definition of privacy for paths:
 
 \begin{defn}[$d\varepsilon$-differential privacy for a path]
     A complete path $\rho$ of length $n$ is $d\varepsilon$-differentially private for some $d>0$ if $\forall \varepsilon>0$, for all valid adjacent input sequences $\texttt{in}\brangle{1}\sim \texttt{in}\brangle{2}$ of length $n$ and all possible output sequences $\sigma$ of length $n$, $\PP[\rho, \texttt{in}\brangle{1}, \sigma]\leq e^{d\varepsilon}\PP[\rho, \texttt{in}\brangle{2}, \sigma]$.
@@ -582,18 +601,21 @@ It will also be convenient to define a notion of privacy for sets of paths:
     Then $S$ is $d\varepsilon$-differentially private for some $d>0$ if, for all paths $\rho\in S$ and outputs $\sigma\in O$, $\forall \varepsilon>0$, for all valid adjacent input sequences $\texttt{in}\brangle{1}\sim \texttt{in}\brangle{2}$, $\PP[\rho, \texttt{in}\brangle{1}, \sigma]\leq e^{d\varepsilon}\PP[\rho, \texttt{in}\brangle{2}, \sigma]$.
 \end{defn}
 
-However, because of the path-output correspondence, the following definition is equivalent:
+We observe that because of the path-output correspondence, the following definition of privacy is equivalent:
 \begin{defn}
     Let $S$ be a set of complete paths; $S$ is $d\varepsilon$-differentially private for some $d>0$ if, for all paths $\rho\in S$, $\rho$ is $d\varepsilon$-differentially private.
 \end{defn}
 
+Note that we slightly redefine $\varepsilon$-differential privacy as $d\varepsilon$-differential privacy, treating $\varepsilon$ as a universal scaling parameter that can be fine-tuned by users for their own purposes. 
+In particular, we argue that this definition is functionally equivalent\footnote{\cite{chadhaLinearTimeDecidability2021} note that it is not entirely clear how this differs from standard differential privacy, but that the known decidability result does not apply here}, since if we are targeting $\varepsilon^*$-differential privacy overall, we can always take $\varepsilon = \frac{\varepsilon^*}{d}$.
+
 \subsubsection{Concatenating couplings}
 
-Let $\rho[\texttt{in}]$ be a random variable representing the output of $\rho$ given input sequence $\texttt{in}$. 
+Just as individual transitions can be concatenated to form program paths, we can compose together couplings associated with each transition to produce a coupling proof of privacy for an entire path. 
 
-In order to show that a program path $\rho$ is differentially private, for all adjacent inputs $\alpha\sim\beta$ and all possible outputs $\sigma$, we want to create the coupling $\rho[\alpha]\{(a, b): a=\sigma\implies b=\sigma\}^{\#d\varepsilon}\rho[\beta]$ for some $d>0$. 
+If $\rho[\texttt{in}]$ is a random variable representing the output of $\rho$ given input sequence $\texttt{in}$, then in order to show that a program path $\rho$ is differentially private we want to create the coupling $\rho[\texttt{in}\brangle{1}]\{(a, b): a=\sigma\implies b=\sigma\}^{\#d\varepsilon}\rho[\texttt{in}\brangle{2}]$ for some $d>0$ for all adjacent inputs $\texttt{in}\brangle{1}\sim\texttt{in}\brangle{2}$ and all possible outputs $\sigma$.
 
-Ideally, we would like to simply create couplings for each individual transition in $\rho$ as before and compose them together to create this overall coupling. Indeed, this approach is almost sufficient; the constraints imposed upon shifts for a coupling for transition $t_i$ depend solely on the shift at the most recent \textbf{assignment transition} in $\rho$ (i.e. the most recent transition $t_j$ such that $\tau_j = \texttt{true}$). 
+As it turns out, naively composing together the couplings from lemma \ref{indTransitionCoupling} are essentially sufficient; the constraints imposed upon shifts for a coupling for transition $t_i$ depend solely on the shift at the most recent \textbf{assignment transition} in $\rho$ (i.e. the most recent transition $t_j$ such that $\tau_j = \texttt{true}$). 
 The coupling shifts for \textit{non-assignment transitions} can thus never impact each other. 
 
 \begin{defn}[Assignment transitions]
@@ -602,7 +624,7 @@ The coupling shifts for \textit{non-assignment transitions} can thus never impac
 
 In particular, note that for transition $t_i$, $\gamma_x = \gamma_{at(i)}$, where $\gamma_{-1}$ is the shift applied to the initial $\texttt{x}$-values $\texttt{x}_0\brangle{1}$ and $\texttt{x}_0\brangle{2}$ (for complete paths, note that $\gamma_{-1}$ is irrelevant).
 
-Thus, for an individual transition $t_i$ of $\rho$, from proposition \ref{indivTransitionCouplingProp}, we have a family of valid coupling strategies $C_i(\gamma_{at(i)}, \gamma_i, \gamma_i')$. 
+Thus, for an individual transition $t_i$ of $\rho$, we have a family of valid coupling strategies $C_i(\gamma_{at(i)}, \gamma_i, \gamma_i')$. 
 
 We can merge these coupling strategies together to create a proof of privacy for the entire path: 
 
@@ -648,11 +670,14 @@ We can merge these coupling strategies together to create a proof of privacy for
     In particular, note that we have created at most one pair of couplings (for $\texttt{insample}$ and $\texttt{insample}$) for each $q_i$. Thus, the total coupling cost associated with each $q_i$ is at most $(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i|)d_i+(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i'|)d_i'$, 
     which gives us an overall coupling cost of $d = \sum_{i=0}^{n-1}(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i|)d_i+(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i'|)d_i'$.
 \end{proof}
-\begin{defn}
-    For a complete path $\rho$ of length $n$ and adjacent input sequences $\texttt{in}\brangle{1}\sim \texttt{in}\brangle{2}$, a \textbf{coupling strategy} is two functions $\bm{\gamma}(\texttt{in}\brangle{1}, \texttt{in}\brangle{2}):\RR^n\times \RR^n\to [-1, 1]^n$ and $\bm{\gamma}'(\texttt{in}\brangle{1}, \texttt{in}\brangle{2}):\RR^n\times \RR^n\to [-1, 1]^n$ that produce shifts for each transition of $\rho$ dependent on the input sequences. 
 
+As with individual transitions, lemma \ref{multTransitionsCouplingProof} implicitly defines an entire family of possible coupling proofs that demonstrate the privacy of a path; we call instantiations of these coupling proofs \textbf{coupling strategies}. 
+
+\begin{defn}
+    For a complete path $\rho$ of length $n$, \textbf{coupling strategy} is a tuple of two functions $\bm{\gamma}(\texttt{in}\brangle{1}, \texttt{in}\brangle{2}):\RR^n\times \RR^n\to [-1, 1]^n$ and $\bm{\gamma}'(\texttt{in}\brangle{1}, \texttt{in}\brangle{2}):\RR^n\times \RR^n\to [-1, 1]^n$ that produce shifts for each transition of $\rho$ for every possible pair of adjacent input sequences $\texttt{in}\brangle{1}\sim\texttt{in}\brangle{2}$. 
     If $\texttt{in}\brangle{1}$ and $\texttt{in}\brangle{2}$ are clear from context, we will often shorthand notating a coupling strategy as $\bm{\gamma}$ and $\bm{\gamma}'$. 
 \end{defn}
+
 
 \begin{defn}
     For a complete path $\rho$ of length $n$, a coupling strategy $C_\rho = (\bm{\gamma}, \bm{\gamma}')$ is \textbf{valid} if $\forall \texttt{in}\brangle{1}\sim\texttt{in}\brangle{2}$, $\bm{\gamma}(\texttt{in}\brangle{1}, \texttt{in}\brangle{2})$ and $\bm{\gamma}'(\texttt{in}\brangle{1}, \texttt{in}\brangle{2})$ satisfy the constraints \[
@@ -665,7 +690,7 @@ We can merge these coupling strategies together to create a proof of privacy for
       \]
 \end{defn}
 
-\subsubsection{Optimizing Privacy}
+Thus, if we have a \textbf{valid} coupling strategy $C$ for a path $\rho$, then immediately by lemma \ref{multTransitionsCouplingProof}, we have a proof that $\rho$ is $d\varepsilon$-differentially private. 
 
 \begin{defn}
     For a complete path $\rho$ of length $n$, the \textbf{cost} of a coupling strategy $C_\rho=(\bm{\gamma}, \bm{\gamma}')$ is \[cost(C_\rho) = \max_{\texttt{in}\brangle{1}\sim\texttt{in}\brangle{2}}\sum_{i=0}^{n-1}(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i|)d_i+(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i'|)d_i'.\]
@@ -674,7 +699,7 @@ We can merge these coupling strategies together to create a proof of privacy for
     \[cost(\rho) = \min_{(\bm{\gamma}, \bm{\gamma}')\in G}cost((\bm{\gamma}, \bm{\gamma}')).\]
 \end{defn}
 
-As before, the existence of a valid coupling strategy upper bounds the privacy cost of any path. 
+Naturally, the existence of a valid coupling strategy bounds the privacy cost of any path. 
 
 \begin{prop}
     If $C_\rho=(\bm{\gamma}, \bm{\gamma}')$ is valid, then $\rho$ is $cost(C_\rho)\varepsilon$-differentially private.
@@ -684,18 +709,6 @@ As before, the existence of a valid coupling strategy upper bounds the privacy c
     Follows immediately from lemma \ref{multTransitionsCouplingProof}.
 \end{proof}
 
-\begin{cor}{\color{red} Cut?}
-    Any complete path $\rho$ is $cost(\rho)\varepsilon$-differentially private. Further, for all complete paths $\rho$, $cost(\rho)<\infty$. 
-\end{cor}
-
-\begin{proof}
-    The first claim follows immediately from definitions. 
-    
-    The second claim follows by considering a coupling strategy $(\bm{\gamma}, \bm{\gamma}')$ where $\forall \texttt{in}\brangle{1}\sim\texttt{in}\brangle{2}, \bm{\gamma} = \bm{\gamma}' = \bm{0}$. Note that $(\bm{\gamma}, \bm{\gamma}')$ is trivially valid. Since $\texttt{in}\brangle{1}\sim\texttt{in}\brangle{2}$, $cost(\rho)\leq cost(C_\rho(\bm{0}))\leq \sum_{i=0}^{n-1}(d_i+d_i')$, which is finite for all fixed $\rho$. 
-\end{proof}
-
-
- 
 
 \subsection{Branching} 
 {\color{red} considering cutting this section - the major function it serves is to emphasize that, excepting loops, paths should all have their own coupling strategies, which could just be explained in the program section}
@@ -707,9 +720,12 @@ As before, the existence of a valid coupling strategy upper bounds the privacy c
 
 Equivalently, a branching program is a language over $\Sigma_T$ that can be represented by a regular expression only using concatenation and finite union; every word in the language must also be of the form $t_{init}\Sigma_T^*$ and satisfy the path condition. 
 
+Branching programs exemplify our conception of programs as simply collections of possible program executions; indeed, we will demonstrate that for the purposes of privacy, we can do no better than treating them as collections of paths.
+
 \subsubsection{Privacy}
 
-We can do no better than assigning coupling strategies for each path independently. 
+We first extend the definition of coupling strategies to sets of paths in the natural manner.
+
 \begin{defn}[Coupling strategies]
     A (branched program) coupling strategy $C$ for a branching program $B$ is a collection of (path) coupling strategies where each complete path $\rho\in B$ is assigned a coupling strategy $C_\rho$. 
 \end{defn}
@@ -722,14 +738,16 @@ We can do no better than assigning coupling strategies for each path independent
     The cost of a coupling strategy $C$ for a branched program $B$ is $\max_{\rho\in B}cost(\rho)$.
 \end{defn}
 
+Notably, for a general branching program, there is no ``smart'' way to combine coupling strategies together; that is, in order to obtain the optimal coupling cost, we must find different coupling strategies for each path in a branching program. We provide a simple counterexample.
+
 \begin{prop}\label{costDependspathProp}
-    Optimal cost is dependent on path. There exists a valid transition alphabet $\Sigma_T$, a state space $Q$, and a branching program $B$ for which the optimal cost of a coupling strategy $C$ for $B$ is dependent on the path $\rho$. 
+    Optimal cost is dependent on path. There exists a valid transition alphabet $\Sigma_T$, a location space $Q$, and a branching program $B$ for which the optimal cost of a coupling strategy $C$ for $B$ is dependent on the path $\rho$. 
     
     In other words, the optimal strategy $C$ must assign different coupling strategies to occurances of the same transition in different paths. 
 \end{prop}
 
 \begin{proof}
-    Let $Q = \{q_0, q_1, q_2, q_3\}$ consist only of input states, each of which have both noise parameters equal to $1$. Let $\Sigma_T = \{t_{init}, t_{geq1}, t_{leq1}, t_{leq2}, t_{geq2}\}$ where 
+    Let $Q = \{q_0, q_1, q_2, q_3\}$ consist only of input locations, each of which have both noise parameters equal to $1$. Let $\Sigma_T = \{t_{init}, t_{geq1}, t_{leq1}, t_{leq2}, t_{geq2}\}$ where 
     \begin{align*}
         t_{init} &= (q_0, q_1, \texttt{true}, \bot, 1)\\
         t_{geq1} &= (q_1, q_2, \gguard[\texttt{x}], \top, 0)\\
@@ -794,6 +812,10 @@ We can do no better than assigning coupling strategies for each path independent
     The above observations show that the optimal coupling strategy for $B$ must necessarily assign different coupling strategies to $t_{init}$ in $\rho_1$ and $\rho_2$.
 \end{proof}
 
+Indeed, there exist a family of counterexamples such that the relative ``cost'' of choosing a unified coupling strategy for a branching program increases quadratically in the size of the branching program. \sky{Is this technically correct @ Vishnu?}
+
+
+
 \begin{prop}
     There exist a family of branching programs $\{B_n\}_{n\in \NN}$ for which the cost of any path-independent coupling strategy $C$ for $B_n$ is greater than $n^2$, but for which there exists a path-dependent coupling strategy $C'$ for $B_n$ with cost $\leq n$.
 \end{prop}
@@ -805,17 +827,23 @@ We can do no better than assigning coupling strategies for each path independent
 
 \subsection{Loops}
 
+We now introduce loops into our program model. 
+
 \begin{defn}
     A looping branch $L$ is a (possibly infinite) set of complete paths such that $L$ is the language described by a single union-free regular expression over a valid transition alphabet $\Sigma_T$.
 \end{defn}
 
 For a looping branch $L$, we will use $R_L$ to denote the minimal union-free regular expression that defines $L$. 
 
-{\color{red} change to be still $\texttt{in}$}
+Intuitively, a looping branch is a single, straight-line path except that we allow for cycles to be inserted within the path. Naturally, looping branches are closely related to star-dot/union-free regular languages and their associated 1-cycle-free-path-automata [citation here].
+
+Uniquely, we will associate entire looping branches with a \textbf{single} coupling strategy.
+
 \begin{defn}[Coupling strategy for a looping branch]
-    Let $r$ be the union-free regular expression describing paths in a looping branch $L$. Let $T_r$ be the set of all transitions that appear in $r$. Then a coupling strategy $C = (\gamma, \gamma')$ for a looping branch is a function $C:T_r\times[-1, 1] \to [-1, 1]\times[-1, 1]$ that computes shifts for each transition in $L$ as a function of the difference between two adjacent inputs. 
+    Let $r$ be the union-free regular expression describing paths in a looping branch $L$. Let $T_r$ be the set of all transitions that appear in $r$. Then a coupling strategy $C = (\gamma, \gamma')$ for a looping branch is a function $C:T_r\times\RR \times\RR\to [-1, 1]\times[-1, 1]$ that computes shifts for each transition in $L$ as a function of two adjacent inputs. 
 \end{defn}
 
+Observe that this single coupling strategy implicitly defines a coupling strategy for each path in $L$.
 
 \begin{defn}[Induced Coupling Strategy]
     {\color{red}not sure how necessary this is}
@@ -826,12 +854,11 @@ For a looping branch $L$, we will use $R_L$ to denote the minimal union-free reg
     \end{align*}
 \end{defn}
 
-One natural question that arises is whether it could be more efficient with regards to cost to 
+Perhaps surprisingly, we show that it is in fact optimal to only consider a single coupling strategy for an entire looping branch; not only is finding individual coupling strategies for every path in a looping branch intractable, but it also does not lead to a better overall privacy cost. 
 
 \begin{prop}\label{ClassCouplingStrategiesAreEnoughProp}
     If there exists a valid coupling strategy $C_\rho$ with cost $cost(C_\rho)$ for every path $\rho$ of an path class $[\rho]$ in a program $A$ and $\sup_{\rho\in [\rho]}cost(C_\rho)< \infty$, then there exists a class coupling strategy $C'$ for $[\rho]$ of $A$ that is valid such that $cost(C') \leq \sup_{\rho\in [\rho]}cost(C_\rho)$. 
 \end{prop}
-
 
 Note that, because of the introduction of stars (or, equivalently, cycles) to our model, it is possible for a looping branch to fail to be private for \textit{any} $d>0$; i.e. every coupling strategy for a looping branch has infinite cost. We can characterize whether or not a coupling strategy has infinite cost through another constraint:
 
@@ -842,8 +869,7 @@ Note that, because of the introduction of stars (or, equivalently, cycles) to ou
     \end{itemize}
 \end{lemma}
 
-
-In other words, a finite-cost coupling strategy must assign shifts such that every cycle transition has 0 privacy cost. 
+Intuitively, a finite-cost coupling strategy must assign shifts such that every cycle transition has 0 privacy cost. 
 
 \begin{proof}
 
@@ -880,9 +906,9 @@ In other words, a finite-cost coupling strategy must assign shifts such that eve
     so for all $M\in \RR$, $\exists \rho_k$ such that $cost(\rho_k) > M$.
 \end{proof}
 
-In particular, we can combine this constraint that gives us \textit{finite cost} class coupling strategies with the four constraints that ensure that coupling strategies are valid. 
+In particular, we can combine this constraint that gives us \textit{finite cost} class coupling strategies with the four constraints that ensure that coupling strategies are valid. This helps us solve the \textit{decision} problem of privacy: does there \textbf{exist} any finite $d>0$ such that a looping branch is $d\varepsilon$-differentially private?
 
-\begin{defn}[Privacy Constraint System]
+\begin{defn}[Privacy Constraint System]\label{privacyConstraintSystem}
     Let $L$ be a looping branch over a valid transition alphabet $\Sigma_T$. If, for a candidate coupling strategy $C_L = (\gamma, \gamma')$ for $L$, the following constraints are satisfied for all $i$: \begin{enumerate}
         \item If $c_i = \lguard[\texttt{x}]$, then $\gamma_i\leq\gamma_{at(i)}$
         \item If $c_i = \gguard[\texttt{x}]$, then $\gamma_i\geq\gamma_{at(i)}$
@@ -894,19 +920,23 @@ In particular, we can combine this constraint that gives us \textit{finite cost}
     then we say that $C$ satisfies the privacy constraint system for $L$. 
 \end{defn}
 
-This provides a useful tool for the decision problem of privacy, which we will discuss in more depth later. 
+Naturally, if there exists a solution to the privacy constraint system for a looping branch $L$, then $L$ is private in the sense of the decision problem. 
 
 \begin{prop}\label{privacyFiniteCostProp}
     If there exists a coupling strategy $C$ for a looping branch $L$ that satisfies the privacy constraint system, then there exists a finite $d>0$ such that $L$ is $d\varepsilon$-differentially private. 
 \end{prop}
 
+Perhaps surprisingly, we will also show that the privacy constraint system is complete; that is, if there does not exist a solution to the privacy constraint system, we can prove that there also does not exist any finite $d>0$ such that $L$ is $d\varepsilon$-differentially private. 
+
 \subsection{Programs}
+
+We are now equipped to introduce our complete program model. 
 
 \begin{defn}
     A program $P$ is a finite union of looping branches over a valid finite alphabet of transitions. 
 \end{defn}
 
-Naturally, this means that $P$ is a language described by a regular expression in union normal form such that each individual term describes a looping branch. 
+Naturally, this equivalently means that $P$ is a language described by a regular expression in union normal form such that each individual term describes a looping branch. 
 
 \begin{lemma}
     If, for every looping branch $L$ in $P$, there exists a valid coupling strategy $C_L$, then $P$ is $(\max_{L\in P} cost(C_L))\varepsilon$-differentially private. 
@@ -917,7 +947,7 @@ Naturally, this means that $P$ is a language described by a regular expression i
 
 \subsection{Deciding Privacy}
 
-We are primarily(?) concerned with the boolean question of privacy; that is, deciding whether or not there exists \textit{any} finite $d>0$ such that a program is $d\varepsilon$-differentially private. 
+In this section, we discuss the boolean or decision problem of privacy; that is, deciding whether or not there exists \textit{any} finite $d>0$ such that a program is $d\varepsilon$-differentially private. 
 
 Clearly, we can algorithmically show that at least some subset of differentially private programs are private through the use of couplings and coupling strategies. 
 
@@ -928,7 +958,7 @@ Clearly, we can algorithmically show that at least some subset of differentially
     Follows immediately from proposition \ref{privacyFiniteCostProp}.
 \end{proof}
 
-Perhaps surprisingly though, we show that coupling proofs are \textbf{complete} for programs of this form; every differentially private program can be proved to be private using couplings. 
+As previously mentioned, we show that coupling proofs are \textbf{complete} for programs of this form; every differentially private program can be proved to be private using couplings. 
 
 \begin{lemma}\label{ProgramCounterexampleLemma}
     If, for some looping branch $L\subseteq P$ in a program $P$, there does not exist a coupling strategy $C_L$ that satisfies the privacy constraint system, then there does not exist any finite $d>0$ such that $P$ is $d\varepsilon$-differentially private.
@@ -936,27 +966,27 @@ Perhaps surprisingly though, we show that coupling proofs are \textbf{complete} 
 
 \subsection{DiPA}
 
-We now discuss a previously defined program model, DiPA, which turns out to be exactly equivalent to our own program model. 
+We now discuss a previously defined program model, DiPA, which turns out to be exactly equivalent to our own program model. Additionally, the equivalence between DiPA and programs allows us to construct our completeness proof. 
 
 \begin{defn}[\cite{chadhaLinearTimeDecidability2021}]
     A Differentially Private Automaton (DiPA) $A$ is an 8-tuple $(Q, \Sigma, C, \Gamma, q_{init}, X, P, \delta)$ where
     \begin{itemize}
-        \item $Q$ is a finite set of states partitioned into input states $Q_{in}$ and non-input states $Q_{non}$. 
+        \item $Q$ is a finite set of locations partitioned into input locations $Q_{in}$ and non-input locations $Q_{non}$. 
         \item $\Sigma = \RR$ is the input alphabet
         \item $C = \{\texttt{true}, \lguard, \gguard\}$ is a set of guard conditions
         \item $\Gamma$ is a finite output alphabet
-        \item $q_{init}\in Q$ is the initial state
+        \item $q_{init}\in Q$ is the initial location
         \item $X = \{\texttt{x}, \texttt{insample}, \texttt{insample}'\}$ is a set of variables
-        \item $P: Q\to \QQ\times \QQ^{\geq 0}\times \QQ\times  \QQ^{\geq 0}$ is a parameter function that assigns sampling parameters for the Laplace distribution for each state
+        \item $P: Q\to \QQ\times \QQ^{\geq 0}\times \QQ\times  \QQ^{\geq 0}$ is a parameter function that assigns sampling parameters for the Laplace distribution for each location
         \item $\delta:(Q\times C)\to (Q\times (\Gamma \cup \{\texttt{insample}, \texttt{insample}'\})\times \{\texttt{true}, \texttt{false}\})$ is a partial transition function. 
     \end{itemize}
     In addition, $\delta$ must satisfy some additional conditions:
     \begin{itemize}
-        \item \textbf{Determinism:} For any state $q\in Q$, if $\delta(q,\texttt{true})$ is defined, then $\delta(q,\lguard)$ and $\delta(q,\gguard)$ are not defined. 
+        \item \textbf{Determinism:} For any location $q\in Q$, if $\delta(q,\texttt{true})$ is defined, then $\delta(q,\lguard)$ and $\delta(q,\gguard)$ are not defined. 
 
-        \item \textbf{Output Distinction:} For any state $q\in Q$, if $\delta(q, \gguard) = (q_1, o_1, b_1)$ and $\delta(q, \lguard) = (q_2, o_2, b_2)$, then $o_1\neq o_2$ and at least one of $o_1\in \Gamma$ and $o_2\in \Gamma$ is true.
+        \item \textbf{Output Distinction:} For any location $q\in Q$, if $\delta(q, \gguard) = (q_1, o_1, b_1)$ and $\delta(q, \lguard) = (q_2, o_2, b_2)$, then $o_1\neq o_2$ and at least one of $o_1\in \Gamma$ and $o_2\in \Gamma$ is true.
 
-        \item \textbf{Initialization:} The initial state $q_0$ has only one outgoing transition of the form $\delta(q_0, \texttt{true}) = (q, o, \texttt{true})$.
+        \item \textbf{Initialization:} The initial location $q_0$ has only one outgoing transition of the form $\delta(q_0, \texttt{true}) = (q, o, \texttt{true})$.
 
         \item \textbf{Non-input transition:} From any $q\in Q_{non}$, if $\delta(q, c)$ is defined, then $c=\texttt{true}$.
     \end{itemize}
@@ -964,17 +994,19 @@ We now discuss a previously defined program model, DiPA, which turns out to be e
 
 A DiPA operates as follows: 
 \begin{itemize}
-    \item At each state, a real-valued input $\texttt{in}$ is read in and two variables $\texttt{insample}\sim \Lap(\texttt{in}, d\varepsilon)$ and $\texttt{insample}'\sim\Lap(\texttt{in}, d\varepsilon)$ are sampled.
-    \item $\texttt{insample}$ is compared to the stored variable $\texttt{x}$, and depending on the guards of the transitions out of the current state, changes the current state and outputs a value. This value can either be $\texttt{insample}, \texttt{insample}'$, or a symbol from $\Gamma$.
+    \item At each location, a real-valued input $\texttt{in}$ is read in and two variables $\texttt{insample}\sim \Lap(\texttt{in}, d\varepsilon)$ and $\texttt{insample}'\sim\Lap(\texttt{in}, d\varepsilon)$ are sampled.
+    \item $\texttt{insample}$ is compared to the stored variable $\texttt{x}$, and depending on the guards of the transitions out of the current location, changes the current location and outputs a value. This value can either be $\texttt{insample}, \texttt{insample}'$, or a symbol from $\Gamma$.
     \item Finally, the  value of $\texttt{x}$ is optionally updated with the value of $\texttt{insample}$.
 \end{itemize}
 
-\begin{defn}
-    Let $\rho$ be a path in a DiPA $A$, let $\texttt{in}$ be a valid input sequence and let $o$ be a possible output of $\rho$. In particular, if $o_i\in \{\texttt{insample}, \texttt{insample}'\}$, then we require that $o_i$ is an \textit{interval} $(a, b)\subseteq \RR$, rather than simply a measurable set as before. 
-    Then $\texttt{Pr}[x, \rho, \texttt{in}, o]$ is the probability of $\rho$ being taken with input sequence $\texttt{in}$ and outputting $o$. If the first state in $\rho$ is $q_{init}$, then $\texttt{Pr}[x, \rho, \texttt{in}, o]$ may be shortened to $\texttt{Pr}[\rho, \texttt{in}, o]$, since the initial value of $\texttt{x}$ is irrelevant.
+We first establish notation for discussing the probabilities of different paths in a DiPA, which allows us to define $d\varepsilon$-differential privacy. 
+
+\begin{defn} 
+    Let $\rho$ be a path in a DiPA $A$, let $\texttt{in}$ be a valid input sequence and let $o$ be a possible output of $\rho$. In particular, if $\sigma_i\in \{\texttt{insample}, \texttt{insample}'\}$, then we require that $o_i$ is an \textit{interval} $(a, b)\subseteq \RR$, rather than simply a measurable set as before. 
+    Then $\texttt{Pr}[x, \rho, \texttt{in}, o]$ is the probability of $\rho$ being taken with input sequence $\texttt{in}$ and outputting $o$. If the first location in $\rho$ is $q_{init}$, then $\texttt{Pr}[x, \rho, \texttt{in}, o]$ may be shortened to $\texttt{Pr}[\rho, \texttt{in}, o]$, since the initial value of $\texttt{x}$ is irrelevant.
 \end{defn}
 
-For a full numerical definition, we refer back to the original work. 
+For a full definition of DiPA semantics, we refer back to the original work. 
 
 \begin{defn}
     A DiPA $A$ is $d\varepsilon$-differentially private for some $d>0$ if for all paths $\rho$ in $A$, for all possible outputs $o$ of $\rho$ and valid adjacent input sequences $\texttt{in}\brangle{1}\sim \texttt{in}\brangle{2}$, \[
@@ -982,7 +1014,7 @@ For a full numerical definition, we refer back to the original work.
     \]
 \end{defn}
 
-We can draw a direct equivalence between programs and DiPAs.
+Notably, we show that we can draw a direct equivalence between programs and DiPAs.
 
 \begin{prop}
     Every path $\rho$ through a DiPA $A$ is represented by a complete path $\hat{\rho}$ comprised of transitions from a valid transition alphabet $\Sigma_T$; further, the set of all possible paths through $A$ is a regular language over $\Sigma_T$.
@@ -996,9 +1028,16 @@ We can draw a direct equivalence between programs and DiPAs.
     Let $\Sigma_T = \bigcup_{\rho\in A}\Sigma_\rho$. Note that $\Sigma_T$ must have finite size because $A$ is a finite automaton and must still be a valid transition alphabet.
 
     Let $D = (Q, \Sigma_T, \delta_D, q_0, F=Q)$ be an NFA defined over the set of program locations $Q$ such that $\delta_D$ is defined as follows:
-    Let $q\in Q$ be an arbitrary state. If $\delta(q, c) = (q', \sigma, \tau)$ is defined for some $c\in C$, let $\delta_D(q, (q, q', c, \sigma, \tau)) = q'$.
+    Let $q\in Q$ be an arbitrary location. If $\delta(q, c) = (q', \sigma, \tau)$ is defined for some $c\in C$, let $\delta_D(q, (q, q', c, \sigma, \tau)) = q'$.
 
-    Then clearly every path in $A$ is also a path in $D$ and vice versa; since every state in $D$ is an accepting state, $\mathcal{L}(D) = \{\hat{\rho}: \rho\in A\}$. Thus, the set of (representations of) all paths in $A$ must be a regular language. 
+    Then clearly every path in $A$ is also a path in $D$ and vice versa; since every location in $D$ is an accepting location, $\mathcal{L}(D) = \{\hat{\rho}: \rho\in A\}$. Thus, the set of (representations of) all paths in $A$ must be a regular language. 
+\end{proof}
+
+\begin{prop}
+    For every program $P$ over a valid transition alphabet $\Sigma_T$, there exists a corresponding DiPA $A$ such that there exists a path $\rho$ in $A$ if and only if its representation is in $P$. 
+\end{prop}
+\begin{proof}
+    The DiPA can be directly constructed from $P$.
 \end{proof}
 
 As expected, the probability of a path ``succeeding'' in a program is the same as the probability of a path being traversed in a DiPA. 
@@ -1010,12 +1049,6 @@ As expected, the probability of a path ``succeeding'' in a program is the same a
     Follows immediately from definitions. 
 \end{proof}
 
-\begin{prop}
-    For every program $P$ over a valid transition alphabet $\Sigma_T$, there exists a corresponding DiPA $A$ such that there exists a path $\rho$ in $A$ if and only if its representation is in $P$. 
-\end{prop}
-\begin{proof}
-    The DiPA can be directly constructed from $P$.
-\end{proof}
 
 Interestingly, the privacy of any DiPA $A$ is completely characterized by four graph-theoretic structures (we omit the precise definitions here). 
 
@@ -1023,10 +1056,17 @@ Interestingly, the privacy of any DiPA $A$ is completely characterized by four g
     A DiPA $A$ does not have a leaking cycle, leaking pair, disclosing cycle, or privacy violating path if and only if there exists some $d>0$ such that for all $\varepsilon>0$, $A$ is $d\varepsilon$-differentially private. 
 \end{thm}
 
+This provides one method of demonstrating that a program is not $d\varepsilon$-differentially private for any $d>0$.
+
 \begin{cor}
     If the corresponding DiPA $A$ to a program $P$ contains a leaking cycle, leaking pair, disclosing cycle, or privacy violating path, then does not exist a finite $d>0$ such that $P$ is $d\varepsilon$-differentially private. 
 \end{cor}
 
+Our key result relates the privacy constraint system (see definition \ref{privacyConstraintSystem}) and these graph-theoretic structures.
+
+\begin{lemma}
+    If, for a looping branch $L$, there does not exist a coupling strategy $C$ that satisfies the privacy constraint system for $L$, then the corresponding DiPA to $L$ must contain either a leaking cycle, a leaking pair, a disclosing cycle, or a privacy violating path. 
+\end{lemma}
 
 \subsection{An algorithm for deciding privacy}
 
@@ -1120,7 +1160,7 @@ If we have a differentially private program, we'd also like to optimize its priv
 \begin{proof}
     Assume that $L$ is differentially private. Then there exists a valid coupling strategy for $L$ with finite cost, showing that the constraints above are feasible, and a finite solution to the optimization problem exists.  
 
-    We will specify a valid coupling strategy $C^* = (\gamma^*, {\gamma'}^*)$ for $L$ with the cost stated above, and then show it is optimal. Define $\Gamma: [-1, 1]^n \to [-1, 1]^n \times [-1, 1]^n$ as follows, where $\Gamma(\Delta)$ is a pair $(\gamma, \gamma')$: 
+    We will specify a valid coupling strategy $C^* = (\gamma^*, {\gamma'}^*)$ for $L$ with the cost locationd above, and then show it is optimal. Define $\Gamma: [-1, 1]^n \to [-1, 1]^n \times [-1, 1]^n$ as follows, where $\Gamma(\Delta)$ is a pair $(\gamma, \gamma')$: 
     \begin{align*}
         \Gamma(\Delta) = &\argmin_{\gamma, \gamma' \in [-1, 1]^n} \sum_{i = 1}^n \left(|\Delta_i - \gamma_i| d_i + |\Delta_i - \gamma_i'|d_i' \right)\\ 
         \text{subject to }
@@ -1314,7 +1354,7 @@ However, there are other, non-trivial, extensions that warrant further study. In
 \subsubsection{Multivariable Transitions}
 
 \begin{defn}[Two-variable guards]
-    Let $\texttt{x}, \texttt{y}$ be real-valued program variables. Then a transition \textbf{guard} is a boolean statement $c = c(x)\oplus c(y)$ where \begin{itemize}
+    Let $\texttt{x}, \texttt{y}$ be real-valued program variables. Then a transition \textbf{guard} is a boolean locationment $c = c(x)\oplus c(y)$ where \begin{itemize}
         \item $c(x)\in \{\texttt{true}, \lguard[\texttt{x}], \gguard[\texttt{x}]\}$
         \item $c(y)\in \{\texttt{true}, \lguard[\texttt{y}], \gguard[\texttt{y}]\}$
         \item $\oplus \in \{\land, \lor\}$
@@ -1326,8 +1366,8 @@ However, there are other, non-trivial, extensions that warrant further study. In
 
 \begin{defn}[2v-transitions]
     A two-variable transition (2v-transition) is a tuple $(q, q', c, \sigma, \tau)$ where \begin{itemize}
-        \item $q\in Q$ is the initial state
-        \item $q'\in Q$ is the destination state
+        \item $q\in Q$ is the initial location
+        \item $q'\in Q$ is the destination location
         \item $c\in\mathcal{C}^{(2)}$ is a transition guard.
         \item $\sigma\in\Gamma\cup\{\texttt{insample}^{(x)}, \texttt{insample}^{(x)\prime}, \texttt{insample}^{(y)}, \texttt{insample}^{(y)\prime}\}$ is the output of the transition
         \item $\tau \in \{0, 1, 2\}$ indicates whether to assign into no variable, $\texttt{x}$, or $\texttt{y}$. In particular, note that only a single variable can be assigned into at a time. 
@@ -1339,14 +1379,14 @@ However, there are other, non-trivial, extensions that warrant further study. In
 Two variable transitions semantically operate extremely similarly to single variable transitions: given some threshold values $\texttt{x}$ and $\texttt{y}$, each transition $t = (q, q', c, \sigma, \tau)$ will first read in a real number input $\texttt{in}$, 
 sample two random variables $z^{(x)}\sim\Lap(0, \frac{1}{d\varepsilon})$ and $z^{(x)\prime}\sim\Lap(0, \frac{1}{d'\varepsilon})$ for comparing the input to $\texttt{x}$ and two more random variables $z^{(y)}\sim\Lap(0, \frac{1}{d\varepsilon})$ and $z^{(y)\prime}\sim\Lap(0, \frac{1}{d'\varepsilon})$ for comparing the input to $\texttt{y}$.
 Using these noise variables, the transition then assigns four variables $\texttt{insample}^{(x)} = \texttt{in} + z^{(x)}$, $\texttt{insample}^{(x\prime)} = \texttt{in} + z^{(x)\prime}$, $\texttt{insample}^{(y)} = \texttt{in} + z^{(y)}$, and $\texttt{insample}^{(x)\prime} = \texttt{in} + z^{(y)\prime}$. 
-If the guard $c$ is satisfied when comparing $\texttt{insample}^{(x)}$ to $\texttt{x}$ and $\texttt{insample}^{(y)}$ to $\texttt{y}$, then we transition to state $q'$, outputting $\sigma$ and, depending on $\tau$, optionally reassigning $\texttt{x} = \texttt{insample}^{(x)}$ or $\texttt{x} = \texttt{insample}^{(y)}$.
+If the guard $c$ is satisfied when comparing $\texttt{insample}^{(x)}$ to $\texttt{x}$ and $\texttt{insample}^{(y)}$ to $\texttt{y}$, then we transition to location $q'$, outputting $\sigma$ and, depending on $\tau$, optionally reassigning $\texttt{x} = \texttt{insample}^{(x)}$ or $\texttt{x} = \texttt{insample}^{(y)}$.
 
 In particular, note that the noisy input that the threshold variables are compared to is independent for $\texttt{x}$ and $\texttt{y}$.
 
-More formally, a program state is a tuple consisting of a program location and values for $\texttt{x}$ and $\texttt{y}$ Let $S = Q\times\RR\times \RR$ be the set of all possible program states. As expected, every possible input is simply an element of $\RR$. 
+More formally, a program location is a tuple consisting of a program location and values for $\texttt{x}$ and $\texttt{y}$ Let $S = Q\times\RR\times \RR$ be the set of all possible program locations. As expected, every possible input is simply an element of $\RR$. 
 As before, the set of all possible output events is $\Gamma \cup \Sigma$, where $\Sigma$ is the standard $\sigma$-algebra of all Lebesgue measurable sets. 
 
-Then the semantics of a 2v-transition $t$ can be defined as a function $\Phi((q, \texttt{x}), \texttt{in}): S\to dist(S\times (\Gamma\cup\Sigma\cup \lambda))$ that maps an initial program state and an input to a distribution of subsequent program states and an output event following the expected semantics; $\lambda$ here denotes the empty string (i.e. no output). 
+Then the semantics of a 2v-transition $t$ can be defined as a function $\Phi((q, \texttt{x}), \texttt{in}): S\to dist(S\times (\Gamma\cup\Sigma\cup \lambda))$ that maps an initial program location and an input to a distribution of subsequent program locations and an output event following the expected semantics; $\lambda$ here denotes the empty string (i.e. no output). 
 
 The precise semantics are defined exactly analogously to the single variable case. 
 
@@ -1358,7 +1398,7 @@ We again denote the probability that a transition ``succeeds'' as $\PP[\texttt{x
         \item \textbf{Initialization:} There exist some $t_{init}^{(x)}, t_{init}^{(y)}\in \Sigma_T$ such that $t_{init}^{(x)} = (q_0, q_1, \texttt{true}, \sigma_0, 1)$ and $t_{init}^{(y)} = (q_1, q_2, \texttt{true}, \sigma_1, 2)$ for some $q_0, q_1, q_2\in Q$, $\sigma_0, \sigma_1 \in \Gamma\cup\{\texttt{insample}, \texttt{insample}'\}$. 
         \item \textbf{Determinism}: If $\Sigma_T$ contains transition $t, t'$ such that $t=(q, q', c, \sigma, \tau)$ and $t'= (q, q^*, c', \sigma', \tau')$, then $c$ and $c'$ must be disjoint events. 
         \item \textbf{Output distinction}: If there exist some $\sigma, \sigma', \tau, \tau'$ such that $(q, q', c, \sigma, \tau)\in \Sigma_T$  and $(q, q^*, c', \sigma', \tau') \in \Sigma_T$ for distinct guards $c, c'$, then $\sigma \neq \sigma'$. Additionally, at least one of $\sigma\in \Gamma$, $\sigma'\in \Gamma$ is true.
-        \item \textbf{Non-input state condition}: For all states $q\in Q_{non}$, if there exists a transition $t=(q, q', c, \sigma, \tau)$ such that $t\in \Sigma_T$, then $c = \texttt{true}$.
+        \item \textbf{Non-input location condition}: For all locations $q\in Q_{non}$, if there exists a transition $t=(q, q', c, \sigma, \tau)$ such that $t\in \Sigma_T$, then $c = \texttt{true}$.
         \item \textbf{Assignment spread parameter condition}: There exists some constant $d_{at}>0$ such that for all transitions $t = (q, q', c, \sigma, \tau)\in \Sigma_T$ where $\tau \in \{1, 2\}$, $P(q) = (d_{at}, d_q')$.
     \end{itemize}
 \end{defn}
@@ -1431,7 +1471,7 @@ We introduce a new coupling possibility - between different variable assignments
         \end{cases},
       \]
 
-    The following four statements hold:\begin{enumerate}
+    The following four locationments hold:\begin{enumerate}
         \item If $c = \lguard[\texttt{x}] \land \gguard[\texttt{y}]$, then $\forall \varepsilon>0$, the lifting $o\brangle{1}\{(a, b): a=\sigma\implies b=\sigma\}^{\#d\varepsilon}o\brangle{2}$ is valid for $d = |\min(\mu_y\brangle{1}-\mu_x\brangle{1}, 0)|+(|\mu\brangle{1}-\mu\brangle{2}+\gamma_x|)d_x+(|-\texttt{in}\brangle{1}+\texttt{in}\brangle{2}-\gamma_q|)d_q+(|-\texttt{in}\brangle{1}+\texttt{in}\brangle{2}-\gamma_q'|)d_q'$. 
         \item If $c = \gguard[\texttt{x}] \land \lguard[\texttt{y}]$, then $\forall \varepsilon>0$, the lifting $o\brangle{1}\{(a, b): a=\sigma\implies b=\sigma\}^{\#d\varepsilon}o\brangle{2}$ is valid for $d = |\min(\mu_x\brangle{1}-\mu_y\brangle{1}, 0)|+(|\mu\brangle{1}-\mu\brangle{2}+\gamma_x|)d_x+(|-\texttt{in}\brangle{1}+\texttt{in}\brangle{2}-\gamma_q|)d_q+(|-\texttt{in}\brangle{1}+\texttt{in}\brangle{2}-\gamma_q'|)d_q'$. 
         \item If $c = \lguard[\texttt{x}] \lor \gguard[\texttt{y}]$, then $\forall \varepsilon>0$, the lifting $o\brangle{1}\{(a, b): a=\sigma\implies b=\sigma\}^{\#d\varepsilon}o\brangle{2}$ is valid for $d = |\max(0, \mu_y\brangle{1}+ \gamma_T^{(y)}-\mu_x\brangle{1}-\gamma_T^{(x)})|+(|\mu\brangle{1}-\mu\brangle{2}+\gamma_x|)d_x+(|-\texttt{in}\brangle{1}+\texttt{in}\brangle{2}-\gamma_q|)d_q+(|-\texttt{in}\brangle{1}+\texttt{in}\brangle{2}-\gamma_q'|)d_q'$. 
@@ -1524,7 +1564,7 @@ We introduce a new coupling possibility - between different variable assignments
 In essence, this allows us to construct liftings for certain transitions ``for free'' in a manner compatible with existing liftings. In particular, this construction applies to transitions whose guards intuitively correspond to checking if an input is within either the empty set or the entire real line. 
 
 \begin{defn}
-    Let $\Sigma_T$ be a valid 2v-transition alphabet. A 2v-path over $\Sigma_T$ is a sequence of transitions $\rho=t_0\cdot t_1\cdot \ldots \cdot t_{n-1}$ such that for all $i$ there exists a state $q_i\in Q$ such that $t_i = (q_i, q_{i+1}, c_i, \sigma_i, \tau_i)$. A 2v-path is \textbf{complete} if it is in the form $t_{init}^{(x)}t_{init}^{(y)}\cdot \rho$ for some $\rho\in \Sigma_T^*$.
+    Let $\Sigma_T$ be a valid 2v-transition alphabet. A 2v-path over $\Sigma_T$ is a sequence of transitions $\rho=t_0\cdot t_1\cdot \ldots \cdot t_{n-1}$ such that for all $i$ there exists a location $q_i\in Q$ such that $t_i = (q_i, q_{i+1}, c_i, \sigma_i, \tau_i)$. A 2v-path is \textbf{complete} if it is in the form $t_{init}^{(x)}t_{init}^{(y)}\cdot \rho$ for some $\rho\in \Sigma_T^*$.
 \end{defn}
 
 The semantics of a 2v-path are again defined exactly analogously to the single variable case; we denote the probability of a path $\rho$``succeeding'' as $\PP[\texttt{x}, \texttt{y}, \rho, \texttt{in}, \sigma]$ for initial values $\texttt{x}, \texttt{y}\in \RR$, input sequence $\texttt{in}$ and output sequence $\sigma$. 
@@ -1664,22 +1704,22 @@ This leads to a natural definition of two variable coupling strategies for paths
 \begin{defn}
     A GDiPA $A$ is an 8-tuple $(Q, \Sigma, \mathcal{C}, \Gamma, q_{init}, X, P, \delta)$ where
     \begin{itemize}
-        \item $Q$ is a finite set of states partitioned into input states $Q_{in}$ and non-input states $Q_{non}$. 
+        \item $Q$ is a finite set of locations partitioned into input locations $Q_{in}$ and non-input locations $Q_{non}$. 
         \item $\Sigma = \RR$ is the input alphabet
         \item $\mathcal{C} = \mathcal{C}^{(2)}$ is a set of guard conditions
         \item $\Gamma$ is a finite output alphabet
-        \item $q_{init}\in Q$ is the initial state
+        \item $q_{init}\in Q$ is the initial location
         \item $X = \{\texttt{x}, \texttt{y}, \texttt{insample}^{(x)}, \texttt{insample}^{(x)}\prime, \texttt{insample}^{(y)}, \texttt{insample}^{(y)}\prime\}$ is a set of variables
-        \item $P: Q\to \QQ\times \QQ^{\geq 0}\times \QQ\times  \QQ^{\geq 0}$ is a parameter function that assigns sampling parameters for the Laplace distribution for each state
+        \item $P: Q\to \QQ\times \QQ^{\geq 0}\times \QQ\times  \QQ^{\geq 0}$ is a parameter function that assigns sampling parameters for the Laplace distribution for each location
         \item $\delta:(Q\times \mathcal{C})\to (Q\times (\Gamma \cup \{\texttt{insample}^{(x)}, \texttt{insample}^{(x)}\prime, \texttt{insample}^{(y)}, \texttt{insample}^{(y)}\prime\})\times \{0, 1, 2\})$ is a partial transition function. 
     \end{itemize}
     In addition, $\delta$ must satisfy some additional conditions:
     \begin{itemize}
-        \item \textbf{Determinism:} For any state $q\in Q$, if $\delta(q, c)$ and $\delta(q, c')$ are defined for distinct guards $c, c'$,  then $c$ and $c'$ must be logically disjoint events.
+        \item \textbf{Determinism:} For any location $q\in Q$, if $\delta(q, c)$ and $\delta(q, c')$ are defined for distinct guards $c, c'$,  then $c$ and $c'$ must be logically disjoint events.
 
-        \item \textbf{Output Distinction:} For any state $q\in Q$, if $\delta(q, c) = (q_1, o_1, b_1)$ and $\delta(q, c') = (q_2, o_2, b_2)$, for distinct guards $c, c'$, then $o_1\neq o_2$ and at least one of $o_1\in \Gamma$ and $o_2\in \Gamma$ is true.
+        \item \textbf{Output Distinction:} For any location $q\in Q$, if $\delta(q, c) = (q_1, o_1, b_1)$ and $\delta(q, c') = (q_2, o_2, b_2)$, for distinct guards $c, c'$, then $o_1\neq o_2$ and at least one of $o_1\in \Gamma$ and $o_2\in \Gamma$ is true.
 
-        \item \textbf{Initialization:} The initial state $q_0$ has only one outgoing transition of the form $\delta(q_0, \texttt{true}) = (q_1, o, 1)$ and $q_1$ has only one outgoing transition of the form $\delta(q_1, \texttt{true}) = (q, o', 2)$.
+        \item \textbf{Initialization:} The initial location $q_0$ has only one outgoing transition of the form $\delta(q_0, \texttt{true}) = (q_1, o, 1)$ and $q_1$ has only one outgoing transition of the form $\delta(q_1, \texttt{true}) = (q, o', 2)$.
 
         \item \textbf{Non-input transition:} From any $q\in Q_{non}$, if $\delta(q, c)$ is defined, then $c=\texttt{true}$.
     \end{itemize}
@@ -2101,7 +2141,7 @@ A full exploration of approximate liftings can be found in \cite{HsuThesis2017}.
 \end{proof}
 
 
-\begin{defn}[Leaking Cycles \cite{chadhaLinearTimeDecidability2021}]
+\begin{defn}[Leaking Cycles~\cite{chadhaLinearTimeDecidability2021}]
     A path $\rho = q_0\to\ldots \to q_n$ in a DiPA $A$ is a leaking path if there exist indices $i, j$ where $0\leq i < j < n$ such that the $i$'th transition $q_i\to q_{i+1}$ in $\rho$ is an assignment transition and the guard of the transition $q_j \to q_{j+1}$ is not $\texttt{true}$. If $\rho$ is also a cycle, then we call it a leaking cycle.
 \end{defn}
 
@@ -2114,8 +2154,8 @@ A full exploration of approximate liftings can be found in \cite{HsuThesis2017}.
 \begin{defn}[Leaking Pairs \cite{chadhaLinearTimeDecidability2021}]
     A pair of cycles $(C, C')$ is called a leaking pair if one of the following two conditions is satisfied.
     \begin{enumerate}
-        \item $C$ is an \lcycle, $C'$ is a \gcycle~ and there is an \texttt{AG}-path from a state in $C$ to a state in $C'$.
-        \item $C$ is a \gcycle, $C'$ is an \lcycle~and there is an \texttt{AL}-path from a state in $C$ to a state in $C'$.
+        \item $C$ is an \lcycle, $C'$ is a \gcycle~and there is an \texttt{AG}-path from a location in $C$ to a location in $C'$.
+        \item $C$ is a \gcycle, $C'$ is an \lcycle~and there is an \texttt{AL}-path from a location in $C$ to a location in $C'$.
     \end{enumerate}
 \end{defn}
 
