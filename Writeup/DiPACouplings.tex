@@ -135,9 +135,11 @@ The Laplace Mechanism, as expected, simply adds noise sampled from the Laplace d
     For a function $f$ with sensitivity $\Delta$, $A(X) = f(X) + \Lap(\frac{\Delta}{\varepsilon})$ is $\varepsilon$-differentially private. 
 \end{thm}
 
-We will consider the scenario where we are given a potentially infinite \textit{sequence} of real-valued query functions $q_0, q_1, \ldots$, each with sensitivity at most $\Delta$.
+We will eventually consider a program model where we are given a potentially infinite \textit{sequence} of real-valued query functions $q_0, q_1, \ldots$, each with sensitivity at most $\Delta$.
 
 \subsection{Deciding Privacy}
+
+\sky{this section isn't super relevant anymore - remove?}
 
 Because designing differentially private algorithms can be quite tricky, we would like to be able to automatically (i.e. algorithmically) verify whether or not a given program is private, especially for algorithms whose privacy proofs do not rely primarily on composition. 
 Ideally, beyond just determining whether a program is private or not, if a program is private, we'd like to find a good bound on the privacy cost for the program as well. 
@@ -158,7 +160,7 @@ Probabilistic couplings are a common tool in probability theory; intuitively, co
     A coupling between two distributions $A$ and $B$ is a joint distribution $C$ such that $\pi_1(C)=A$ and $\pi_2(C)=B$, where $\pi_1(C)$ and $\pi_2(C)$ are the first and second marginals of $C$, respectively. 
 \end{defn}
 
-In particular, couplings can be useful when analyzing the relation between two probablistic processes; couplings were first formulated by [check name] to analyze the behaviour of markov chains and have close connections to concepts such as total variation distance and stochastic domination. 
+In particular, couplings are useful when analyzing the relationship between two probablistic processes. [past literature on couplings]
 
 As useful as standard couplings are, however, we must use more powerful machinery to properly reason about privacy.
 
@@ -846,7 +848,7 @@ Uniquely, we will associate entire looping branches with a \textbf{single} coupl
 Observe that this single coupling strategy implicitly defines a coupling strategy for each path in $L$.
 
 \begin{defn}[Induced Coupling Strategy]
-    {\color{red}not sure how necessary this is}
+    \sky{not sure how necessary this is}
     Given a coupling strategy $C = (\gamma, \gamma')$ for a looping branch $L$ and a specific path $\rho\in L$, the coupling strategy for $\rho=q_0\to \ldots \to q_n$ induced by $C$ is the pair of functions $\gamma_\rho, \gamma'_\rho$ such that 
     \begin{align*}
         \gamma_\rho(\texttt{in}\brangle{1}, \texttt{in}\brangle{2}) &= (\gamma(q_0\to q_1)(\texttt{in}\brangle{1}, \texttt{in}\brangle{2}), \gamma(q_1\to q_2)(\texttt{in}\brangle{1}, \texttt{in}\brangle{2}), \ldots,\gamma(q_{n-1}\to q_n)(\texttt{in}\brangle{1}, \texttt{in}\brangle{2}) )\\
@@ -871,40 +873,6 @@ Note that, because of the introduction of stars (or, equivalently, cycles) to ou
 
 Intuitively, a finite-cost coupling strategy must assign shifts such that every cycle transition has 0 privacy cost. 
 
-\begin{proof}
-
-    ($\impliedby$)
-
-    Let $T$ be the set of transitions $t_i$ in $L$ such that $t_i$ is \textbf{not} found under a star in $R_L$. 
-
-    Fix a complete path $\rho\in L$ and let $C_\rho$ be the coupling strategy for $\rho$ induced by $C$. 
-
-    Let $D_\rho$ be the set of transitions $t_i\in \rho$ such that $t_i$ is under a star in $R_L$, i.e., $t_i\notin T$.  
-
-    If the given constraint holds, then we know that $\max_{\texttt{in}\brangle{1}\sim\texttt{in}\brangle{2}}\sum_{i: t_i\in D_\rho}(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i|)d_i+(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i'|)d_i' = 0$
-
-    So \begin{align*}
-        cost(C_\rho) = \max_{\texttt{in}\brangle{1}\sim\texttt{in}\brangle{2}}&\sum_{i: t_i\in D_\rho}(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i|)d_i+(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i'|)d_i'\\
-        &+\sum_{i: t_i\notin D_\rho}(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i|)d_i+(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i'|)d_i'\\
-        = \max_{\texttt{in}\brangle{1}\sim\texttt{in}\brangle{2}}&\sum_{i: t_i\in T}(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i|)d_i+(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i'|)d_i'\\
-        \leq \sum_{i:t_i\in T}(2d_i& + 2d_i')\\
-        \leq |T|\max_{i:t_i\in T}&(2d_i + 2d_i')
-    \end{align*}
-
-    Thus, $cost(C)\leq |T|\max_{i:t_i\in T}(2d_i + 2d_i') <\infty$.
-
-    ($\implies$)
-
-    Let $t_i$ be a transition in $L$ under a star in $R_L$ such that $\gamma_i\neq -\texttt{in}\brangle{1}_i+\texttt{in}\brangle{2}_i$ or $\gamma_i'\neq  -\texttt{in}\brangle{1}_i+\texttt{in}\brangle{2}_i$.     Thus, $\exists \texttt{in}\brangle{1}\sim \texttt{in}\brangle{2}$ such that $(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i|)d_i+(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i'|)d_i'>0$.
-    Fix such a $\texttt{in}\brangle{1}\sim \texttt{in}\brangle{2}$. 
-
-    Then there exists some complete path $\rho$ in $L$ of the form $a(bt_ic)^*d$ for some $a, b, c, d\in \Sigma_T^*$.
-    
-    Let $\rho_k=a(bt_ic)^kd$ be the corresponding complete path in $L$ with $(bt_ic)$ iterated $k$ times. This is equivalent to iterating the cycle containing $t_i$ $k$ times. Then for all $k\in \NN$, \begin{align*}
-        cost(\rho_k) \geq k((|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i|)d_i+(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i'|)d_i'),
-    \end{align*}
-    so for all $M\in \RR$, $\exists \rho_k$ such that $cost(\rho_k) > M$.
-\end{proof}
 
 In particular, we can combine this constraint that gives us \textit{finite cost} class coupling strategies with the four constraints that ensure that coupling strategies are valid. This helps us solve the \textit{decision} problem of privacy: does there \textbf{exist} any finite $d>0$ such that a looping branch is $d\varepsilon$-differentially private?
 
@@ -1351,7 +1319,11 @@ However, there are other, non-trivial, extensions that warrant further study. In
 
 \subsection{Two-Variable Programs: GDiPA}
 
+In this section, we introduce programs with two threshold variables.  
+
 \subsubsection{Multivariable Transitions}
+
+In this section, we introduce two-variable programs in a similar manner to single variable programs by constructing a transition alphabet for two-variable programs.
 
 \begin{defn}[Two-variable guards]
     Let $\texttt{x}, \texttt{y}$ be real-valued program variables. Then a transition \textbf{guard} is a boolean locationment $c = c(x)\oplus c(y)$ where \begin{itemize}
@@ -1364,6 +1336,8 @@ However, there are other, non-trivial, extensions that warrant further study. In
     Let $\mathcal{C}^{(2)}$ be the set of all possible guards with two variables \texttt{x} and \texttt{y}.
 \end{defn}
 
+We can now define two variable transitions, which differ from single variable transitions only in their guard and in the ability to choose which variable to optionally assign into. 
+
 \begin{defn}[2v-transitions]
     A two-variable transition (2v-transition) is a tuple $(q, q', c, \sigma, \tau)$ where \begin{itemize}
         \item $q\in Q$ is the initial location
@@ -1374,19 +1348,20 @@ However, there are other, non-trivial, extensions that warrant further study. In
     \end{itemize}
 \end{defn}
 
+
 \subsubsection{Two Variable Program Semantics}
 
 Two variable transitions semantically operate extremely similarly to single variable transitions: given some threshold values $\texttt{x}$ and $\texttt{y}$, each transition $t = (q, q', c, \sigma, \tau)$ will first read in a real number input $\texttt{in}$, 
 sample two random variables $z^{(x)}\sim\Lap(0, \frac{1}{d\varepsilon})$ and $z^{(x)\prime}\sim\Lap(0, \frac{1}{d'\varepsilon})$ for comparing the input to $\texttt{x}$ and two more random variables $z^{(y)}\sim\Lap(0, \frac{1}{d\varepsilon})$ and $z^{(y)\prime}\sim\Lap(0, \frac{1}{d'\varepsilon})$ for comparing the input to $\texttt{y}$.
-Using these noise variables, the transition then assigns four variables $\texttt{insample}^{(x)} = \texttt{in} + z^{(x)}$, $\texttt{insample}^{(x\prime)} = \texttt{in} + z^{(x)\prime}$, $\texttt{insample}^{(y)} = \texttt{in} + z^{(y)}$, and $\texttt{insample}^{(x)\prime} = \texttt{in} + z^{(y)\prime}$. 
+Using these noise variables, the transition then assigns four variables $\texttt{insample}^{(x)} = \texttt{in} + z^{(x)}$, $\texttt{insample}^{(x)\prime} = \texttt{in} + z^{(x)\prime}$, $\texttt{insample}^{(y)} = \texttt{in} + z^{(y)}$, and $\texttt{insample}^{(x)\prime} = \texttt{in} + z^{(y)\prime}$. 
 If the guard $c$ is satisfied when comparing $\texttt{insample}^{(x)}$ to $\texttt{x}$ and $\texttt{insample}^{(y)}$ to $\texttt{y}$, then we transition to location $q'$, outputting $\sigma$ and, depending on $\tau$, optionally reassigning $\texttt{x} = \texttt{insample}^{(x)}$ or $\texttt{x} = \texttt{insample}^{(y)}$.
 
 In particular, note that the noisy input that the threshold variables are compared to is independent for $\texttt{x}$ and $\texttt{y}$.
 
-More formally, a program location is a tuple consisting of a program location and values for $\texttt{x}$ and $\texttt{y}$ Let $S = Q\times\RR\times \RR$ be the set of all possible program locations. As expected, every possible input is simply an element of $\RR$. 
+More formally, a program location is a tuple consisting of a program location and values for $\texttt{x}$ and $\texttt{y}$. Let $S = Q\times\RR\times \RR$ be the set of all possible program locations. As expected, every possible input is simply an element of $\RR$. 
 As before, the set of all possible output events is $\Gamma \cup \Sigma$, where $\Sigma$ is the standard $\sigma$-algebra of all Lebesgue measurable sets. 
 
-Then the semantics of a 2v-transition $t$ can be defined as a function $\Phi((q, \texttt{x}), \texttt{in}): S\to dist(S\times (\Gamma\cup\Sigma\cup \lambda))$ that maps an initial program location and an input to a distribution of subsequent program locations and an output event following the expected semantics; $\lambda$ here denotes the empty string (i.e. no output). 
+Then the semantics of a 2v-transition $t$ can be defined as a function $\Phi((q, \texttt{x}, \texttt{y}), \texttt{in}): S\to dist(S\times (\Gamma\cup\RR\cup \lambda))$ that maps an initial program state and an input to a distribution of subsequent program states and an output event following the expected semantics; $\lambda$ here denotes the empty string (i.e. no output). 
 
 The precise semantics are defined exactly analogously to the single variable case. 
 
@@ -1403,11 +1378,15 @@ We again denote the probability that a transition ``succeeds'' as $\PP[\texttt{x
     \end{itemize}
 \end{defn}
 
-- new condition, all assignment transitions have the same spread parameter on insample. 
+For technical reasons that will become clear later, we introduce a new validity condition that requires that all assignment transitions have the same spread parameter on their Laplace noise.
 
 \subsubsection{Multivariable Couplings}
 
-\begin{lemma}
+In this section, we introduce two methods for constructing two variable couplings for 2v-transitions; one method combines couplings in parallel and the other combines couplings for different variables together. 
+
+We first show that if we can create couplings for each variable in isolation, then we can immediately create a coupling for a combined 2v-transition. 
+
+\begin{lemma}\label{mvParallelCouplingsLemma}
     Let $X\brangle{1}\sim \Lap(\mu_x\brangle{1}, \frac{1}{d_x\varepsilon}), X\brangle{2}\sim\Lap(\mu_x\brangle{2}, \frac{1}{d_x\varepsilon})$ be random variables be random variables representing possible initial values of $\texttt{x}$, respectively, 
     and $Y\brangle{1}\sim \Lap(\mu_y\brangle{1}, \frac{1}{d_y\varepsilon}), Y\brangle{2}\sim\Lap(\mu_y\brangle{2}, \frac{1}{d_y\varepsilon})$ be random variables be random variables representing possible initial values of $\texttt{x}$, respectively. 
 
@@ -1441,19 +1420,13 @@ We again denote the probability that a transition ``succeeds'' as $\PP[\texttt{x
 \end{proof}
 
 
-
-\begin{prop}
+\begin{cor}
     If there exist coupling strategies $C_x, C_y$ that each independently satisfy the privacy constraint system for a 2v-transition $t$, then there exists a valid 2-coupling strategy $C$ for $t$ such that $cost(C) = cost(C_x)+cost(C_y)$. 
-\end{prop}
+\end{cor}
 
 \textbf{Cross-Couplings{\color{red}CHANGE NAME}}
 
-We introduce a new type of coupling strategy for a single (2v-)transition:
-
-{\color{red} need to define valid cross couplings}
-
-We introduce a new coupling possibility - between different variable assignments
-
+We now introduce a new type of coupling strategy for a single (2v-)transition:
 
 \begin{lemma}\label{mvIndTransitionCoupling}
     Let $X\brangle{1}\sim \Lap(\mu_x\brangle{1}, \frac{1}{d_x\varepsilon}), X\brangle{2}\sim\Lap(\mu_x\brangle{2}, \frac{1}{d_x\varepsilon})$ be random variables be random variables representing possible initial values of $\texttt{x}$, respectively, and $Y\brangle{1}\sim \Lap(\mu_y\brangle{1}, \frac{1}{d_y\varepsilon}), Y\brangle{2}\sim\Lap(\mu_y\brangle{2}, \frac{1}{d_y\varepsilon})$ be random variables be random variables representing possible initial values of $\texttt{x}$, respectively. 
@@ -1561,7 +1534,7 @@ We introduce a new coupling possibility - between different variable assignments
 
 \end{proof}
 
-In essence, this allows us to construct liftings for certain transitions ``for free'' in a manner compatible with existing liftings. In particular, this construction applies to transitions whose guards intuitively correspond to checking if an input is within either the empty set or the entire real line. 
+In essence, this allows us to construct liftings for certain transitions ``for free'' in a manner compatible with existing liftings. In particular, this construction applies to transitions whose guards intuitively correspond to checking if an input is within either the empty set or the entire real line, which are either always true or always false. 
 
 \begin{defn}
     Let $\Sigma_T$ be a valid 2v-transition alphabet. A 2v-path over $\Sigma_T$ is a sequence of transitions $\rho=t_0\cdot t_1\cdot \ldots \cdot t_{n-1}$ such that for all $i$ there exists a location $q_i\in Q$ such that $t_i = (q_i, q_{i+1}, c_i, \sigma_i, \tau_i)$. A 2v-path is \textbf{complete} if it is in the form $t_{init}^{(x)}t_{init}^{(y)}\cdot \rho$ for some $\rho\in \Sigma_T^*$.
@@ -1617,9 +1590,13 @@ This leads to a natural definition of two variable coupling strategies for paths
     \end{itemize}
 \end{defn}
 
+The extension of 2v-paths to looping branches and programs is extremely natural and follows exactly the same structure as single variable programs. 
+
 \begin{defn}[Two Variable Looping Branches]
-    A 2v-looping branch is simply a looping branch over a valid 2v-transition alphabet $\Sigma_T$.
+    A 2v-looping branch is simply a looping branch (i.e. a language of complete paths that can be represented by a union-free regular expression) over a valid 2v-transition alphabet $\Sigma_T$.
 \end{defn}
+
+Just as with the single variable, a single constraint system can fully capture privacy for two variable programs.
 
 \begin{defn}
     Let $L$ be a 2v-looping branch over a valid transition alphabet $\Sigma_T$. If, for a candidate coupling strategy $C_L = (\gamma, \gamma', \gamma_{(i, j)})$ for $L$, the following constraints are satisfied for all possible inputs $\texttt{in}\brangle{1}\sim\texttt{in}\brangle{2}$ and all $i$: \begin{enumerate}
@@ -1658,6 +1635,7 @@ This leads to a natural definition of two variable coupling strategies for paths
     then we say that $C$ satisfies the privacy constraint system for $L$. 
 \end{defn}
 
+
 \begin{lemma}
     If a coupling strategy $C$ satisfies the privacy constraint system for a 2v-looping branch $L$, then $cost(C)<\infty$ and $L$ is $cost(C)\varepsilon$-differentially private. 
 \end{lemma}
@@ -1669,6 +1647,37 @@ This leads to a natural definition of two variable coupling strategies for paths
 
     Similarly, observe that by constraints (12) through (15), $|\gamma_{(i, j)}|\leq 2$ because $\gamma_{at_x(i)}^{(x)},\gamma_{at_y(i)}^{(y)}\in [-1, 1]$. Because of constraint (11), this means that the $c_{xy}\leq 2m$, where $m$ is the total number of distinct assignment transitions in $L$, which is finite. This completes the proof.
 \end{proof}
+
+\subsubsection{Couplings for GDiPA}
+
+We introduce a two-variable analogue to DiPA, which allows us to reason about counterexamples more easily. 
+
+\begin{defn}
+    A GDiPA $A$ is an 8-tuple $(Q, \Sigma, \mathcal{C}, \Gamma, q_{init}, X, P, \delta)$ where
+    \begin{itemize}
+        \item $Q$ is a finite set of locations partitioned into input locations $Q_{in}$ and non-input locations $Q_{non}$. 
+        \item $\Sigma = \RR$ is the input alphabet
+        \item $\mathcal{C} = \mathcal{C}^{(2)}$ is a set of guard conditions
+        \item $\Gamma$ is a finite output alphabet
+        \item $q_{init}\in Q$ is the initial location
+        \item $X = \{\texttt{x}, \texttt{y}, \texttt{insample}^{(x)}, \texttt{insample}^{(x)}\prime, \texttt{insample}^{(y)}, \texttt{insample}^{(y)}\prime\}$ is a set of variables
+        \item $P: Q\to \QQ\times \QQ^{\geq 0}\times \QQ\times  \QQ^{\geq 0}$ is a parameter function that assigns sampling parameters for the Laplace distribution for each location
+        \item $\delta:(Q\times \mathcal{C})\to (Q\times (\Gamma \cup \{\texttt{insample}^{(x)}, \texttt{insample}^{(x)}\prime, \texttt{insample}^{(y)}, \texttt{insample}^{(y)}\prime\})\times \{0, 1, 2\})$ is a partial transition function. 
+    \end{itemize}
+    In addition, $\delta$ must satisfy some additional conditions:
+    \begin{itemize}
+        \item \textbf{Determinism:} For any location $q\in Q$, if $\delta(q, c)$ and $\delta(q, c')$ are defined for distinct guards $c, c'$,  then $c$ and $c'$ must be logically disjoint events.
+
+        \item \textbf{Output Distinction:} For any location $q\in Q$, if $\delta(q, c) = (q_1, o_1, b_1)$ and $\delta(q, c') = (q_2, o_2, b_2)$, for distinct guards $c, c'$, then $o_1\neq o_2$ and at least one of $o_1\in \Gamma$ and $o_2\in \Gamma$ is true.
+
+        \item \textbf{Initialization:} The initial location $q_0$ has only one outgoing transition of the form $\delta(q_0, \texttt{true}) = (q_1, o, 1)$ and $q_1$ has only one outgoing transition of the form $\delta(q_1, \texttt{true}) = (q, o', 2)$.
+
+        \item \textbf{Non-input transition:} From any $q\in Q_{non}$, if $\delta(q, c)$ is defined, then $c=\texttt{true}$.
+    \end{itemize}
+\end{defn}
+
+Just as with DiPAs and Programs, we can equivalently define a GDiPA as regular language that can be described as a finite union of 2-variable looping branches over a valid 2v-transition alphabet $\Sigma_T$. 
+
 
 \begin{lemma}
     If no coupling strategy for a 2v-looping branch $L$ satisfies the privacy constraint system, then there exists a leaking cycle, non-cancelling leaking pair, disclosing cycle, or privacy violating path in a variable in $L$.
@@ -1699,40 +1708,6 @@ This leads to a natural definition of two variable coupling strategies for paths
     Because there do not exist disclosing cycles, leaking cycles, or privacy violating paths in either variable, this cannot violate any further constraints. Thus, $C$ is not maximal, which is our contradiction, so $L$ must contain either a leaking cycle, disclosing cycle, privacy violating path, or non-cancelling leaking pair in at least one variable.
 \end{proof}
 
-\subsubsection{Couplings for GDiPA}
-
-\begin{defn}
-    A GDiPA $A$ is an 8-tuple $(Q, \Sigma, \mathcal{C}, \Gamma, q_{init}, X, P, \delta)$ where
-    \begin{itemize}
-        \item $Q$ is a finite set of locations partitioned into input locations $Q_{in}$ and non-input locations $Q_{non}$. 
-        \item $\Sigma = \RR$ is the input alphabet
-        \item $\mathcal{C} = \mathcal{C}^{(2)}$ is a set of guard conditions
-        \item $\Gamma$ is a finite output alphabet
-        \item $q_{init}\in Q$ is the initial location
-        \item $X = \{\texttt{x}, \texttt{y}, \texttt{insample}^{(x)}, \texttt{insample}^{(x)}\prime, \texttt{insample}^{(y)}, \texttt{insample}^{(y)}\prime\}$ is a set of variables
-        \item $P: Q\to \QQ\times \QQ^{\geq 0}\times \QQ\times  \QQ^{\geq 0}$ is a parameter function that assigns sampling parameters for the Laplace distribution for each location
-        \item $\delta:(Q\times \mathcal{C})\to (Q\times (\Gamma \cup \{\texttt{insample}^{(x)}, \texttt{insample}^{(x)}\prime, \texttt{insample}^{(y)}, \texttt{insample}^{(y)}\prime\})\times \{0, 1, 2\})$ is a partial transition function. 
-    \end{itemize}
-    In addition, $\delta$ must satisfy some additional conditions:
-    \begin{itemize}
-        \item \textbf{Determinism:} For any location $q\in Q$, if $\delta(q, c)$ and $\delta(q, c')$ are defined for distinct guards $c, c'$,  then $c$ and $c'$ must be logically disjoint events.
-
-        \item \textbf{Output Distinction:} For any location $q\in Q$, if $\delta(q, c) = (q_1, o_1, b_1)$ and $\delta(q, c') = (q_2, o_2, b_2)$, for distinct guards $c, c'$, then $o_1\neq o_2$ and at least one of $o_1\in \Gamma$ and $o_2\in \Gamma$ is true.
-
-        \item \textbf{Initialization:} The initial location $q_0$ has only one outgoing transition of the form $\delta(q_0, \texttt{true}) = (q_1, o, 1)$ and $q_1$ has only one outgoing transition of the form $\delta(q_1, \texttt{true}) = (q, o', 2)$.
-
-        \item \textbf{Non-input transition:} From any $q\in Q_{non}$, if $\delta(q, c)$ is defined, then $c=\texttt{true}$.
-    \end{itemize}
-\end{defn}
-
-
-Just as with DiPAs and Programs, we can equivalently define a GDiPA as regular language that can be described as a finite union of 2-variable looping branches over a valid 2v-transition alphabet $\Sigma_T$. 
-
-
-\begin{lemma}
-    If there does not exist a valid and finite cost coupling strategy for every looping branch of $A$, then there must exist either a leaking cycle, disclosing cycle, or privacy violating path in a single variable or a non-cancelling leaking pair. 
-\end{lemma}
-
 \begin{lemma}
     If there exists a leaking cycle, disclosing cycle, or privacy violating path in a single variable or a non-cancelling leaking pair in a single variable in a GDiPA $A$, then $A$ is not $dvarepsilon$-differentially private for any $d>0$. 
 \end{lemma}
@@ -1743,7 +1718,8 @@ Just as with DiPAs and Programs, we can equivalently define a GDiPA as regular l
 
 \subsection{Beyond Two Variables}
 
-- 
+It is straightforward to extend the definitions of 2v-transitions, paths, looping branches, etc. to more than two variables; it is additionally straightforward to extend results like lemma \ref{mvParallelCouplingsLemma} to apply more than two variables. However, it is not immediately clear how cross-couplings would be extended to additional variables;
+one obvious possibility is to allow for cross-couplings between \textit{all} possible pairs, but the completeness result likely would not generalize in the same fashion. 
 
 \section{Conclusion}
 We have shown how to use coupling techniques to prove privacy for a class of SVT-like programs first defined in \cite{chadhaLinearTimeDecidability2021} and discovered that couplings additionally characterize this class. We additionally showed that this can be done tractably, and that couplings can help provide lower bounds on privacy costs of these algorithms. 
@@ -1767,10 +1743,45 @@ A full exploration of approximate liftings can be found in \cite{HsuThesis2017}.
 
 \subsection{Proofs for section 4}
 
-{\color{red} move these two lemmas away from this section (appendix or closer to usage in main theorem)}
+
+\begin{proof}[\proofname~of lemma \ref{finiteCostConstraintLemma}]
+
+    ($\impliedby$)
+
+    Let $T$ be the set of transitions $t_i$ in $L$ such that $t_i$ is \textbf{not} found under a star in $R_L$. 
+
+    Fix a complete path $\rho\in L$ and let $C_\rho$ be the coupling strategy for $\rho$ induced by $C$. 
+
+    Let $D_\rho$ be the set of transitions $t_i\in \rho$ such that $t_i$ is under a star in $R_L$, i.e., $t_i\notin T$.  
+
+    If the given constraint holds, then we know that $\max_{\texttt{in}\brangle{1}\sim\texttt{in}\brangle{2}}\sum_{i: t_i\in D_\rho}(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i|)d_i+(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i'|)d_i' = 0$
+
+    So \begin{align*}
+        cost(C_\rho) = \max_{\texttt{in}\brangle{1}\sim\texttt{in}\brangle{2}}&\sum_{i: t_i\in D_\rho}(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i|)d_i+(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i'|)d_i'\\
+        &+\sum_{i: t_i\notin D_\rho}(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i|)d_i+(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i'|)d_i'\\
+        = \max_{\texttt{in}\brangle{1}\sim\texttt{in}\brangle{2}}&\sum_{i: t_i\in T}(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i|)d_i+(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i'|)d_i'\\
+        \leq \sum_{i:t_i\in T}(2d_i& + 2d_i')\\
+        \leq |T|\max_{i:t_i\in T}&(2d_i + 2d_i')
+    \end{align*}
+
+    Thus, $cost(C)\leq |T|\max_{i:t_i\in T}(2d_i + 2d_i') <\infty$.
+
+    ($\implies$)
+
+    Let $t_i$ be a transition in $L$ under a star in $R_L$ such that $\gamma_i\neq -\texttt{in}\brangle{1}_i+\texttt{in}\brangle{2}_i$ or $\gamma_i'\neq  -\texttt{in}\brangle{1}_i+\texttt{in}\brangle{2}_i$.     Thus, $\exists \texttt{in}\brangle{1}\sim \texttt{in}\brangle{2}$ such that $(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i|)d_i+(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i'|)d_i'>0$.
+    Fix such a $\texttt{in}\brangle{1}\sim \texttt{in}\brangle{2}$. 
+
+    Then there exists some complete path $\rho$ in $L$ of the form $a(bt_ic)^*d$ for some $a, b, c, d\in \Sigma_T^*$.
+    
+    Let $\rho_k=a(bt_ic)^kd$ be the corresponding complete path in $L$ with $(bt_ic)$ iterated $k$ times. This is equivalent to iterating the cycle containing $t_i$ $k$ times. Then for all $k\in \NN$, \begin{align*}
+        cost(\rho_k) \geq k((|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i|)d_i+(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i'|)d_i'),
+    \end{align*}
+    so for all $M\in \RR$, $\exists \rho_k$ such that $cost(\rho_k) > M$.
+\end{proof}
+
 
 \begin{lemma}\label{cycleGammaConstraints}
-    If a coupling strategy $C=(\mathbf{\gamma}, \mathbf{\gamma}')$ for a lasso $L_\rho$ is valid and has finite cost, then the following must hold for all $i$:
+    If a coupling strategy $C=(\mathbf{\gamma}, \mathbf{\gamma}')$ for a looping branch $L$ is valid and has finite cost, then the following must hold for all $i$:
     \begin{enumerate}
         \item If $t_i$ is in a cycle and $c_i = \lguard[\texttt{x}]$, then $\gamma_i = -\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}$ and $\gamma_{at(i)} = 1$.
         \item If $t_i$ is in a cycle and $c_i = \gguard[\texttt{x}]$, then $\gamma_i = -\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}$ and $\gamma_{at(i)} = -1$.
