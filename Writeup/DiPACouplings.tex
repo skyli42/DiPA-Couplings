@@ -85,6 +85,18 @@ Because even for limited programs the problem of determining if a program is dif
 Recently, a line of work has emerged around \textbf{approximate liftings}~\cite{BartheEtAl2016,bartheKopfOlmedo2012ProbabilisticRelationalReasoningforDifferentialPriv,BartheOlmedo2013,HsuThesis2017}. Approximate liftings are a generalization of probabilistic couplings, themselves a well-known technique in probability theory for analyzing relationships between random variables. 
 Approximate liftings allow for a more structured proof approach to many algorithms that themselves are not conducive to a standard compositional analysis, such as SVT.\@ Because of their structure, liftings also lend themselves to automated proof construction~\cite{AlbarghouthiHsu2018}. 
 
+Our contributions:
+\begin{itemize}
+    \item We develop a simple program model centred around comparing an input to a threshold value for which we show that there is a simple and, most notably, complete class of privacy proofs built from approximate liftings
+    \begin{itemize}
+        \item Every program in our model is a language over an alphabet of individual program transitions
+        \item We can use the structure of these programs to automatically build privacy proofs for any program using approximate liftings
+        \item Importantly, if we cannot build a privacy proof for a program, we show that it is in fact not private at all; i.e. these privacy proofs are complete
+        \item We also demonstrate methods for computing the minimal privacy cost of a coupling proof directly and in approximation
+    \end{itemize}
+    \item This program model exactly coincides with a previously developed, automaton-theoretic, model known as DiPA. 
+    \item We additionally demonstrate how this model, and along with it coupling proofs, can be extended to accomodate two threshold variables such that coupling proofs again characterize the model completely. 
+\end{itemize}
 
 \section{Differential Privacy}
 
@@ -171,9 +183,9 @@ Probabilistic couplings are a common tool in probability theory; intuitively, co
 
 In particular, couplings are useful when analyzing the relationship between two probablistic processes. [past literature on couplings]
 
-As useful as standard couplings are, however, we must use more powerful machinery to properly reason about privacy.
+A previous line of work has extended the concept of couplings to reason about privacy and private processes. 
 
-\textbf{Approximate liftings} \cite{BartheOlmedo2013,bartheKopfOlmedo2012ProbabilisticRelationalReasoningforDifferentialPriv,HsuThesis2017,BartheEtAl2016} allow us to apply couplings to the realm of differential privacy. 
+In particular, objects known as \textbf{approximate liftings} \cite{BartheOlmedo2013,bartheKopfOlmedo2012ProbabilisticRelationalReasoningforDifferentialPriv,HsuThesis2017,BartheEtAl2016} allow us to apply couplings to the realm of differential privacy. 
 
 \begin{defn}
     Let $A_1, A_2$ be two probability spaces\footnote{may need to formally rewrite this at some point}. We say a distribution $\mu_1$ on $A_1$ and $\mu_2$ on $A_2$ are related by the $\mathbf{\varepsilon}$\textbf{-lifting} of the relation $\Psi\subseteq A_1\times A_2$ (written $\mu_1\Psi^{\#\varepsilon}\mu_2$) if there exist two \textbf{witness distributions} $\mu_L, \mu_R$ on $A_1\times A_2$ such that\begin{enumerate}
@@ -183,31 +195,37 @@ As useful as standard couplings are, however, we must use more powerful machiner
     \end{enumerate}
 \end{defn}
 
-The similarities between the third condition and the definition of differential privacy should be clear. Indeed, there is a close connection between approximate liftings and differential privacy:
+In some sense, approximate liftings can be considered ``half-couplings'', where half of $\mu_L$ is coupled with half of $\mu_R$. Because of the close relationship between couplings and approximate liftings, we will often use ``couplings'' to generically refer to approximate liftings and couplings together.
+
+The similarities between the third condition of approximate liftings and the definition of differential privacy should be clear. Indeed, there is a close connection between approximate liftings and differential privacy:
 
 \begin{thm}
     An algorithm $A(X)$ is $\varepsilon$-differentially private if and only if, for all adjacent input sequences $X\sim X'$, $A(X)(=)^{\#\varepsilon}A(X')$.
 \end{thm}
 
-If we are solely aiming to show that a program is private, we can instead work with the following relaxation: 
+However, we will generally work with the following relaxation, which still allows us to prove that an algorithm is private:
 
 \begin{thm}\label{implicationcouplingthm}
     If for all adjacent input sequences $X\sim X'$ and outputs $\sigma$ of $A$, $A(X)\{(a, b): a=\sigma\implies b=\sigma\}^{\#\varepsilon}A(X')$, then $A(X)$ is $\varepsilon-$differentially private.
 \end{thm}
 
-As expected, the foundational results of differential privacy can be restated in terms of liftings:
-
-\begin{prop}[Laplace Mechanism for Liftings]
-    If $X_1\sim\Lap(\mu_1, \frac{1}{\varepsilon})$ and $X_2\sim\Lap(\mu_2, \frac{1}{\varepsilon})$, then $X_1(=)^{\#\varepsilon|\mu_1-\mu_2|}X_2$.
-\end{prop}
+Almost every standard result about differential privacy can be restated in terms of couplings; for this paper, we will primarily rely on the fact that couplings can be composed and that we can couple together Laplace random variables. 
 
 \begin{thm}[Composition of Liftings]\label{liftingcomposition}
     Let $A_1, B_2, A_2, B_2$ be distributions over $S_1, T_1, S_2, T_2$, respectively and let $R_1\subseteq S_1\times T_1$, $R_2\subseteq S_2\times T_2$ be relations. If $A_1 R_1^{\#\varepsilon_1}B_1$ and $A_1 R_1 B_1\implies A_2R_2^{\#\varepsilon_2}B_2$, then $A_2 R_2^{\#\varepsilon_1+\varepsilon_2}B_2$.
 \end{thm}
 
+\begin{prop}[Laplace Mechanism for Liftings]
+    If $X_1\sim\Lap(\mu_1, \frac{1}{\varepsilon})$ and $X_2\sim\Lap(\mu_2, \frac{1}{\varepsilon})$, then $X_1(=)^{\#\varepsilon|\mu_1-\mu_2|}X_2$.
+\end{prop}
+
+
+
 The structure of theorems \ref{implicationcouplingthm} and \ref{liftingcomposition} suggests the format that coupling proofs of privacy take: given two ``runs'' of an algorithm on adjacent inputs, construct many smaller liftings between program variables in each run and compose these liftings together to show that a final implicatory lifting between the outputs of the two runs exists. 
 
 \subsection{Proving SVT with couplings}
+
+For illustrative purposes, we provide a manual proof of privacy for a notoriously tricky algorithm, the Sparse Vector Technique (SVT). \sky{do we need some explanation that this proof is technically original bc of the rewordings? also can remove this section for space}
 
 A classic algorithm that requires analysis beyond standard composition is Sparse Vector Technique (SVT). Given a possibly infinite stream of inputs and a threshold value, SVT will output if the queries are above or below the threshold (with noise on both the query and the threshold). 
 
@@ -1901,15 +1919,7 @@ A full exploration of approximate liftings can be found in \cite{HsuThesis2017}.
     If a valid finite cost coupling strategy $C = (\gamma, \gamma')$ exists for a lasso $L_\rho$, then there exists a valid finite cost coupling strategy $C^*= (\gamma^*, \gamma^{*\prime})$ such that for all $i\in AT(L_\rho)$, $\gamma_i^*\in \{-1, 0, 1\}$. 
 \end{lemma}
 \begin{proof}
-    Note that because $C$ is valid and has finite cost, there cannot be any assignment transitions in the cycle in $\rho$. 
-
-    Further, there cannot be both a transition with guard $\lguard[\texttt{x}]$ and guard $\gguard[\texttt{x}]$ in the cycle in $\rho$ by the previous lemma. 
-
-    Let $t_{at(k)}$ be the final assignment transition before the cycle in $\rho$. 
-
-    By the previous lemma, $\gamma_{at(k)} \in \{-1, 1\}$ already. 
-
-    - every previous assignment transition can either be changed without caring about $\gamma_{at(k)}$ or 
+    \sky{note: vishnu has a proof for this}
 
 \end{proof}
 
@@ -2224,7 +2234,7 @@ A full exploration of approximate liftings can be found in \cite{HsuThesis2017}.
 
     Otherwise, if $t_i$ is not an assignment transition, $c_i = \lguard[\texttt{x}]$, and constraint (1) is violated for $\gamma_i$, we must have that $\gamma_{at(i)}<1$ due to other constraints.
     
-    Consider all assignment transitions in $\rho$ before $t_i$. Note that if any such assignment transition is in a cycle, then that cycle must be a leaking cycle since either the assignment transition is in the same cycle as $t_i$ or there must be some non-$\texttt{true}$ transition in the cycle because otherwise $t_i$ is unreachable. {\color{red} make sure to add a condition to programs so that this is bad}
+    Consider all assignment transitions in $\rho$ before $t_i$. Note that if any such assignment transition is in a cycle, then that cycle must be a leaking cycle since either the assignment transition is in the same cycle as $t_i$ or there must be some non-$\texttt{true}$ transition in the cycle because otherwise $t_i$ is unreachable.
 
     So assume that all assignment transitions in $\rho$ before $t_i$ are not in a cycle. Then if $c_{at(i)} \neq \lguard[\texttt{x}]$, because $C$ is maximal, this must mean that $t_{at(i)}$ outputs $\texttt{insample}$. Note that the path from $t_{at(i)+1}$ to $t_i$ is an $\texttt{AL}$-path (since there are no assignment transitions on it) and $t_i$ is in an $\texttt{L}$-cycle since $t_i$ is in a cycle and $c_i = \lguard[\texttt{x}]$. 
     Then the path from $t_{at(i)}$ (an assignment transition that outputs $\texttt{insample}$) to $t_i$ is a privacy violating path. 
