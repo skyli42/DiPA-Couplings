@@ -46,6 +46,7 @@
 \newcommand{\todo}[2]{\textcolor{#1}{\textbf{#2}}}
 \newcommand{\sasho}[1]{\todo{blue}{Sasho: <<#1>>}}
 \newcommand{\sky}[1]{\todo{green}{Sky: <<#1>>}}
+\newcommand{\vishnu}[1]{\todo{magenta}{Vishnu: <<#1>>}}
 
 \DeclareMathOperator*{\argmax}{arg\,max}
 \DeclareMathOperator*{\argmin}{arg\,min}
@@ -814,7 +815,14 @@ The proposition below shows that the cost of a coupling strategy that assigns th
 \end{prop}
 
 \begin{proof}
-    (Sketch) One path is $t_{true} t_{geq}^n$, where all transitions are assignments. There are other paths which are like $t_{init} t_{loop}^* t_{geq}$ that force the shift on $t_{geq}$ to be $1$ instead of $-1$ for a path independent coupling strategy. This causes the cost of the $t_{true} t_{geq}^n$ path to be $n^2$, but a coupling strategy that considers this path separately can have cost $n$. 
+    Construct $B_n$ as follows. Consider a path $\rho = t_{true}^{(1)} t_{geq}^{(1)} \left(t_{leq}^{(1)}\right)^n \dots t_{true}^{(n)} t_{geq}^{(n)} \left(t_{leq}^{(n)}\right)^n$ of $n$ alternations of assignment transitions with guard \texttt{true} followed by assignment transitions with guard $\gguard$, which are followed by $n$ transitions with guard $\lguard$. 
+    For each $i$, construct the looping branch $L_i = L\left(t_{true}^{(n + i)} \left(t_{loop}^{(i)}\right)^* t_{geq}^{(i)}\right)$ such that each transition $t_{geq}^{(i)}$ is preceded by an arbitrary number of transitions with guard $\lguard$.
+    
+    Let $C = (\gamma, \gamma')$ be a path-independent coupling strategy for $B_n$. Then $C$ must assign the same shift to each transition in $B_n$. 
+
+    From the privacy constraints on the looping branches $L_i$, we see that $\gamma_{t_{true}^{n + i}}(0, 1) = 1$ from the same method as in \ref{costDependspathProp}, which then implies from the constraint $\gamma_{t_{true}^{n + i}} \leq \gamma_{t_{geq}^{(i)}}$ that $\gamma_{t_{geq}^{(i)}}(0, 1) = 1$ as well.
+
+    This means that the cost of the path $\rho$ is at least $n^2$, as contains $n^2$ transitions with guard $1$ each when the input difference is $-1$ \vishnu{TODO: this is in shambles, make more clear}
 \end{proof}
 
 
@@ -1034,7 +1042,7 @@ Observe that the constraints imposed on valid coupling strategies for a complete
 In particular, this lends itself to conceptualizing complete paths by splitting them up based on assignment transitions. 
 
 \begin{defn}
-    For a complete path $\rho$ in a program $P$, let $A_\rho$ be the set of all assignment transitions in $\rho$. 
+    For a complete path $\rho$ in a program $P$, let $A_\rho$ be the set of all assignment transitions in $\rho$. \vishnu{Unless this is used later, we can probably remove this definition.}
 \end{defn}
 
 \begin{defn}
@@ -1042,7 +1050,6 @@ In particular, this lends itself to conceptualizing complete paths by splitting 
 \end{defn}
 
 In other words, a segment is a subpath of $\rho$ between two consecutive assignment transitions (or between the last assignment transition and the end of the path). Splitting up a path into segments thus allows us to think about a single value of $\texttt{x}$ at a time.
-
 
 % The segment graph overview
 
@@ -1169,7 +1176,7 @@ Note: the inner problem is convex, and so the outer problem is that of convex ma
             &\ \gamma_i = 1 \text{ if } t_i \text{ is in a cycle and has } c_i = \lguard,\\ 
             &\ \gamma_i = -1 \text{ if } t_i \text{ is in a cycle and has } c_i = \gguard
     \end{align*}
-    which is the cost of a coupling strategy in which $\gamma$ and $\gamma'$ are constant with respect to $\texttt{in}\brangle{1}$ and $\texttt{in}\brangle{2}$ on each transition. 
+    which is the cost of a coupling strategy in which $\gamma$ and $\gamma'$ are constant with respect to $\texttt{in}\brangle{1}$ and $\texttt{in}\brangle{2}$ on non-cyclic transitions. 
 \end{defn}
 
 \begin{prop}
@@ -1264,17 +1271,104 @@ Note: the inner problem is convex, and so the outer problem is that of convex ma
     representing the worst-case privacy loss over all possible paths in $L$ and all possible adjacent inputs.
 \end{conj}
 
-\subsection{Deciding Privacy II}
+\subsection{Deciding Privacy (Graph, no segments)}
 
-We can check whether a looping branch is differentially private by checking whether the approximate privacy cost of the looping branch is finite. This is true if and only if the \textit{approximate privacy constraints} {(\color{red} Is this the right name?)} are feasible.
+We can check whether a looping branch is differentially private by checking whether the approximate privacy cost of the looping branch is finite. This is true if and only if the \textit{approximate privacy constraints} \vishnu{Is this the right name?} are feasible.
 
+We will give an algorithm to check whether the approximate privacy constraints are feasible. Although this is equivalent to solving a 2SAT instance, we will encode these constraints in a graph which preserves some of the structure of our program. 
+
+\begin{defn}[Privacy constraint graph]
+    Let $L$ be a looping branch in a program $P$. The \textbf{privacy constraint graph} $G_L = (V, E)$ of $L$ is a directed graph where: 
+    \begin{itemize}
+        \item For every transition $t_i$ in $L$, there is a vertex $v_i \in V$ representing the shift $\gamma_i$ on $t_i$.
+        \item For every pair of transitions $(t_i, t_j)$ which have the privacy constraint $\gamma_i \leq \gamma_j$, there is an edge $(v_i, v_j) \in E$.
+        \item There are nodes ${\bf 1, -1}\ \in V$ such that: 
+        \begin{itemize}
+            \item The edges $({\bf -1}, v)$ exist for all $v \in V$.
+            \item The edges $(v, {\bf 1})$ exist for all $v \in V$.
+            \item For every transition $t_i$ with the privacy constraint $\gamma_i = 1$, there is an edge $({\bf 1}, v_i) \in E$.
+            \item For every transition $t_i$ with the privacy constraint $\gamma_i = -1$, there is an edge $(v_i, {\bf -1}) \in E$. 
+        \end{itemize}
+    \end{itemize}
+    \vishnu{TODO: I've reused $v_i$ here and in the linear program to compute the approx privacy cost, this is confusing, need to change one of them}
+\end{defn}
+
+\begin{prop}
+    A looping branch $L$ is differentially private if and only if there does not exist a path from $\bf 1$ to $\bf -1$ in the privacy constraint graph of $L$.
+\end{prop}
+
+\begin{proof}
+    $(\implies)$ Let $L$ be differentially private. Then $approx(L) < \infty$, and so there exists $\gamma \in [-1, 1]^n$ such that the approximate privacy constraints are satisfied by $\gamma$. Aiming for a contradiction, assume that there exists a path ${\bf 1} \to v_{i_1} \to \dots \to v_{i_k} \to {\bf -1}$ in the privacy constraint graph of $L$. This corresponds to the sequence of privacy constraint inequalities
+    \[1 \leq \gamma_{i_1} \leq \dots \leq \gamma_{i_k} \leq -1\]
+    which is a contradiction, showing that no such $\gamma$ could exist. Therefore, there is no path from $\bf 1$ to $\bf -1$ in the privacy constraint graph of $L$.
+
+    $(\impliedby)$ Let there exist no path from $\bf 1$ to $\bf -1$ in the privacy constraint graph of $L$. Define 
+    \begin{align*}
+        \gamma_i = \begin{cases}
+            1 &\text{ if there exists a path from } {\bf 1} \text{ to } v_i \text{ in } G_L \\
+            -1 &\text{ otherwise}
+        \end{cases}
+    \end{align*}
+    We claim that the approximate privacy constraints are satisfied by $\gamma$. \vishnu{Need to do a better job of stating what approximate privacy constraints are and why they only depend on $\gamma \in [-1, 1]^n$ and not some function of $\texttt{in}\brangle{1}$ and $\texttt{in}\brangle{2}$}.
+    
+    \begin{itemize}
+        \item Consider the approximate privacy constraint $\gamma_i \leq \gamma_j$. This corresponds to the edge $(v_i, v_j)$ in $G_L$. If $\gamma_i = 1$, there is a path from $\bf 1$ to $v_i$, and so there is a path from $\bf 1$ to $v_j$, and so $\gamma_j = 1$, satisfying the constraint. If $\gamma_i = -1$, then any assignment of $\gamma_j$ satisfies the constraint. 
+        \item Consider the constraint $\gamma_i = 1$. This corresponds to the edge $({\bf 1}, v_i)$ in $G_L$. Since there is a path from $\bf 1$ to $v_i$, we have $\gamma_i = 1$, satisfying the constraint.
+        \item Consider the constraint $\gamma_i = -1$. This corresponds to the edge $(v_i, {\bf -1})$ in $G_L$. Since there is no path from $\bf 1$ to $\bf -1$ in $G_L$, there must be no path from $\bf 1$ to $v_i$. Thus, $\gamma_i = -1$, satisfying the constraint.
+    \end{itemize}
+    
+    Thus, the approximate privacy constraints are satisfied by $\gamma$, which means that $approx(L) < \infty$ and $L$ is differentially private.
+\end{proof}
+
+We have specified a linear time algorithm only to check whether a given looping branch is private. However, we can check whether \textit{all} looping branches are private at once in linear time by combining the privacy constraint graphs for each looping branch into a single graph.
+
+\begin{defn}
+    The privacy constraint graph $G_P$ of a program $P$ is the union of the privacy constraint graphs of each looping branch in $P$.
+\end{defn}
+
+\begin{prop}
+    \label{prop:paths_in_privacy_graph}
+    Let $v_{i_0}, \dots, v_{i_k}$ be vertices in $G_P$ corresponding to transitions $t_{i_0}, \dots, t_{i_k}$ in $P$. If $v_{i_0} \to \dots \to v_{i_k}$ is a path in $G_P$, then there exists a path $\rho \in P$ such that 
+    \begin{align*}
+        t_{i_0} \cdots t_{i_k} \text{ is a subsequence of } \rho \text{ with } guard(t_{i_j}) = \lguard \text { for all } j \in \{1, \dots, k\}
+    \end{align*}
+    or
+    \begin{align*}
+        t_{i_k} \cdots t_{i_0} \text{ is a subsequence of } \rho \text{ with } guard(t_{i_j}) = \gguard \text { for all } j \in \{1, \dots, k\}
+    \end{align*}
+\end{prop}
+
+
+\begin{proof}
+    We will use induction on the length of the path $v_{i_0} \to \dots \to v_{i_k}$ in $G_P$. 
+    
+    If $k = 1$, then the path $v_{i_0} \to v_{i_1}$ comprises of a single edge $(v_{i_0}, v_{i_1})$ in $G_P$, which is contained in $G_L$ for some looping branch $L$ in $P$. 
+
+    Assume that all paths $u_{i_0} \to \dots \to u_{i_k}$ in $G_L$ of length $k$ are contained in some looping branch $L$ in $P$.
+    
+    \vishnu{TODO: Finish this proof.}
+\end{proof}
+
+
+\begin{cor}
+    The path $v_{i_0} \to \dots \to v_{i_k}$ is in $G_P$ if and only if there is a looping branch $L$ in $P$ such that $v_{i_0} \to \dots \to v_{i_k}$ is a path in $G_L$.
+\end{cor}
+
+\begin{prop}
+    A program $P$ is differentially private if and only if there does not exist a path from $\bf 1$ to $\bf -1$ in the privacy constraint graph of $P$.
+\end{prop}
+
+\begin{proof}
+    There is a path from $\bf 1$ to $\bf -1$ in the privacy constraint graph of $P$ if and only if there is a path from $\bf 1$ to $\bf -1$ in the privacy constraint graph of some looping branch $L$ in $P$ by Proposition \ref{prop:paths_in_privacy_graph}. This is true if and only if there exists some $L$ which is not differentially private, which is true if and only if $P$ is not differentially private.
+\end{proof}
+
+\subsection{Deciding Privacy (SAT)}
 
 \begin{prop}
     We can check whether the approximate privacy constraints are feasible in linear time in $n$, the number of transitions in the looping branch.
 \end{prop}
 
 \begin{proof} (Sketch)
-
     (If there is a transition in a cycle that outputs \texttt{insample}, then the approximate privacy constraints are not feasible, and we can return false. There is a way to encode this also into 2-SAT, but is it really worth it? So we'll only consider $\gamma$ in this sketch). 
     
     We will construct a reduction to 2-SAT.
@@ -1285,7 +1379,7 @@ We can check whether a looping branch is differentially private by checking whet
         \begin{equation}
             \lnot x_j \lor x_i
         \end{equation}
-        essentially encoding $\gamma_j = 1 \implies \gamma_i = 1$.
+        essentially encoding $(\gamma_j = 1) \implies (\gamma_i = 1)$.
         \item For every constraint $\gamma_i = 1$, construct the clause
         \begin{equation}
             x_i
@@ -1297,6 +1391,24 @@ We can check whether a looping branch is differentially private by checking whet
     \end{itemize}
 
     We can check whether the constraints are feasible by checking whether the resulting 2-SAT instance is satisfiable. This can be done in linear time in $n$ using the algorithm described in (TODO: Cite 2-SAT algorithm).
+\end{proof}
+
+In order to check whether a program $P$ is private, we could check whether each looping branch in $P$ is private. However, the number of looping branches in $P$ could be exponential in the size of $P$. Instead, we can check whether \textit{all} looping branches are private at once in linear time by combining the approximate privacy constraints for each looping branch into a single set of constraints.
+
+\begin{thm}
+    We can check whether $P$ is private in linear time in the size of $P$. \vishnu{This is a working theorem statement.} 
+\end{thm}
+
+\begin{proof}
+    We will construct a reduction to 2-SAT. Each looping branch $L$ in $P$ has a set of clauses $D$ constructed above from the approximate privacy constraints. Note that the privacy constraints on a transition or pair of transitions in $P$ \textit{do not} depend on which looping branch $L$ they appear in, only on the structure of the program $P$. Thus, we can combine the clauses $D_L$ for each looping branch $L$ into a single set of clauses $D$.
+    
+    Claim: $D$ is satisfiable if and only if $D_L$ is satisfiable for all looping branches $L$ in $P$. 
+
+    \begin{proof}
+        $(\implies)$ Suppose that $D$ is satisfiable. Then there exists an assignment of variables $x_1, \dots, x_n$ that satisfies $D$. Let $L$ be a looping branch in $P$. Then the assignment to $x_1, \dots, x_n$ also satisfies $D_L$, since the clauses in $D_L$ are a subset of the clauses in $C$. Thus, $D_L$ is satisfiable.
+
+        $(\impliedby)$ Suppose that $D$ is not satisfiable. There exists 
+    \end{proof}
 \end{proof}
 
 \section{Program Model Extensions}
