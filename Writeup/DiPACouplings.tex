@@ -824,23 +824,62 @@ Notably, for a general branching program, there is no ``smart'' way to combine c
     The above observations show that the optimal coupling strategy for $B$ must necessarily assign different coupling strategies to $t_{init}$ in $\rho_1$ and $\rho_2$.
 \end{proof}
 
-Indeed, there exist a family of counterexamples such that the relative ``cost'' of choosing a unified coupling strategy for a branching program increases quadratically in the size of the branching program. \sky{Is this technically correct @ Vishnu?}
+Indeed, there exist a family of counterexamples such that the relative ``cost'' of choosing a unified coupling strategy for a branching program increases quadratically in the size of the branching program. \sky{Is this technically correct @ Vishnu?} \vishnu{Yes!}
 
 The proposition below shows that the cost of a coupling strategy that assigns the same shift to each transition (path-independent strategies) can be arbitrarily larger than the optimal cost. 
 
 \begin{prop}
-    There exist a family of branching programs $\{B_n\}_{n\in \NN}$ for which the cost of any path-independent coupling strategy $C$ for $B_n$ is greater than $n^2$, but for which there exists a path-dependent coupling strategy $C'$ for $B_n$ with cost $\leq n$.
+    There exist a family of branching programs $\{B_n\}_{n\in \NN}$ for which the cost of any path-independent coupling strategy $C$ for $B_n$ is in $\Omega(n^2)$, but for which there exists a path-dependent coupling strategy $C'$ for $B_n$ with cost in $O(n)$.
 \end{prop}
 
 \begin{proof}
-    Construct $B_n$ as follows. Consider a path $\rho = t_{true}^{(1)} t_{geq}^{(1)} \left(t_{leq}^{(1)}\right)^n \dots t_{true}^{(n)} t_{geq}^{(n)} \left(t_{leq}^{(n)}\right)^n$ of $n$ alternations of assignment transitions with guard \texttt{true} followed by assignment transitions with guard $\gguard$, which are followed by $n$ transitions with guard $\lguard$. 
-    For each $i$, construct the looping branch $L_i = L\left(t_{true}^{(n + i)} \left(t_{loop}^{(i)}\right)^* t_{geq}^{(i)}\right)$ such that each transition $t_{geq}^{(i)}$ is preceded by an arbitrary number of transitions with guard $\lguard$.
+    Construct $B_n$ as follows. Consider a path $\rho = t_{true}^{(1)} t_{geq}^{(1)} \left(t_{leq}^{(1)}\right)^n \dots t_{true}^{(n)} t_{geq}^{(n)} \left(t_{leq}^{(n)}\right)^n$ where:
+
+    \begin{itemize}
+        \item $t_{true}^{(i)}$ are assignment transitions with guard \texttt{true}.
+        \item $t_{geq}^{(i)}$ are assignment transitions with guard $\gguard$.
+        \item $t_{leq}^{(i)}$ are non-assignment transitions with guard $\lguard$.
+        \item The noise parameters for all transitions are $1$.
+        \item None of the transitions output \texttt{insample}.
+    \end{itemize}
+
+    For each $i$, construct also the looping branch $L_i = L\left(t_{true}^{(n + i)} \left(t_{loop}^{(i)}\right)^* t_{geq}^{(i)}\right)$ such that each transition $t_{geq}^{(i)}$ is preceded by an arbitrary number of transitions with guard $\lguard$.
     
-    Let $C = (\gamma, \gamma')$ be a path-independent coupling strategy for $B_n$. Then $C$ must assign the same shift to each transition in $B_n$. 
+    Let $C$ be a path-independent coupling strategy for $B_n$ -- this menas that $C$ must assign the same shift to each transition in $B_n$. 
 
-    From the privacy constraints on the looping branches $L_i$, we see that $\gamma_{t_{true}^{n + i}}(0, 1) = 1$ from the same method as in \ref{costDependspathProp}, which then implies from the constraint $\gamma_{t_{true}^{n + i}} \leq \gamma_{t_{geq}^{(i)}}$ that $\gamma_{t_{geq}^{(i)}}(0, 1) = 1$ as well.
+    From the privacy constraints on the looping branches $L_i$, we see that $\gamma_{t_{true}^{n + i}}(1, 0) = 1$ from the same method as in \ref{costDependspathProp}, which then implies from the constraint $\gamma_{t_{true}^{n + i}} \leq \gamma_{t_{geq}^{(i)}}$ that $\gamma_{t_{geq}^{(i)}}(1, 0) = 1$. 
 
-    This means that the cost of the path $\rho$ is at least $n^2$, as contains $n^2$ transitions with guard $1$ each when the input difference is $-1$ \vishnu{TODO: this is in shambles, make more clear}
+    Since the preceding assignment transition for $t_{leq}^{(i)}$ is given by $t_{geq}^{(i)}$, for which we have the privacy constraint $\gamma_{t_{geq}^{(i)}} \leq \gamma_{t_{leq}^{(i)}}$, we see that $\gamma_{t_{leq}^{(i)}}(1, 0) = 1$ as well. 
+
+    Computing the cost of the coupling strategy assigned to $\rho$, which has $n \cdot (n + 2)$ transitions, we get 
+
+    \begin{align*}
+        cost(C_\rho) &\geq \max_{\Delta = \texttt{in}\brangle{2} - \texttt{in}\brangle{1}} \sum_{i=1}^{n} \big(|\Delta_{t_{true}^{(i)}} - \gamma_{t_{true}^{(i)}}(-\Delta_{t_{true}^{(i)}}, 0)| + |\Delta_{t_{geq}^{(i)}} - \gamma_{t_{geq}^{(i)}}(-\Delta_{t_{geq}^{(i)}}, 0)| \\ & \qquad \qquad \qquad \qquad + n \cdot |\Delta_{t_{leq}^{(i)}} - \gamma_{t_{leq}^{(i)}}(-\Delta_{t_{leq}^{(i)}}, 0)|\big)\\
+        &\geq \sum_{i = 1}^n \left(|-1 - \gamma_{t_{true}^{(i)}}(1, 0)| + |-1 - \gamma_{t_{geq}^{(i)}}(1, 0)| + n \cdot |-1 - \gamma_{t_{leq}^{(i)}}(1, 0)|\right)\\
+        &= \sum_{i = 1}^n \left(|-1 - \gamma_{t_{true}^{(i)}}(1, 0)| + |-1 - 1| + n \cdot |-1 - 1|\right)\\
+        &\geq \sum_{i = 1}^n \left(2 n + 1\right)\\
+        &= n \cdot (2 n + 1)
+    \end{align*} 
+
+    whereas there exists another coupling strategy $C_\rho^* = (\gamma^*, \gamma^{'*})$ for $\rho$ that would assign 
+    \begin{align*}
+        \gamma_{t_{true}^{(i)}}^*(\texttt{in}\brangle{1}, \texttt{in}\brangle{2}) &= -\texttt{in}\brangle{1} + \texttt{in}\brangle{2}\\
+        \gamma_{t_{geq}^{(i)}}^*(\texttt{in}\brangle{1}, \texttt{in}\brangle{2}) &= 1\\
+        \gamma_{t_{leq}^{(i)}}^*(\texttt{in}\brangle{1}, \texttt{in}\brangle{2}) &= -\texttt{in}\brangle{1} + \texttt{in}\brangle{2}
+    \end{align*}
+    which satisfies the privacy constraints \[\gamma_{t_{true}^{(i)}}^* \leq \gamma_{t_{geq}^{(i)}}^* \geq \gamma_{t_{leq}^{(i)}}^*\] for all $i$, which has cost $2n$.
+    
+    For the looping branches $L_i$, the coupling strategy $C_{L_i}^* = (\gamma^*, \gamma^{'*})$ assigns
+
+    \begin{align*}
+        \gamma_{t_{true}^{(n + i)}}^*(\texttt{in}\brangle{1}, \texttt{in}\brangle{2}) &= 1\\
+        \gamma_{t_{loop}^{(i)}}^*(\texttt{in}\brangle{1}, \texttt{in}\brangle{2}) &= -\texttt{in}\brangle{1} + \texttt{in}\brangle{2}\\
+        \gamma_{t_{geq}^{(i)}}^*(\texttt{in}\brangle{1}, \texttt{in}\brangle{2}) &= 1
+    \end{align*}
+
+    which satisfies the privacy constraints \[\gamma_{t_{geq}^{(i)}}^* \geq \gamma_{t_{true}^{(n + i)}}^* \leq \gamma_{t_{loop}^{(i)}}^*\] for all $i$, and has cost $4$.
+    
+    Putting these strategies together, we have a coupling startegy $C^*$ for $B_n$ with cost $2n$, as opposed to at least $n (2n + 1)$ for any path-independent coupling strategy $C$.
 \end{proof}
 
 
