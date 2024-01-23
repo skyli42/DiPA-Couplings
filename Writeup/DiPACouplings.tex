@@ -119,7 +119,9 @@ We thus formalize privacy under this framework as follows.
 
 The privacy parameter $\varepsilon$ is traditionally thought of as analogous to the `privacy cost' of a program; the larger $\varepsilon$ is, the more privacy is ``lost''.
 
-We introduce the concept of max divergence as a convenient way to ``measure'' this privacy cost.
+It is possible that some algorithms will fail to be differentially private for \textit{any} $\varepsilon>0$; we will often refer to algorithms or programs being ``differentially private'' or just ``private'' (without any reference to an $\varepsilon>0$) to indicate that there exists \textit{some} $\varepsilon>0$ for which the algorithm is $\varepsilon$-differentially private. 
+
+We also introduce the concept of max divergence as a convenient way to ``measure'' this privacy cost.
 
 \begin{defn}[Max Divergence]
     For any two probability distributions $P, Q$ over a shared event space $E$, the max-divergence of $P$ and $Q$ is 
@@ -291,6 +293,8 @@ However, re-analyzing SVT using approximate liftings can be relatively simple.
 Our approach is to build up a program model through the lens of regular languages. In this view, a program is simply a regular language comprised of possible program paths (or executions) where each path corresponds to a word in the language. This approach allows us to simultaneously build approximate liftings for each path that prove the overall privacy of a program.
 
 We begin with single transitions between two program locations, which correspond directly to characters in an alphabet. 
+
+\sky{todo: add a note about treating $\varepsilon$ as a parameter to the program}
 
 \subsection{Individual Transitions}
 
@@ -846,7 +850,7 @@ The proposition below shows that the cost of a coupling strategy that assigns th
 
 \subsection{Loops}
 
-We now introduce loops into our program model. 
+We now introduce loops into our program model through the introduction of a star operator. 
 
 \begin{defn}
     A looping branch $L$ is a (possibly infinite) set of complete paths such that $L$ is the language described by a single union-free regular expression over a valid transition alphabet $\Sigma_T$.
@@ -854,32 +858,36 @@ We now introduce loops into our program model.
 
 For a looping branch $L$, we will use $R_L$ to denote the minimal union-free regular expression that defines $L$. 
 
-Intuitively, a looping branch is a single, straight-line path except that we allow for cycles to be inserted within the path. Naturally, looping branches are closely related to star-dot/union-free regular languages and their associated 1-cycle-free-path-automata [citation here].
+Intuitively, a looping branch is a single, straight-line path except that we allow for cycles to be inserted within the path. Naturally, looping branches are closely related to general ``star-dot'' or union-free regular languages and their associated 1-cycle-free-path-automata (see, for example, \cite{nagy2006union}).
 
-Uniquely, we will associate entire looping branches with a \textbf{single} coupling strategy.
+We will associate entire looping branches with a \textbf{single} coupling strategy.
 
 \begin{defn}[Coupling strategy for a looping branch]
-    Let $r$ be the union-free regular expression describing paths in a looping branch $L$. Let $T_r$ be the set of all transitions that appear in $r$. Then a coupling strategy $C = (\gamma, \gamma')$ for a looping branch is a function $C:T_r\times\RR \times\RR\to [-1, 1]\times[-1, 1]$ that computes shifts for each transition in $L$ as a function of two adjacent inputs. 
+    Let $r$ be the union-free regular expression describing paths in a looping branch $L$. Let $T_r$ be the set of all transitions that appear in $r$. Then a coupling strategy $C = (\gamma, \gamma')$ for a looping branch is a function $C:T_r\times\RR \times\RR\to [-1, 1]\times[-1, 1]$ that computes shifts for each transition in $L$ as a function of two adjacent inputs.
+    
 \end{defn}
 
-Observe that this single coupling strategy implicitly defines a coupling strategy for each path in $L$.
+
+We will sometimes call these coupling strategies ``class'' coupling strategies if necessary to distinguish them from coupling strategies for individual paths.
+
+Observe that a class coupling strategy implicitly defines a coupling strategy for each path in $L$.
 
 \begin{defn}[Induced Coupling Strategy]
     \sky{not sure how necessary this is}
-    Given a coupling strategy $C = (\gamma, \gamma')$ for a looping branch $L$ and a specific path $\rho\in L$, the coupling strategy for $\rho=q_0\to \ldots \to q_n$ induced by $C$ is the pair of functions $\gamma_\rho, \gamma'_\rho$ such that 
+    Given a coupling strategy $C = (\gamma, \gamma')$ for a looping branch $L$ and a specific path $\rho\in L$, the coupling strategy for $\rho=t_0\cdots t_{n-1}$ induced by $C$ is the pair of functions $\gamma_\rho, \gamma'_\rho$ such that 
     \begin{align*}
-        \gamma_\rho(\texttt{in}\brangle{1}, \texttt{in}\brangle{2}) &= (\gamma(q_0\to q_1)(\texttt{in}\brangle{1}, \texttt{in}\brangle{2}), \gamma(q_1\to q_2)(\texttt{in}\brangle{1}, \texttt{in}\brangle{2}), \ldots,\gamma(q_{n-1}\to q_n)(\texttt{in}\brangle{1}, \texttt{in}\brangle{2}) )\\
-        \gamma'_\rho(\texttt{in}\brangle{1}, \texttt{in}\brangle{2}) &= (\gamma'(q_0\to q_1)(\texttt{in}\brangle{1}, \texttt{in}\brangle{2}), \gamma'(q_1\to q_2)(\texttt{in}\brangle{1}, \texttt{in}\brangle{2}), \ldots,\gamma'(q_{n-1}\to q_n)(\texttt{in}\brangle{1}, \texttt{in}\brangle{2}) )
+        \gamma_\rho(\texttt{in}\brangle{1}, \texttt{in}\brangle{2}) &= (\gamma(t_0)(\texttt{in}\brangle{1}, \texttt{in}\brangle{2}), \gamma(t_1)(\texttt{in}\brangle{1}, \texttt{in}\brangle{2}), \ldots,\gamma(t_{n-1})(\texttt{in}\brangle{1}, \texttt{in}\brangle{2}) )\\
+        \gamma'_\rho(\texttt{in}\brangle{1}, \texttt{in}\brangle{2}) &= (\gamma'(t_0)(\texttt{in}\brangle{1}, \texttt{in}\brangle{2}), \gamma'(t_1)(\texttt{in}\brangle{1}, \texttt{in}\brangle{2}), \ldots,\gamma'(t_{n-1})(\texttt{in}\brangle{1}, \texttt{in}\brangle{2}) )
     \end{align*}
 \end{defn}
 
-Perhaps surprisingly, we show that it is in fact optimal to only consider a single coupling strategy for an entire looping branch; not only is finding individual coupling strategies for every path in a looping branch intractable, but it also does not lead to a better overall privacy cost. 
+Perhaps surprisingly, we show that it is in fact optimal to only consider a single coupling strategy for an entire looping branch; not only is finding individual coupling strategies for every single path in a looping branch intractable, but it also does not lead to a better overall privacy cost. 
 
 \begin{prop}\label{ClassCouplingStrategiesAreEnoughProp}
     If there exists a valid coupling strategy $C_\rho$ with cost $cost(C_\rho)$ for every path $\rho$ of an path class $[\rho]$ in a program $A$ and $\sup_{\rho\in [\rho]}cost(C_\rho)< \infty$, then there exists a class coupling strategy $C'$ for $[\rho]$ of $A$ that is valid such that $cost(C') \leq \sup_{\rho\in [\rho]}cost(C_\rho)$. 
 \end{prop}
 
-Note that, because of the introduction of stars (or, equivalently, cycles) to our model, it is possible for a looping branch to fail to be private for \textit{any} $d>0$; i.e. every coupling strategy for a looping branch has infinite cost. We can characterize whether or not a coupling strategy has infinite cost through another constraint:
+Note that, because of the introduction of stars (i.e. cycles) to our model, it is possible for a looping branch to fail to be private for \textit{any} $d>0$; in other words, every coupling strategy for a looping branch has infinite cost. We can characterize whether or not a coupling strategy has infinite cost through another constraint:
 
 \begin{lemma}\label{finiteCostConstraintLemma}
     For a looping branch $L$, a valid coupling strategy $C = (\mathbf{\gamma}, \mathbf{\gamma}')$ has finite cost $cost(C)<\infty$ if and only if the following constraint applies for all $i$:
@@ -911,7 +919,7 @@ Naturally, if there exists a solution to the privacy constraint system for a loo
     If there exists a coupling strategy $C$ for a looping branch $L$ that satisfies the privacy constraint system, then there exists a finite $d>0$ such that $L$ is $d\varepsilon$-differentially private. 
 \end{prop}
 
-Perhaps surprisingly, we will also show that the privacy constraint system is complete; that is, if there does not exist a solution to the privacy constraint system, we can prove that there also does not exist any finite $d>0$ such that $L$ is $d\varepsilon$-differentially private. 
+Perhaps surprisingly, we will also later show that the privacy constraint system is complete; that is, if there does not exist a solution to the privacy constraint system, we can prove that there also does not exist any finite $d>0$ such that $L$ is $d\varepsilon$-differentially private. 
 
 \subsection{Programs}
 
@@ -923,8 +931,10 @@ We are now equipped to introduce our complete program model.
 
 Naturally, this equivalently means that $P$ is a language described by a regular expression in union normal form such that each individual term describes a looping branch. 
 
+As illustrated by branching programs, we cannot do any better with regards to coupling strategies than simply choosing one coupling strategy per looping branch. 
+
 \begin{lemma}
-    If, for every looping branch $L$ in $P$, there exists a valid coupling strategy $C_L$, then $P$ is $(\max_{L\in P} cost(C_L))\varepsilon$-differentially private. 
+    If, for every looping branch $L$ in $P$, there exists a valid coupling strategy $C_L$, then $P$ is $(\max_{L\subseteq P} cost(C_L))\varepsilon$-differentially private. 
 \end{lemma}
 \begin{proof}
     Follows immediately from definitions. 
@@ -948,6 +958,8 @@ As previously mentioned, we show that coupling proofs are \textbf{complete} for 
 \begin{lemma}\label{ProgramCounterexampleLemma}
     If, for some looping branch $L\subseteq P$ in a program $P$, there does not exist a coupling strategy $C_L$ that satisfies the privacy constraint system, then there does not exist any finite $d>0$ such that $P$ is $d\varepsilon$-differentially private.
 \end{lemma}
+
+To complete the proof, we introduce a previously analyzed program model known as DiPA, which we claim captures the same class of programs as our program model. 
 
 \subsection{DiPA}
 
@@ -1041,7 +1053,7 @@ Interestingly, the privacy of any DiPA $A$ is completely characterized by four g
     A DiPA $A$ does not have a leaking cycle, leaking pair, disclosing cycle, or privacy violating path if and only if there exists some $d>0$ such that for all $\varepsilon>0$, $A$ is $d\varepsilon$-differentially private. 
 \end{thm}
 
-This provides one method of demonstrating that a program is not $d\varepsilon$-differentially private for any $d>0$.
+This provides us with a method of demonstrating that a program is not $d\varepsilon$-differentially private for any $d>0$.
 
 \begin{cor}
     If the corresponding DiPA $A$ to a program $P$ contains a leaking cycle, leaking pair, disclosing cycle, or privacy violating path, then does not exist a finite $d>0$ such that $P$ is $d\varepsilon$-differentially private. 
@@ -1054,6 +1066,10 @@ Our key result relates the privacy constraint system (see definition \ref{privac
 \end{lemma}
 
 \subsection{An algorithm for deciding privacy}
+
+We now introduce a polynomial-time \sky{linear?} algorithm for solving the decision problem of privacy. 
+
+\sky{note: vishnu is restructuring/removing the following }
 
 Observe that the constraints imposed on valid coupling strategies for a complete path $\rho$ only depend on the shifts associated with \textit{assignment transitions} in $\rho$. 
 
@@ -1414,7 +1430,7 @@ We have specified a linear time algorithm only to check whether a given looping 
 In order to check whether a program $P$ is private, we could check whether each looping branch in $P$ is private. However, the number of looping branches in $P$ could be exponential in the size of $P$. Instead, we can check whether \textit{all} looping branches are private at once in linear time by combining the approximate privacy constraints for each looping branch into a single set of constraints.
 
 \begin{thm}
-    We can check whether $P$ is private in linear time in the size of $P$. \vishnu{This is a working theorem statement.} 
+    We can check whether $P$ is private in linear time in the size of $P$. \vishnu{This is a working theorem statement.} \sky{might be worth clarifying specifically what exactly the ``size'' of $P$ is}
 \end{thm}
 
 \begin{proof}
@@ -1434,9 +1450,9 @@ In order to check whether a program $P$ is private, we could check whether each 
 The class of programs we have defined is rather limited, leading to the natural question of whether our results can be extended to more powerful program models. 
 
 Some `natural' extensions of DiPA end up reducing directly to DiPA. For example, we considered an extension of DiPA that included a single integral ``counter'' variable $n$; this program model also allowed for branching conditional on $n$ being greater than a threshold value. 
-We discovered that every DiPA equipped with a counter can be rewritten as a standard DiPA by using a power set-style automata construction. 
+We discovered that every DiPA equipped with a counter can be rewritten as a standard DiPA by using a power set-style automata construction. \sky{is more elaboration here necessary?}
 
-However, there are other, non-trivial, extensions that warrant further study. In particular, we describe one extension of DiPA that allows for two real-valued program variables $\texttt{x}, \texttt{y}$.
+However, there are other, non-trivial, extensions that warrant further study. In particular, we analyze one extension of DiPA that allows for two real-valued program variables $\texttt{x}, \texttt{y}$.
 
 \subsection{Two-Variable Programs: GDiPA}
 
@@ -1482,11 +1498,11 @@ In particular, note that the noisy input that the threshold variables are compar
 More formally, a program location is a tuple consisting of a program location and values for $\texttt{x}$ and $\texttt{y}$. Let $S = Q\times\RR\times \RR$ be the set of all possible program locations. As expected, every possible input is simply an element of $\RR$. 
 As before, the set of all possible output events is $\Gamma \cup \Sigma$, where $\Sigma$ is the standard $\sigma$-algebra of all Lebesgue measurable sets. 
 
-Then the semantics of a 2v-transition $t$ can be defined as a function $\Phi((q, \texttt{x}, \texttt{y}), \texttt{in}): S\to dist(S\times (\Gamma\cup\RR\cup \lambda))$ that maps an initial program state and an input to a distribution of subsequent program states and an output event following the expected semantics; $\lambda$ here denotes the empty string (i.e. no output). 
+Then the semantics of a 2v-transition $t$ can be defined as a function $\Phi_t((q, \texttt{x}, \texttt{y}), \texttt{in}): S\to dist(S\times (\Gamma\cup\RR\cup \lambda))$ that maps an initial program state and an input to a distribution of subsequent program states and an output event following the expected semantics; $\lambda$ here denotes the empty string (i.e. no output). 
 
 The precise semantics are defined exactly analogously to the single variable case. 
 
-We again denote the probability that a transition ``succeeds'' as $\PP[\texttt{x}, \texttt{y}, t, \texttt{in}, o]$, where $\texttt{x}, \texttt{y}\in \RR$ are the initial values of $\texttt{x}$ and $\texttt{y}$, respectively, $t$ is a 2v-transition, $\texttt{in}\in \RR$ is a real-valued input, and $o\in \Gamma\cup\Sigma$ is a possible output of $t$.
+We again denote the probability that a transition $t= (q, q', c, \sigma, tau)$ ``succeeds'' as $\PP[\texttt{x}, \texttt{y}, t, \texttt{in}, o] = \int_{-\infty}^{\infty}\int_{-\infty}^{\infty}\PP[\texttt{x}\gets x']\PP[\texttt{y}\gets y']\Phi_t((q, \texttt{x}, \texttt{y}))((q', x', y'), o)dx'dy'$, where $\texttt{x}, \texttt{y}\in \RR$ are the initial values of $\texttt{x}$ and $\texttt{y}$, respectively, $\texttt{in}\in \RR$ is a real-valued input, and $o\in \Gamma\cup\Sigma$ is a possible output of $t$.
 
 \begin{defn}[Valid Transition Alphabets]
     A finite 2v-transition alphabet $\Sigma_T$ is valid if it satisfies the following conditions: 
@@ -1499,7 +1515,7 @@ We again denote the probability that a transition ``succeeds'' as $\PP[\texttt{x
     \end{itemize}
 \end{defn}
 
-For technical reasons that will become clear later, we introduce a new validity condition that requires that all assignment transitions have the same spread parameter on their Laplace noise.
+For technical reasons that will become clear later, we introduce a new validity condition (the ``assignment spread parameter condition'') that requires that all assignment transitions have the same spread parameter on their Laplace noise.
 
 \subsubsection{Multivariable Couplings}
 
@@ -1540,12 +1556,13 @@ We first show that if we can create couplings for each variable in isolation, th
     Finally, as before, if $\sigma \in \{\texttt{insample}^{(x)}, \texttt{insample}^{(x)\prime}, \texttt{insample}^{(y)},\texttt{insample}^{(y)\prime}\}$, then for all $\sigma$, $o\brangle{1}=\sigma \implies o\brangle{2} = \sigma$. By simply adding up the costs from lemma \ref{indTransitionCoupling}, we complete the proof.
 \end{proof}
 
+This provides an extremely straightforward method of combining coupling strategies for different variables together; indeed, this specific result is immediately extensible to an arbitrary number of variables. 
 
 \begin{cor}
     If there exist coupling strategies $C_x, C_y$ that each independently satisfy the privacy constraint system for a 2v-transition $t$, then there exists a valid 2-coupling strategy $C$ for $t$ such that $cost(C) = cost(C_x)+cost(C_y)$. 
 \end{cor}
 
-\textbf{Cross-Couplings{\color{red}CHANGE NAME}}
+\textbf{Cross-Couplings}
 
 We now introduce a new type of coupling strategy for a single (2v-)transition:
 
@@ -1573,7 +1590,7 @@ We now introduce a new type of coupling strategy for a single (2v-)transition:
     \end{enumerate}
 \end{lemma}
 \begin{proof}
-    For convenience, we will rewrite $X$ and $Y$ as $X = \mu_x + \zeta_x$ and $Y = \mu_y + \zeta_y$, where $\zeta_x \sim\Lap(0, \frac{1}{d_x\varepsilon})$ and $\zeta_y \sim\Lap(0, \frac{1}{d_x\varepsilon})$. 
+    For convenience, we will rewrite $X$ and $Y$ as $X = \mu_x + \zeta_x$ and $Y = \mu_y + \zeta_y$, where $\zeta_x \sim\Lap(0, \frac{1}{d_{at}\varepsilon})$ and $\zeta_y \sim\Lap(0, \frac{1}{d_{at}\varepsilon})$. 
     As before, we also write $\texttt{insample}^{(x)} = \texttt{in} + z^{(x)}$, where $z\sim\Lap(0, \frac{1}{d_q\varepsilon})$ and $\texttt{insample}^{(x)\prime} = \texttt{in} + z^{(x)\prime}$, where $z'\sim\Lap(0, \frac{1}{d_q'\varepsilon})$ (and symmetrically for $\texttt{insample}^{(y)}$, $\texttt{insample}^{(y)\prime}$).
 
     We show cases (1) and (3). Cases (2) and (4) follow symmetrically. 
