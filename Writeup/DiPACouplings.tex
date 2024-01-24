@@ -1253,7 +1253,10 @@ Note: the inner problem is convex, and so the outer problem is that of convex ma
 \end{defn}
 
 \begin{prop}
+    \label{prop:approx_exists}
     Given a differentially private looping branch $L$, there exists a valid coupling strategy $C_L$ for $L$ such that $cost(C_L) = approx(L)$.
+
+    Moreover, if $\gamma \in [-1, 1]^n$ satisfies the approximate privacy constraints, then there is a valid coupling strategy $C_L = (\gamma^*, {\gamma'}^*)$ for $L$ such that $\gamma_i^*(\texttt{in}\brangle{1}, \texttt{in}\brangle{2}) = \gamma_i$ for all $t_i$ that do not appear in cycles. 
 \end{prop}
 
 \begin{proof}
@@ -1316,6 +1319,7 @@ Note: the inner problem is convex, and so the outer problem is that of convex ma
 \end{proof}
 
 \begin{prop}
+    \label{prop:approx_opt_are_close}
     For a looping branch $L$ with $n$ distinct transitions, we have 
     \[opt(L) \leq approx(L) \leq opt(L) + \sum_{i \in I }^n d_i + \sum_{t_i \text{outputs \texttt{insample}}} d_i'\]
     where $I$ is the set of transitions in $L$ that do $\textit{not}$ appear in a cycle.
@@ -2004,11 +2008,25 @@ A full exploration of approximate liftings can be found in \cite{HsuThesis2017}.
     Further, because $\gamma_{at(i)}$ must be greater than $\gamma_i$ for all $\texttt{in}_i\brangle{1}\sim\texttt{in}_i\brangle{2}$ for $C$ to be valid, we must have that $\gamma_{at(i)}=1$.
 \end{proof}
 \begin{lemma}
-    If a valid finite cost coupling strategy $C = (\gamma, \gamma')$ exists for a lasso $L_\rho$, then there exists a valid finite cost coupling strategy $C^*= (\gamma^*, \gamma^{*\prime})$ such that for all $i\in AT(L_\rho)$, $\gamma_i^*\in \{-1, 0, 1\}$. 
+    If a valid finite cost coupling strategy $C = (\gamma, \gamma')$ exists for a lasso $L_\rho$, then there exists a valid finite cost coupling strategy $C^*= (\gamma^*, \gamma^{*\prime})$ such that for all $i\in AT(L_\rho)$, $\gamma_i^*\in \{-1, 1\}$. 
 \end{lemma}
 \begin{proof}
-    \sky{note: vishnu has a proof for this}
+    Since $L_\rho$ is differentially private, the cost $opt(L_\rho)$ of its optimal coupling strategy is finite. By Proposition \ref{prop:approx_opt_are_close}, we see also that $approx(L)$ is finite. Thus, there exists $\beta \in [-1, 1]^{n}$ which satisfies the approximate privacy constraints on $L_\rho$.
 
+    Define 
+    \[\gamma_i = \lfloor \beta_i \rfloor \]
+
+    and notice that $\gamma_i, \gamma^{\prime}$ also satisfy the approximate privacy constraints on $L_\rho$:
+    \begin{align*}
+        \beta_{at(i)} \leq \beta_i &\implies \lfloor \beta_{at(i)} \rfloor \leq \lfloor \beta_i \rfloor \implies \gamma_{at(i)} \leq \gamma_i\\
+        \beta_{at(i)} \geq \beta_i &\implies \lfloor \beta_{at(i)} \rfloor \geq \lfloor \beta_i \rfloor \implies \gamma_{at(i)} \geq \gamma_i\\
+        \beta_{i} = 0 &\implies \lfloor \beta_{i} \rfloor = 0 \implies \gamma_{i} = 0\\
+        \beta_{i} = 1 &\implies \lfloor \beta_{i} \rfloor = 1 \implies \gamma_{i} = 1\\
+        \beta_{i} = -1 &\implies \lfloor \beta_{i} \rfloor = -1 \implies \gamma_{i} = -1
+    \end{align*}
+    Since $L_\rho$ is private, none of the transitons $t_i$ for $i \in AT(L_\rho)$ are in cycles. \vishnu{Can I say this?}
+    
+    By Proposition \ref{prop:approx_exists}, we see that there is a valid coupling strategy $C^* = (\gamma^*, \gamma^{*\prime})$ for $\gamma^*_i = \gamma_i \in \{\pm 1\}$ for all $i \in AT(L_\rho)$.
 \end{proof}
 
 
