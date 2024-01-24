@@ -2008,7 +2008,7 @@ A full exploration of approximate liftings can be found in \cite{HsuThesis2017}.
     Further, because $\gamma_{at(i)}$ must be greater than $\gamma_i$ for all $\texttt{in}_i\brangle{1}\sim\texttt{in}_i\brangle{2}$ for $C$ to be valid, we must have that $\gamma_{at(i)}=1$.
 \end{proof}
 \begin{lemma}
-    If a valid finite cost coupling strategy $C = (\gamma, \gamma')$ exists for a lasso $L_\rho$, then there exists a valid finite cost coupling strategy $C^*= (\gamma^*, \gamma^{*\prime})$ such that for all $i\in AT(L_\rho)$, $\gamma_i^*\in \{-1, 1\}$. 
+    If a valid finite cost coupling strategy $C = (\gamma, \gamma')$ exists for a lasso $L_\rho$, then there exists a valid finite cost coupling strategy $C^*= (\gamma^*, \gamma^{*\prime})$ such that for all $i\in AT(L_\rho)$, $\gamma_i^*\in \{-1, 0, 1\}$. 
 \end{lemma}
 \begin{proof}
     Since $L_\rho$ is differentially private, the cost $opt(L_\rho)$ of its optimal coupling strategy is finite. By Proposition \ref{prop:approx_opt_are_close}, we see also that $approx(L)$ is finite. Thus, there exists $\beta \in [-1, 1]^{n}$ which satisfies the approximate privacy constraints on $L_\rho$.
@@ -2026,7 +2026,7 @@ A full exploration of approximate liftings can be found in \cite{HsuThesis2017}.
     \end{align*}
     Since $L_\rho$ is private, none of the transitons $t_i$ for $i \in AT(L_\rho)$ are in cycles. \vishnu{Can I say this?}
     
-    By Proposition \ref{prop:approx_exists}, we see that there is a valid coupling strategy $C^* = (\gamma^*, \gamma^{*\prime})$ for $\gamma^*_i = \gamma_i \in \{\pm 1\}$ for all $i \in AT(L_\rho)$.
+    By Proposition \ref{prop:approx_exists}, we see that there is a valid coupling strategy $C^* = (\gamma^*, \gamma^{*\prime})$ for $\gamma^*_i = \gamma_i \in \{-1, 0, 1\}$ for all $i \in AT(L_\rho)$.
 \end{proof}
 
 
