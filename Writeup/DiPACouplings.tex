@@ -87,7 +87,7 @@ Approximate liftings allow for a more structured proof approach to many algorith
 
 Our contributions:
 \begin{itemize}
-    \item We develop a simple program model centred around comparing an input to a threshold value for which we show that there is a simple and, most notably, complete class of privacy proofs built from approximate liftings
+    \item We develop a simple program model centred around comparing an input to a threshold value for which we show that there is a simple and, most notably, complete class of privacy proofs (``coupling proofs'') built from approximate liftings
     \begin{itemize}
         \item Every program in our model is a language over an alphabet of individual program transitions
         \item We can use the structure of these programs to automatically build privacy proofs for any program using approximate liftings
@@ -100,13 +100,13 @@ Our contributions:
 
 \section{Differential Privacy}
 
-Differential privacy is a mathematically robust approach to privacy; most generally, differential privacy ensures that it is unlikely for an adversary to distinguish between whether or not one person's data was used in a private algorithm. To do this, differentially private algorithms rely on randomization, especially through the addition of statistical noise.
+Differential privacy is a mathematically robust approach to privacy; in brief, differential privacy ensures that it is unlikely for an adversary to distinguish between whether or not one person's data was used in a private algorithm. To do this, differentially private algorithms rely on randomization, especially through the addition of statistical noise.
 
-More precisely then, for a fixed output $\sigma$ of a private algorithm $A$, the probability of obtaining $\sigma$ for a dataset with some individual Alex is close (measured by a multiplicative factor) to the probability of obtaining $\sigma$ for the same dataset with Alex removed or Alex's data changed.
+More precisely then, for any output $\sigma$ of a private algorithm $A$, the probability of obtaining $\sigma$ for a dataset with some individual Alex is close (measured by a multiplicative factor) to the probability of obtaining $\sigma$ for the same dataset with Alex removed or Alex's data changed.
 
 We will consider \textbf{datasets} $\mathcal{X}\in X^n$ of size $n$, where $X$ is the set of all possible rows in the dataset; each person is represented by a single row. 
 
-We next define what it means for datasets to be ``similar'' to each other. 
+We first define what it means for datasets to be ``similar'' to each other. 
 
 \begin{defn}
     Two datasets $\mathcal{X}=(x_1, \ldots, x_n), \mathcal{X}'=(x'_1, \ldots, x'_n)\in X^n$ are \textbf{adjacent} (notated $\mathcal{X}\sim\mathcal{X}'$) if $|\{i: x_i\neq x'_i\}|\leq 1$\footnote{A common variant is to define adjacency by the removal or addition of an entry, rather than changing one}.
@@ -117,18 +117,19 @@ We thus formalize privacy under this framework as follows.
     For some $\varepsilon>0$, a randomized algorithm $A$ is $\varepsilon$-differentially private if, for all pairs of \textbf{adjacent} datasets $X$ and $X'$ and all events $E \subseteq \im(A)$, \[\PP[A(X) \in E]\leq e^\varepsilon \PP[A(X')\in E]\]
 \end{defn}
 
-The privacy parameter $\varepsilon$ is traditionally thought of as analogous to the `privacy cost' of a program; the larger $\varepsilon$ is, the more privacy is ``lost''.
+The privacy parameter $\varepsilon$ is traditionally thought of as analogous to the `privacy cost' of a program; the larger $\varepsilon$ is, the more privacy is ``lost''. In our analysis of differentially private algorithms, we thus aim to minimize the ``cost'' of an algorithm.
 
-It is possible that some algorithms will fail to be differentially private for \textit{any} $\varepsilon>0$; we will often refer to algorithms or programs being ``differentially private'' or just ``private'' (without any reference to an $\varepsilon>0$) to indicate that there exists \textit{some} $\varepsilon>0$ for which the algorithm is $\varepsilon$-differentially private. 
+It is possible that some algorithms will fail to be differentially private for \textit{any} $\varepsilon>0$; we will often refer to algorithms or programs being ``differentially private'' or just ``private'' without any reference to an $\varepsilon>0$ to indicate that there exists \textit{some} $\varepsilon>0$ for which the algorithm is $\varepsilon$-differentially private. 
+We call the problem of deciding whether or not an algorithm is differentially private the decision problem of privacy.
 
-We also introduce the concept of max divergence as a convenient way to ``measure'' this privacy cost.
+We also introduce the concept of max divergence as a convenient way to ``measure'' privacy cost.
 
 \begin{defn}[Max Divergence]
     For any two probability distributions $P, Q$ over a shared event space $E$, the max-divergence of $P$ and $Q$ is 
     $D_{\infty}(P||Q) = \max_{e\in E}\ln\left(\frac{P(e)}{Q(e)}\right)$.
 \end{defn}
 
-Max divergence is closely related to differential privacy; it immediately follows from definition that an algorithm $A$ is $\varepsilon$-DP if and only if for all adjacent inputs $X\sim X'$, $D_{\infty}(A(X)||A(X'))\leq \varepsilon$. 
+It immediately follows from the definition that an algorithm $A$ is $\varepsilon$-DP if and only if for all adjacent inputs $X\sim X'$, $D_{\infty}(A(X)||A(X'))\leq \varepsilon$; thus, max-divergence is one way to represent the ``true'' or ``minimal'' privacy cost of an algorithm.
 
 An extremely useful property of differential privacy is that differentially private programs can be \textbf{sequentially composed} with a linear degradation in privacy:
 
@@ -136,23 +137,25 @@ An extremely useful property of differential privacy is that differentially priv
     If $A$ is $\varepsilon_1$-differentially private and, for all $\sigma$, $B(\sigma, \cdot)$ is $\varepsilon_2$-differentially private, then $B(A(X), X)$ is $\varepsilon_1+\varepsilon_2$-differentially private. 
 \end{thm}
 
-Composition therefore allows us to view privacy parameters $\varepsilon$ as a ``budget'' for privacy-leaking operations in a program. Many\footnote{generic platitude - reword} common differentially private algorithms are thus built out of well-known private components combined together, which also lend themselves to straightforward analyses. 
+Composition therefore allows us to view privacy parameters $\varepsilon$ as a ``budget'' for privacy-leaking operations in a program. Many common differentially private algorithms are thus built out of well-known private components combined together, which also lend themselves to straightforward analyses. 
 
 \subsection{Sensitivity and the Laplace Mechanism}
 
-Because we are typically interested in analyzing \textit{functions} of our raw dataset (for example, the average age of a town), it is often useful to examine differential privacy through a similar model - instead of comparing two adjacent datasets $X\sim X'$, we compare \textbf{queries} $f(X)$ and $f(X')$. In this world, we care about the \textit{sensitivity} of functions: how much a function \textit{changes} when considering adjacent inputs.  
+Because we are typically interested in analyzing \textit{functions} of a dataset (for example, the average age of a town), it is often useful to examine differential privacy through a similar model - instead of comparing two adjacent datasets $X\sim X'$, we compare \textbf{queries} $f(X)$ and $f(X')$. In this world, we care about the \textit{sensitivity} of functions: how much a function \textit{changes} when considering adjacent inputs.  
 
 \begin{defn}
     The ($\ell_1$-)sensitivity of a function $f: X\to \RR$, often denoted $\Delta f$, is defined as $\Delta f = \max_{X\sim X'}||f(X)-f(X')||_1$.
 \end{defn}
 
-Given a function's sensitivity, we can easily make it differentially private through the use of the \textbf{Laplace Mechanism}.
+If we know a function's sensitivity, we can easily make it differentially private through the use of the \textbf{Laplace Mechanism}.
+
+For completeness, we first define the Laplace distribution. 
 
 \begin{defn}
-    The Laplace distribution $\Lap(\mu, b)$ with mean $\mu$ and spread parameter $b$ is the probability distribution with probability density function $f(x) = \frac{1}{2b}\exp(-\frac{|x-\mu|}{b})$. If $\mu =0$, we will often abbreviate $\Lap(0, b)$ as $\Lap(b)$. 
+    The Laplace distribution $\Lap(\mu, b)$ with mean $\mu$ and spread parameter $b$ is the probability distribution with probability density function $f(x) = \frac{1}{2b}\exp(-\frac{|x-\mu|}{b})$. If $\mu =0$, we may abbreviate $\Lap(0, b)$ as $\Lap(b)$. 
 \end{defn}
 
-The Laplace Mechanism, as expected, simply adds noise sampled from the Laplace distribution to a query result. 
+The Laplace Mechanism, as expected, simply adds noise sampled from the Laplace distribution to a query result. In particular, the noise is dependent on the sensitivity of the input function; as expected, the higher the sensitivity of a function is, the more noise the Laplace mechanism will add to it.   
 
 \begin{thm}[Theorem 3.6~\cite{dworkrothmonograph}]
     For a function $f$ with sensitivity $\Delta$, $A(X) = f(X) + \Lap(\frac{\Delta}{\varepsilon})$ is $\varepsilon$-differentially private. 
@@ -160,24 +163,11 @@ The Laplace Mechanism, as expected, simply adds noise sampled from the Laplace d
 
 We will eventually consider a program model where we are given a potentially infinite \textit{sequence} of real-valued query functions $q_0, q_1, \ldots$, each with sensitivity at most $\Delta$.
 
-\subsection{Deciding Privacy}
-
-\sky{this section isn't super relevant anymore - remove?}
-
-Because designing differentially private algorithms can be quite tricky, we would like to be able to automatically (i.e. algorithmically) verify whether or not a given program is private, especially for algorithms whose privacy proofs do not rely primarily on composition. 
-Ideally, beyond just determining whether a program is private or not, if a program is private, we'd like to find a good bound on the privacy cost for the program as well. 
-
-Unfortunately, even for relatively simple programs, just the basic problem is undecidable. 
-
-\begin{thm}[\cite{barthe.etal2020decidingdp}]
-    The problem of determining whether a program from a certain class of algorithms with assignments, conditionals, and while loops is $\varepsilon$-differentially private is undecidable\footnote{rephrase?}.
-\end{thm}
-
-Thus, we will derive a decision procedure for a very specific class of potentially private programs; in particular, this class of programs lends itself to a straightforward analysis by \textbf{approximate liftings}, which we now introduce. 
-
 \section{Couplings and Liftings}
 
-Probabilistic couplings are a common tool in probability theory; intuitively, couplings allow for the joint analysis of nominally unrelated probabilistic processes. 
+In this section we introduce approximate liftings, which are probabilistic tools that allow for the structured creation of proofs of differential privacy.
+
+Approximate liftings are closely related to probabilistic couplings, which themselves are a commonly used tool in probabilistic analysis. We introduce couplings here as illustrative background.
 
 \begin{defn}
     A coupling between two distributions $A$ and $B$ is a joint distribution $C$ such that $\pi_1(C)=A$ and $\pi_2(C)=B$, where $\pi_1(C)$ and $\pi_2(C)$ are the first and second marginals of $C$, respectively. 
@@ -185,9 +175,7 @@ Probabilistic couplings are a common tool in probability theory; intuitively, co
 
 In particular, couplings are useful when analyzing the relationship between two probablistic processes. [past literature on couplings]
 
-A previous line of work has extended the concept of couplings to reason about privacy and private processes. 
-
-In particular, objects known as \textbf{approximate liftings} \cite{BartheOlmedo2013,bartheKopfOlmedo2012ProbabilisticRelationalReasoningforDifferentialPriv,HsuThesis2017,BartheEtAl2016} allow us to apply couplings to the realm of differential privacy. 
+A previous line of work has extended the concept of couplings to reason about privacy and private processes: \textbf{approximate liftings} \cite{BartheOlmedo2013,bartheKopfOlmedo2012ProbabilisticRelationalReasoningforDifferentialPriv,HsuThesis2017,BartheEtAl2016} allow us to apply couplings to the realm of differential privacy. 
 
 \begin{defn}
     Let $A_1, A_2$ be two probability spaces\footnote{may need to formally rewrite this at some point}. We say a distribution $\mu_1$ on $A_1$ and $\mu_2$ on $A_2$ are related by the $\mathbf{\varepsilon}$\textbf{-lifting} of the relation $\Psi\subseteq A_1\times A_2$ (written $\mu_1\Psi^{\#\varepsilon}\mu_2$) if there exist two \textbf{witness distributions} $\mu_L, \mu_R$ on $A_1\times A_2$ such that\begin{enumerate}
@@ -197,12 +185,12 @@ In particular, objects known as \textbf{approximate liftings} \cite{BartheOlmedo
     \end{enumerate}
 \end{defn}
 
-In some sense, approximate liftings can be considered ``half-couplings'', where half of $\mu_L$ is coupled with half of $\mu_R$. Because of the close relationship between couplings and approximate liftings, we will often use ``couplings'' to generically refer to approximate liftings and couplings together.
+In some sense, approximate liftings can be considered ``half-couplings'', where half of $\mu_L$ is coupled with half of $\mu_R$. Because of the close relationship between couplings and approximate liftings, we will often use ``couplings'' to generically refer to both approximate liftings and couplings in the technical sense.
 
-The similarities between the third condition of approximate liftings and the definition of differential privacy should be clear. Indeed, there is a close connection between approximate liftings and differential privacy:
+As expected, there is a close connection between approximate liftings and differential privacy:
 
 \begin{thm}
-    An algorithm $A(X)$ is $\varepsilon$-differentially private if and only if, for all adjacent input sequences $X\sim X'$, $A(X)(=)^{\#\varepsilon}A(X')$.
+    An algorithm $A(X)$ is $\varepsilon$-differentially private if and only if, for all adjacent inputs $X\sim X'$, $A(X)(=)^{\#\varepsilon}A(X')$.
 \end{thm}
 
 However, we will generally work with the following relaxation, which still allows us to prove that an algorithm is private:
@@ -216,22 +204,22 @@ Almost every standard result about differential privacy can be restated in terms
 \begin{thm}[Composition of Liftings]\label{liftingcomposition}
     Let $A_1, B_2, A_2, B_2$ be distributions over $S_1, T_1, S_2, T_2$, respectively and let $R_1\subseteq S_1\times T_1$, $R_2\subseteq S_2\times T_2$ be relations. If $A_1 R_1^{\#\varepsilon_1}B_1$ and $A_1 R_1 B_1\implies A_2R_2^{\#\varepsilon_2}B_2$, then $A_2 R_2^{\#\varepsilon_1+\varepsilon_2}B_2$.
 \end{thm}
+\sky{Would an example here be useful?}
 
 \begin{prop}[Laplace Mechanism for Liftings]
     If $X_1\sim\Lap(\mu_1, \frac{1}{\varepsilon})$ and $X_2\sim\Lap(\mu_2, \frac{1}{\varepsilon})$, then $X_1(=)^{\#\varepsilon|\mu_1-\mu_2|}X_2$.
 \end{prop}
 
 
-
-The structure of theorems \ref{implicationcouplingthm} and \ref{liftingcomposition} suggests the format that coupling proofs of privacy take: given two ``runs'' of an algorithm on adjacent inputs, construct many smaller liftings between program variables in each run and compose these liftings together to show that a final implicatory lifting between the outputs of the two runs exists. 
+Theorems \ref{implicationcouplingthm} and \ref{liftingcomposition} suggest the form of coupling proofs for privacy: given two ``runs'' of an algorithm on adjacent inputs, construct many smaller liftings between program variables in each run and compose these liftings together to show that a final implicatory lifting between the outputs of the two runs exists. 
 
 \subsection{Proving SVT with couplings}
 
 For illustrative purposes, we provide a manual proof of privacy for a notoriously tricky algorithm, the Sparse Vector Technique (SVT). \sky{do we need some explanation that this proof is technically original bc of the rewordings? also can remove this section for space}
 
-A classic algorithm that requires analysis beyond standard composition is Sparse Vector Technique (SVT). Given a possibly infinite stream of inputs and a threshold value, SVT will output if the queries are above or below the threshold (with noise on both the query and the threshold). 
+A classic algorithm that requires analysis beyond standard composition is Sparse Vector Technique (SVT). Given a possibly infinite stream of inputs and a threshold value, SVT will output if the queries are above or below the threshold. 
 
-Unusually for differentially private algorithms, SVT can output a potentially unbounded number of ``below threshold'' queries before the first $c$ ``above threshold''s (or vice-versa), where $c$ is some constant set by the user; when $c=1$, SVT is frequently also referred to as ``Above (or Below) Threshold''. Potential applications include, for example, checking that a series of inputs is within an expected range or, appropriately, privately determining the non-zero elements of a sparse vector. 
+Unusually for differentially private algorithms, SVT can output a potentially unbounded number of ``below threshold'' queries before the first $c$ ``above threshold''s (or vice-versa), where $c$ is some constant set by the user; when $c=1$, SVT is also referred to as ``Above (or Below) Threshold''. Potential applications include, for example, checking that a series of inputs is within an expected range or, appropriately, privately determining the non-zero elements of a sparse vector. 
 
 Because SVT allows for a potentially unbounded number of ``below threshold'' query outputs, its analysis requires a non-standard approach; a naive composition approach that assigns a fixed cost to outputting the result of each query will immediately result in unbounded privacy cost as well. 
 Indeed, the analysis of SVT is notoriously difficult, with multiple published attempts at privacy proofs that were later shown to be incorrect\footnote{A textbook analysis of SVT, along with a discussion of bugged versions and incorrect privacy proofs, can be found at \cite{10.14778/3055330.3055331}}. 
@@ -828,7 +816,7 @@ Notably, for a general branching program, there is no ``smart'' way to combine c
     The above observations show that the optimal coupling strategy for $B$ must necessarily assign different coupling strategies to $t_{init}$ in $\rho_1$ and $\rho_2$.
 \end{proof}
 
-Indeed, there exist a family of counterexamples such that the relative ``cost'' of choosing a unified coupling strategy for a branching program increases quadratically in the size of the branching program. \sky{Is this technically correct @ Vishnu?} \vishnu{Yes!}
+Indeed, there exist a family of counterexamples such that the relative ``cost'' of choosing a unified coupling strategy for a branching program increases quadratically in the size of the branching program.
 
 The proposition below shows that the cost of a coupling strategy that assigns the same shift to each transition (path-independent strategies) can be arbitrarily larger than the optimal cost. 
 
@@ -1103,79 +1091,6 @@ Our key result relates the privacy constraint system (see definition \ref{privac
 \begin{lemma}
     If, for a looping branch $L$, there does not exist a coupling strategy $C$ that satisfies the privacy constraint system for $L$, then the corresponding DiPA to $L$ must contain either a leaking cycle, a leaking pair, a disclosing cycle, or a privacy violating path. 
 \end{lemma}
-
-\subsection{An algorithm for deciding privacy}
-
-We now introduce a polynomial-time \sky{linear?} algorithm for solving the decision problem of privacy. 
-
-\sky{note: vishnu is restructuring/removing the following }
-
-Observe that the constraints imposed on valid coupling strategies for a complete path $\rho$ only depend on the shifts associated with \textit{assignment transitions} in $\rho$. 
-
-In particular, this lends itself to conceptualizing complete paths by splitting them up based on assignment transitions. 
-
-\begin{defn}
-    For a complete path $\rho$ in a program $P$, let $A_\rho$ be the set of all assignment transitions in $\rho$. \vishnu{Unless this is used later, we can probably remove this definition.}
-\end{defn}
-
-\begin{defn}
-    A \textbf{segment} of a (complete) path $\rho = q_0\to\ldots\to q_n$ is a subpath $q_i \to q_{i+1}\to \ldots \to q_j$ of $\rho$ such that $t_i \in A_\rho$; for all $i<k<j$, $t_k \notin A_\rho$; and either $j=n$ or $t_j \in A_\rho$.
-\end{defn}
-
-In other words, a segment is a subpath of $\rho$ between two consecutive assignment transitions (or between the last assignment transition and the end of the path). Splitting up a path into segments thus allows us to think about a single value of $\texttt{x}$ at a time.
-
-% The segment graph overview
-
-\begin{defn}
-    Given segments $s_i$ and $s_j$ of a path $\rho$, we say that $s_j$ follows $s_i$ (written $s_i \hookrightarrow s_j$) if $s_j$ is a subpath of $\rho$ occurring immediately after $s_i$ in $\rho$.
-\end{defn}
-
-
-\begin{defn}[Segment graph of a program]
-    Given a DiPA $\mathcal{A}$, the segment graph $G_P = (V, E)$ of $\mathcal{A}$ is a directed graph where: 
-    \begin{itemize}
-        \item For every segment $s_i \in seg(\mathcal{A})$, there is a vertex $v_i \in V$ representing the coupling shift on the assignment transition of $s_i$.
-        \item For every pair of segments $(s_i, s_j)$ which have the privacy constraint $\gamma_i \leq \gamma_j$, there is an edge $(v_i, v_j) \in E$.
-        \item There are nodes ${\bf 1, -1}\ \in V$ such that: 
-        \begin{itemize}
-            \item The edges $({\bf -1}, v)$ exist for all $v \in V$.
-            \item The edges $(v, {\bf 1})$ exist for all $v \in V$.
-            \item For every segment $s_i$ with the privacy constraint $\gamma_i = 1$, there is an edge $({\bf 1}, v_i) \in E$.
-            \item For every segment $s_i$ with the privacy constraint $\gamma_i = -1$, there is an edge $(v_i, {\bf -1}) \in E$. 
-        \end{itemize}
-    \end{itemize}
-\end{defn}
-
-\begin{lemma}
-    \label{lemma:segpath}
-    Let there exist a path $v_1 \to \dots \to v_k$ in the segment graph of $\mathcal{A}$, and let the corresponding segments be $s_{i_1}, \dots, s_{i_k}$. Then we either have that 
-    
-    \[s_{i_1} \hookrightarrow s_{i_2} \hookrightarrow \dots \hookrightarrow s_{i_k} \qquad \text{ and } \qquad guard(s_{i_k}) = <\]
-    
-    or 
-    
-    \[s_{i_k} \hookrightarrow s_{i_{k - 1}} \hookrightarrow \dots \hookrightarrow s_{i_1} \qquad \text{ and } \qquad guard(s_{i_k}) = \geq\]
-\end{lemma}
-
-\begin{proof}
-    We will use induction on $k$ with base case $k = 2$. If we have $v_1 \to v_2$ in the segment  graph, then we either have that $s_{i_1} \hookrightarrow s_{i_2}$ with $guard(s_{i_2}) = <$, or that $s_{i_2} \hookrightarrow s_{i_1}$ with $guard(s_{i_2}) = \geq$. For a path with length $k + 1$ in the segment  graph, let us assume the desired result. Then apply the base case on $s_{i_{k}} \to s_{i_{k + 1}}$ to conclude. 
-\end{proof}
-
-\begin{thm}
-    \label{theorem:decide_privacy}
-    A DiPA $\mathcal{A}$ is differentially private if and only if there does not exist a path from $\bf 1$ to $\bf -1$ in the segment graph of $\mathcal{A}$.
-\end{thm}
-
-\begin{proof}
-    $(\implies)$ Suppose that $\mathcal{A}$ is differentially private. Then there exists a shift-coupling proof of privacy $\Gamma$ with finite cost. Assume that there exists a path ${\bf 1} \to v_1 \to \dots \to v_k \to {\bf -1}$ in the segment graph of $\mathcal{A}$. 
-    Without loss of generality, we have the sequence of segments $s_{i_1} \hookrightarrow \dots \hookrightarrow s_{i_k}$ corresponding to the path by Lemma \ref{lemma:segpath}. We can then extend this to a sequence of segments $s_1 \to \dots \to s_{i_1} \to \dots \to s_{i_k} \to \dots \to s_n$ that begins with the initialization segment and ends with a terminal segment. 
-
-    If we restrict the segment-shift graph to only these segments, we find that any assignment of shifts $\gamma$ would not be valid, as we would be able to construct a sequence of inequalities to conclude that $1 \leq -1$, which is false. Thus, there is no valid assignment of shifts $\gamma$ for this sequence of segments with finite cost, and so $\Gamma$ is not a shift-coupling proof of privacy with finite cost. This is a contradiction.
-
-    $(\impliedby)$ This direction follows from the fact that there is \textit{some} valid assignment of shifts $\gamma$ with finite cost on each segment, and so we can construct a shift-coupling proof of privacy $\Gamma$ with finite cost.
-\end{proof}
-
-We can construct the segment graph of a DiPA in linear time, and check for a path from $\bf 1$ to $\bf -1$ in linear time using a breadth-first search. Thus, we can decide privacy in linear time.
 
 \subsection{Minimizing a privacy budget}
 
