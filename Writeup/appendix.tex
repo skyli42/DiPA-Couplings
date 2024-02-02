@@ -1,0 +1,450 @@
+
+\section{Appendix}
+
+\subsection{Proofs for section 4}
+
+
+\begin{proof}[\proofname~of lemma \ref{finiteCostConstraintLemma}]
+
+    ($\impliedby$)
+
+    Let $T$ be the set of transitions $t_i$ in $L$ such that $t_i$ is \textbf{not} found under a star in $R_L$. 
+
+    Fix a complete path $\rho\in L$ and let $C_\rho$ be the coupling strategy for $\rho$ induced by $C$. 
+
+    Let $D_\rho$ be the set of transitions $t_i\in \rho$ such that $t_i$ is under a star in $R_L$, i.e., $t_i\notin T$.  
+
+    If the given constraint holds, then we know that $\max_{\texttt{in}\brangle{1}\sim\texttt{in}\brangle{2}}\sum_{i: t_i\in D_\rho}(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i|)d_i+(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i'|)d_i' = 0$
+
+    So \begin{align*}
+        cost(C_\rho) = \max_{\texttt{in}\brangle{1}\sim\texttt{in}\brangle{2}}&\sum_{i: t_i\in D_\rho}(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i|)d_i+(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i'|)d_i'\\
+        &+\sum_{i: t_i\notin D_\rho}(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i|)d_i+(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i'|)d_i'\\
+        = \max_{\texttt{in}\brangle{1}\sim\texttt{in}\brangle{2}}&\sum_{i: t_i\in T}(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i|)d_i+(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i'|)d_i'\\
+        \leq \sum_{i:t_i\in T}(2d_i& + 2d_i')\\
+        \leq |T|\max_{i:t_i\in T}&(2d_i + 2d_i')
+    \end{align*}
+
+    Thus, $cost(C)\leq |T|\max_{i:t_i\in T}(2d_i + 2d_i') <\infty$.
+
+    ($\implies$)
+
+    Let $t_i$ be a transition in $L$ under a star in $R_L$ such that $\gamma_i\neq -\texttt{in}\brangle{1}_i+\texttt{in}\brangle{2}_i$ or $\gamma_i'\neq  -\texttt{in}\brangle{1}_i+\texttt{in}\brangle{2}_i$.     Thus, $\exists \texttt{in}\brangle{1}\sim \texttt{in}\brangle{2}$ such that $(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i|)d_i+(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i'|)d_i'>0$.
+    Fix such a $\texttt{in}\brangle{1}\sim \texttt{in}\brangle{2}$. 
+
+    Then there exists some complete path $\rho$ in $L$ of the form $a(bt_ic)^*d$ for some $a, b, c, d\in \Sigma_T^*$.
+    
+    Let $\rho_k=a(bt_ic)^kd$ be the corresponding complete path in $L$ with $(bt_ic)$ iterated $k$ times. This is equivalent to iterating the cycle containing $t_i$ $k$ times. Then for all $k\in \NN$, \begin{align*}
+        cost(\rho_k) \geq k((|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i|)d_i+(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i'|)d_i'),
+    \end{align*}
+    so for all $M\in \RR$, $\exists \rho_k$ such that $cost(\rho_k) > M$.
+\end{proof}
+
+
+\begin{lemma}\label{cycleGammaConstraints}
+    If a coupling strategy $C=(\mathbf{\gamma}, \mathbf{\gamma}')$ for a looping branch $L$ is valid and has finite cost, then the following must hold for all $i$:
+    \begin{enumerate}
+        \item If $t_i$ is in a cycle and $c_i = \lguard[\texttt{x}]$, then $\gamma_i = -\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}$ and $\gamma_{at(i)} = 1$.
+        \item If $t_i$ is in a cycle and $c_i = \gguard[\texttt{x}]$, then $\gamma_i = -\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}$ and $\gamma_{at(i)} = -1$.
+    \end{enumerate}
+\end{lemma}
+\begin{proof}
+    We will show (1). (2) follows symmetrically.
+
+    Consider some $t_i$ in a cycle where $c_i = \lguard[\texttt{x}]$. Because $C$ is has finite cost, we know from lemma \ref{finiteCostConstraintLemma} that $\gamma_i = -\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}$ for all  $\texttt{in}_i\brangle{1}\sim\texttt{in}_i\brangle{2}$. In particular, when $-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}=1$, then $\gamma_i=1$. 
+    
+    Further, because $\gamma_{at(i)}$ must be greater than $\gamma_i$ for all $\texttt{in}_i\brangle{1}\sim\texttt{in}_i\brangle{2}$ for $C$ to be valid, we must have that $\gamma_{at(i)}=1$.
+\end{proof}
+\begin{lemma}
+    If a valid finite cost coupling strategy $C = (\gamma, \gamma')$ exists for a lasso $L_\rho$, then there exists a valid finite cost coupling strategy $C^*= (\gamma^*, \gamma^{*\prime})$ such that for all $i\in AT(L_\rho)$, $\gamma_i^*\in \{-1, 0, 1\}$. 
+\end{lemma}
+\begin{proof}
+    Since $L_\rho$ is differentially private, the cost $opt(L_\rho)$ of its optimal coupling strategy is finite. By Proposition \ref{prop:approx_opt_are_close}, we see also that $approx(L)$ is finite. Thus, there exists $\beta \in [-1, 1]^{n}$ which satisfies the approximate privacy constraints on $L_\rho$.
+
+    Define 
+    \[\gamma_i = \lfloor \beta_i \rfloor \]
+
+    and notice that $\gamma_i, \gamma^{\prime}$ also satisfy the approximate privacy constraints on $L_\rho$:
+    \begin{align*}
+        \beta_{at(i)} \leq \beta_i &\implies \lfloor \beta_{at(i)} \rfloor \leq \lfloor \beta_i \rfloor \implies \gamma_{at(i)} \leq \gamma_i\\
+        \beta_{at(i)} \geq \beta_i &\implies \lfloor \beta_{at(i)} \rfloor \geq \lfloor \beta_i \rfloor \implies \gamma_{at(i)} \geq \gamma_i\\
+        \beta_{i} = 0 &\implies \lfloor \beta_{i} \rfloor = 0 \implies \gamma_{i} = 0\\
+        \beta_{i} = 1 &\implies \lfloor \beta_{i} \rfloor = 1 \implies \gamma_{i} = 1\\
+        \beta_{i} = -1 &\implies \lfloor \beta_{i} \rfloor = -1 \implies \gamma_{i} = -1
+    \end{align*}
+    Since $L_\rho$ is private, none of the transitons $t_i$ for $i \in AT(L_\rho)$ are in cycles. \vishnu{Can I say this?}
+    
+    By Proposition \ref{prop:approx_exists}, we see that there is a valid coupling strategy $C^* = (\gamma^*, \gamma^{*\prime})$ for $\gamma^*_i = \gamma_i \in \{-1, 0, 1\}$ for all $i \in AT(L_\rho)$.
+\end{proof}
+
+
+\begin{proof}[Proof of proposition \ref{ClassCouplingStrategiesAreEnoughProp}]
+    
+    {\color{red} Make sure to put this proof after the DiPA counterexample proof}
+
+    Because $\sup_{\rho\in [\rho]}cost(C_\rho)< \infty$, we can assume that there are no leaking cycles, disclosing cycles, leaking pairs, or privacy violating paths in $[\rho]$.
+
+
+    For a given path $\rho$ and a coupling strategy $C_\rho$, recall that we effectively assign each transition $t_i$ in $\rho$ the cost $\max_{\Delta \in \{-1, 0, 1\}}|\Delta - \gamma_i(\Delta)| + |\Delta' - \gamma'_i(\Delta)|$. For convenience, we will shorthand this quantity as $\delta(\rho, t_i) + \delta'(\rho, t_i)$.
+
+
+    For all $n\in \NN$, let $\rho_n$ be the path in $[\rho]$ with every cycle in $\rho_n$ repeated $n$ times. 
+
+   Let $cycle([\rho])$ be the set of all transitions in $[\rho]$ that are contained within a cycle in $[\rho]$. Observe that for all $t\in cycle([\rho])$, \[
+        \lim_{n\to\infty}\inf_{t_i\in\rho_n: t_i=t} \delta(\rho_n, t_i) = 0
+    \]
+    Informally, for every cycle transition $t$ in $[\rho]$, if the cycle it is contained in is iterated enough times, there must be some iteration $t_i$ of $t$ that is assigned costs approaching 0. 
+
+    This can be shown by considering a transition $t$ in a cycle in $[\rho]$ whose minimum coupling cost is non-zero (i.e. $\inf_{\rho\in[\rho]; t_i=t} \delta(t_i) > 0$). Then for any finite $d>0$, there exists an path $\rho_n$ where $n>\lceil\frac{d}{\inf\delta(t_i)}\rceil+1$. Then $cost(C_{\rho^*})>d$, which implies that $\sup_{\rho\in [\rho]}cost(C_\rho) = \infty$, so the observation must hold. 
+
+    Let $t_i$ be a transition in a cycle in $[\rho]$ and let $\mathcal{C}_i$ be the cycle containing $t_i$. 
+
+    Then in particular, if $\mathcal{C}_i$ contains a transition with guard $\lguard[\texttt{x}]$, then for all $\psi>0$, there exists $n\in \NN$ such that for $\rho_n\in [\rho]$, $\gamma_{at(i)}> 1-\psi$ and if $\mathcal{C}_i$ contains a transition with guard $\lguard[\texttt{x}]$, then for all $\psi>0$, $\gamma_{at(i)}> -1+\psi$. 
+    Informally, assignment transitions before an \lcycle\ have shifts that approach 1 and assignment transitions before a \gcycle\ have shifts that approach -1 in $\rho_n$ as $n\to\infty$. 
+
+    Because we know that all coupling strategies $C_{\rho}$ are valid, this may also imply that other assignment transitions also have shifts that approach 1 or -1. 
+
+    Further, if the shifts for an assignment transition $t_i$ approach 1, then the shifts for a transition $t_j$ such that $at(j) = i$ and $c_j = \gguard[\texttt{x}]$ must also approach 1; symmetrically, if the shifts for an assignment transition $t_i$ approach -1, then the shifts for a transition $t_j$ such that $at(j) = i$ and $c_j = \lguard[\texttt{x}]$ must also approach -1. 
+
+    Let $T_1$ and $T_{-1}$ be the sets of assignment transitions in $[\rho]$ that approach 1 and -1, respectively. 
+
+    Note that every other transition in $[\rho]$ is a non-cycle transition. Consider such a transition $t$ in $[\rho]$. Then for every path $\rho\in [\rho]$ and its corresponding coupling strategy $C_\rho$, there is exactly one shift assignment for $t$ because $t$ is not in a cycle. 
+
+    Let the class coupling strategy $C' = (\gamma, \gamma')$ be partially defined as follows: \begin{align*}
+        \gamma(t_i)(\texttt{in}\brangle{1}, \texttt{in}\brangle{2}) &= \begin{cases}
+            1 & t_i \in T_1\\
+            -1 & t_i \in T_{-1}\\
+            \texttt{in}\brangle{1}-\texttt{in}\brangle{2} & c_i = \lguard[\texttt{x}]\land t_{at(i)}\in T_1\\
+            \texttt{in}\brangle{1}-\texttt{in}\brangle{2} & c_i = \gguard[\texttt{x}]\land t_{at(i)}\in T_{-1}\\
+            1 & c_i = \gguard[\texttt{x}]\land t_{at(i)}\in T_1\\
+            -1 & c_i = \lguard[\texttt{x}]\land t_{at(i)}\in T_{-1}
+        \end{cases}\\
+        \gamma'(t_i)(\texttt{in}\brangle{1}, \texttt{in}\brangle{2}) &=\begin{cases}
+            0 & t_i\text{ outputs }\texttt{insample}'\\
+            \texttt{in}\brangle{1}-\texttt{in}\brangle{2} & \text{otherwise}
+        \end{cases}
+    \end{align*}
+
+    Let $T_{un}$ be the set of transitions in $[\rho]$ that are not assigned by $\gamma$ so far. Note that all transitions in $T_{un}$ are not in cycles. 
+
+    Let $C^* = (\gamma^*, \gamma^{*\prime})$ be the minimal-cost valid class coupling strategy such that for all $t\notin T_{un}$, $\gamma^*(t) = \gamma(t)$. 
+
+    In other words, $cost(C^*) = \inf_{\text{all such possible valid class coupling strategies } C} cost(C)$. Note that $C^*$ is valid. 
+
+    We additionally claim that $cost(C^*)\leq \sup_{\rho\in [\rho]}cost(C_\rho)$. The cost of $C^*$ can be separated into costs attributed to $\gamma^{*\prime}$, costs attributed to all transitions not in $T_{un}$ by $\gamma^*$, and costs attributed to all transitions in $T_{un}$ by $\gamma^*$. 
+    
+    First, note that the coupling cost attributed to $\gamma^{*\prime}$ in $C^*$ must be at most the maximimum coupling cost attributed to $\gamma'$ over all path-specific coupling strategies. From before, we additionally know that the cost attributed to all transitions $t\notin T_{un}$ by $\gamma^*$ is at most the supremum of the costs attributed to $t$ over all paths in $[\rho]$, since we take the limit of all such shifts for $\rho_n$ as $n\to\infty$.
+
+    Finally, since all path-specific coupling strategies are valid, taking the remaining transition shifts to minimize the overall cost while retaining a valid coupling strategy sufficies. 
+
+    {\color{red} If i have time, come back to this argument - expressed poorly right now}
+\end{proof}
+
+\begin{proof}[Proof of lemma \ref{ProgramCounterexampleLemma}]
+    Let $[\rho]$ be a path class in $P$ that does not have a coupling strategy that satisfies the privacy constraint system.
+
+    Consider a ``maximially'' satisfied coupling strategy $C=(\mathbf{\gamma}, \mathbf{\gamma}')$ for $[\rho]$; i.e. there is no other coupling strategy $C'$ for $[\rho]$ such that $C'$ satisfies more constraints than $C$. By lemma [tbd], we are allowed to only consider coupling strategies $C=(\gamma, \gamma')$ such that, for all $i\in AT(A)$, $\gamma_i \in \{-1, 0, 1\}$. 
+
+    Fix some path class $\rho$ in $A$ such that at least one constraint is not satisfied by $C$ as applied to $\rho$.
+
+    By assumption, at least one constraint is unsatisfied by $C$. We will show that in every case, $A$ must contain at least one of a leaking cycle, leaking pair, disclosing cycle, or privacy violating path. By theorem \ref{DiPACounterexamplesThm}, this is sufficient to show that $A$ is not $d\varepsilon$-differentially private for any $d>0$.
+
+    {\color{red} If I have time (low priority): rewrite this using a few helper lemmas to compress (e.g. $\gamma_{at(i)} =1\implies \lcycle$)}
+
+    \textbf{Case 1: (1) is unsatisfied for $\gamma_i$}
+    
+    In this case, $c_i = \lguard[\texttt{x}]$ and $\gamma_i > \gamma_{at(i)}$. Note that $\gamma_{at(i)} \neq 1$. 
+
+    We can assume that for all assignment transitions $t_{at(k)}$ in $\rho$ that $t_{at(k)}$ is not in a cycle, since otherwise there would be a leaking cycle in $A$. 
+
+    \textbf{Case 1.1: $t_i$ is in a cycle}
+
+    In this case, we can suppose that $t_i$ is not an assignment transition and $t_i$ does not output $\texttt{insample}$ or $\texttt{insample}'$, since otherwise either a leaking cycle or a disclosing cycle would clearly exist in $A$. We can thus additionally assume that constraint (5) is satisfied for $\gamma_i$. 
+    
+    Noe that the cycle containing $t_i$ is also an $\texttt{L}$-cycle by definition.
+
+    Then attempting to resolve (1) for $\gamma_i$ by setting $\gamma_{at(i)} = 1$ must violate another constraint. In particular, either constraint (1) or (3) for $\gamma_{at(i)}$ or constraint (2) for some $\gamma_j$ such that $at(j) = at(i)$ must be newly violated. Note that constraint (5) for $\gamma_{at(i)}$ cannot be violated since we assumed that $t_{at(i)}$ is not in a cycle. 
+
+    \textbf{Case 1.1.1: setting $\gamma_{at(i)} = 1$ violates constraint (1) for $\gamma_{at(i)}$}
+
+    Let $t_{at(k)}$ be the earliest assignment transition before $t_{at(i)}$ such that, for all $at(k)\leq at(l)< at(i)$, $\gamma_{at(l)} <1$ and $c_{at(l)} = \lguard[\texttt{x}]$. Then there must be \textit{some} $\gamma_{at(l)}$ such that setting $\gamma_{at(l)} = 1$ would violate constraint (2) for some $\gamma_{l'}$ such that $at(l') = at(l)$. 
+
+    Observe that $c_{l'} = \gguard[\texttt{x}]$ and there is an $\texttt{AL}$-path from $t_{l'}$ to $t_i$. 
+
+    Then setting $\gamma_{l'}= 1$ must violate either constraint (3) or constraint (5) for $\gamma_{l'}$. If constraint (3) is violated, then $\gamma_{l'}$ is a transition with guard $\gguard[\texttt{x}]$ that outputs $\texttt{insample}$, so there is a privacy violating path from $t_{l'}$ to $t_i$. Otherwise if constraint (5) is violated, then $\gamma_{l'}$ is in a \gcycle, so there is a leaking pair composed of the cycles containing $t_{l'}$ and $t_i$, repectively. 
+
+    \textbf{Case 1.1.2: Setting $\gamma_{at(i)}=1$ would violate (3) for $\gamma_{at(i)}$}
+
+    Then $\gamma_{at(i)}$ is an assignment transition that outputs $\texttt{insample}$. Further, the path from $t_{at(i)}$ to $t_i$ is an $\texttt{AL}$-path, since there are no transitions on it. Thus, there is a privacy violating path from $t_i{at(i)}$ to $t_i$
+
+    \textbf{Case 1.1.3: Setting $\gamma_{at(i)}=1$ would violate (2) for some $\gamma_j$ such that $at(j)= at(i)$}
+
+    Note that, if $i<j$, the path from $t_i$ to $t_j$ (or vice versa, if $j<i$) is both an $\texttt{AL}$ and $\texttt{AG}$-path.
+
+    Setting $\gamma_{j}= 1$ must violate either constraint (3) or constraint (5) for $\gamma_{j}$. 
+    
+    If constraint (3) is violated, then $\gamma_{j}$ is a transition with guard $\gguard[\texttt{x}]$ that outputs $\texttt{insample}$. Thus if $i<j$, there is a privacy violating path from $t_i$ to $t_j$ and if $j<i$, there is a privacy violating path from $t_j$ to $t_i$. 
+    
+    Otherwise if constraint (5) is violated, then $\gamma_{j}$ is in a \gcycle, so there is a leaking pair composed of the cycle containing $t_j$ and the cycle containing $t_i$ if $j<i$ or vice versa if $j>i$. 
+
+    \textbf{Case 1.2: $t_i$ is not in a cycle}
+
+    Note that $t_i$ must either be an assignment transition or output $\texttt{insample}$ or both, since otherwise, setting $\gamma_i = \gamma_{at(i)}$ would resolve constraint (1) for $\gamma_i$ without violating any other constraint. 
+
+    \textbf{Case 1.2.1: $t_i$ outputs $\texttt{insample}$ and $t_i$ is an assignment transition}
+
+    In this case, attempting to resolve constraint (1) without violating constraint (3) for $\gamma_i$ by setting $\gamma_i = \gamma_{at(i)} = 0$ must violate some other constraint. In particular, setting $\gamma_{at(i)} = 0$ can newly violate constraint (1) for $\gamma_{at(i)}$ or constraint (2) for some $\gamma_j$ such that $at(j) = at(i)$; note that setting $\gamma_{at(i)}=0$ cannot \textit{newly} violate constraint (1) for some $\gamma_j$ such that $at(j) = at(i)$. 
+    Alternatively, setting $\gamma_i = 0$ could potentially newly violate either constraint (1) or constraint (2) for some $\gamma_j$ such that $at(j) = i$. 
+
+    \textbf{Case 1.2.2.1: Setting $\gamma_{at(i)} =0$ violates constraint (1) for $\gamma_{at(i)}$}
+
+    Let $t_{at(k)}$ be the earliest assignment transition before $t_{at(i)}$ such that, for all $at(k)\leq at(l)< at(i)$, $\gamma_{at(l)} = -1$ and $c_{at(l)} = \lguard[\texttt{x}]$. Then there must be \textit{some} $\gamma_{at(l)}$ such that setting $\gamma_{at(l)} = 0$ would violate constraint (2) for some $\gamma_{l'}$ such that $at(l') = at(l)$.  
+    Additionally, note that setting $\gamma_{l'} = \gamma_{at(l)} = 0$ can only violate constraint (5) for $\gamma_{l'}$, since $\gamma_{l'}$ cannot be an assignment transition. 
+    
+    Thus, $t_{l'}$ is in a cycle, so the cycle containing $t_{l'}$ is a \gcycle. Note that the path from $t_{l'}$ to $t_i$ is an $\texttt{AL}$-path. Therefore, there is a privacy violating path from $t_{l'}$ to $t_i$.
+
+    \textbf{Case 1.2.2.2: Setting $\gamma_{at(i)} =0$ violates constraint (2) for some $\gamma_j$ such that $at(j) = at(i)$}
+
+    Note that $j\neq i$, meaning that $t_j$ is not an assignment transition. Then setting $\gamma_j = \gamma_{at(i)} = 0$ must violate constraint (5) for $\gamma_j$; this means that $t_j$ is in a \gcycle. 
+
+    If $i<j$, then the path from $t_i$ to $t_j$ is an $\texttt{AL}$-path, so it is also a privacy violating path.
+
+    Otherwise illustratef $j<i$, then the path from $t_j$ to $t_i$ is an $\texttt{AG}$ path, so it is also a privacy violating path.
+
+    \textbf{Case 1.2.2.3: Setting $\gamma_i =0$ violates constraint (1) for some $\gamma_j$ such that $at(j) = i$}
+
+    If $\gamma_j$ is not an assignment transition, then setting $\gamma_j = \gamma_i = 0$ must violate constraint (5) for $\gamma_j$, so $t_j$ is in an \lcycle. Then there is a privacy violating path from $t_i$ to $t_j$, since the path from $t_{i+1}$ to $t_j$ is an $\texttt{AL}$-path by virtue of not containing any assignment transitions. 
+
+    Otherwise if $t_j$ is an assignment transition, then $\gamma_j$ must originally be set to 1. Let $t_{at(k)}$ be the latest assignment after $t_{i}$ such that, for all $i\leq at(l)< at(k)$, $\gamma_{at(l)} = 1$ and $c_{at(l)} = \lguard[\texttt{x}]$. Then there must be \textit{some} $\gamma_{at(l)}$ such that setting $\gamma_{at(l)} = 0$ would violate constraint (1) for some $\gamma_{l'}$ such that $at(l') = at(l)$.  
+    Additionally, note that setting $\gamma_{l'} = \gamma_{at(l)} = 0$ can only violate constraint (5) for $\gamma_{l'}$, since $\gamma_{l'}$ cannot be an assignment transition. 
+
+    Then $\gamma_{l'}$ must be in an \lcycle. Since the path from $t_i$ to $t_{l'}$ is an $\texttt{AL}$-path, there is a privacy violating path from $t_i$ to $t_{l'}$.
+
+    \textbf{Case 1.2.2.4: Setting $\gamma_i =0$ violates constraint (2) for some $\gamma_j$ such that $at(j) = i$}
+
+    This case is exactly symmetric to case 1.2.2.3.
+
+    \textbf{Case 1.2.2: $t_i$ outputs $\texttt{insample}$ and $t_i$ is not an assignment transition}
+
+    We can assume that $\gamma_{at(i)} = -1$ originally, since otherwise, setting $\gamma_i = 0$ would resolve constraint (1) without violating any additional ones.
+
+    Thus attempting to resolve constraint (1) while preserving constraint (3) for $\gamma_i$ by setting $\gamma_{at(i)}=\gamma_i =0$ must violate constraint (1) for $\gamma_{at(i)}$. 
+   
+    Let $t_{at(k)}$ be the earliest assignment transition before $t_{at(i)}$ such that, for all $at(k)\leq at(l)< at(i)$, $\gamma_{at(l)} = -1$ and $c_{at(l)} = \lguard[\texttt{x}]$. Then there must be some $\gamma_{at(l)}$ such that setting $\gamma_{at(l)} = 0$ would violate constraint (2) for some $\gamma_{l'}$ such that $at(l') = at(l)$.  
+    Additionally, note that setting $\gamma_{l'} = \gamma_{at(l)} = 0$ can only violate constraint (5) for $\gamma_{l'}$, since $\gamma_{l'}$ cannot be an assignment transition. 
+    
+    Thus, $t_{l'}$ is in a cycle, so the cycle containing $t_{l'}$ is a \gcycle. Note that the path from $t_{l'}$ to $t_i$ is an $\texttt{AL}$-path. Therefore, there is a privacy violating path from $t_{l'}$ to $t_i$.
+
+    \textbf{Case 1.2.3: $t_i$ does not output $\texttt{insample}$ and $t_i$ is an assignment transition}
+
+    In this case, attempting to resolve (1) by setting $\gamma_{at(i)} = 1$ must violate either constraint (1) or (3) for $\gamma_{at(i)}$, or constraint (2) for some $\gamma_j$ such that $at(j) = at(i)$. 
+
+    Additionally, note that $\gamma_{at(i)} \in \{0, -1\}$. 
+
+    \textbf{Case 1.2.3.1: $\gamma_{at(i)} =0$}
+
+    Since originally, $\gamma_i > \gamma_{at(i)} \implies \gamma_i = 1$, we know that setting $\gamma_i = \gamma_{at(i)} = 0$ must violate constraint (1) for some $\gamma_j$ such that $at(j) = i$. If $t_{j}$ is not an assignment transition, then setting $\gamma_{j} = 0$ can only violate constraint (5) for $\gamma_{j}$, meaning that $t_j$ is in an \lcycle.
+
+    Otherwise, if $t_j$ is an assignment transition, let $t_{at(k)}$ be the latest assignment transition after $t_{i}$ such that for all $j\leq at(l)< at(k)$, $\gamma_{at(l)} =1$ and $c_{at(k)} = \lguard[\texttt{x}]$. Then there must exist some $at(l), j\leq at(l)< at(k)$ such that setting $\gamma_{at(l)}=0$ would violate constraint (1) for some non-assignment $\gamma_{l'}$ where $at(l') = at(l)$. 
+
+    Further, setting $\gamma_{l'} = 0$ must then violate constraint (5) for $\gamma_{l'}$, so $t_{l'}$ is in an \lcycle. 
+
+    Therefore, there exists a $\texttt{AL}$-path from $t_i$ to some transition $t$ in an \lcycle. 
+
+    \textbf{Case 1.2.3.1.1: Setting $\gamma_{at(i)} = 1$ would violate constraint (1) for $\gamma_{at(i)}$}
+
+    Let $t_{at(j)}$ be the earliest assignment transition before $t_{at(i)}$ such that for all $at(j)\leq at(k)< at(i)$, $\gamma_{at(k)} =0$ and $c_{at(k)} = \lguard[\texttt{x}]$. Then there must exist some $at(k), at(j)\leq at(k)< at(i)$ such that setting $\gamma_{at(k)}=1$ would violate constraint (2) for some non-assignment $\gamma_l$ where $at(l) = at(k)$, so $c_l = \gguard[\texttt{x}]$
+
+    Note that there is an $\texttt{AL}$-path from $t_l$ to $t_i$, and therefore an $\texttt{AL}$-path from $t_l$ to some transition $t_{o}$ in an \lcycle. 
+
+    Further, setting $\gamma_l = \gamma_{at(k)} = 1$ must then violate either constraint (3) or (5) for $\gamma_l$. 
+
+    If constraint (3) is violated, then $t_l$ outputs $\texttt{insample}$, so there is a privacy violating from $t_l$ to $t_o$.
+
+    If constraint (5) is violated, then $t_l$ is in a \gcycle, so there is a leaking pair consisting of the cycle containing $t_l$ and the cycle containing $t_o$. 
+
+    \textbf{Case 1.2.3.1.2: Setting $\gamma_{at(i)}=1$ would violate constraint (3) for $\gamma_{at(i)}$}
+
+    Note that there is an $\texttt{AL}$ path from $t_{at(i)}$ to some transition $t_j$ such that $t_j$ is in an \lcycle.
+
+    Then $t_{at(i)}$ is an assignment transition that outputs $\texttt{insample}$, so there is a privacy violating path from $t_{at(i)}$ to $t_j$. 
+    
+    \textbf{Case 1.2.3.1.3: Setting $\gamma_{at(i)}=1$ would violate constraint (2) for some $\gamma_j$ such that $at(j) = at(i)$}
+
+    As before, note that there is an $\texttt{AL}$ path from $t_{j}$ to some transition $t_k$ such that $t_k$ is in an \lcycle.
+
+    Then trying to set $\gamma_j = \gamma_{at(i)} = 1$ must violate either constraint (3) or constraint (5) for $\gamma_j$. If constraint (3) is violated, then $t_j$ outputs $\texttt{insample}$, so there is a privacy violating from $t_j$ to $t_k$. If constraint (5) is violated, then $t_j$ is in a \gcycle, so there is a leaking pair consisting of the cycle containing $t_j$ and the cycle containing $t_k$.  
+
+    \textbf{Case 1.2.3.2: $\gamma_{at(i)} = -1$}
+
+    Note that $\gamma_i \in \{0, 1\}$.
+
+    First, if $\gamma_i = 0$, then setting $\gamma_i = -1$ must newly violate constraint (1) for some $\gamma_j$ where $at(j) = i$. If $t_{j}$ is not an assignment transition, then setting $\gamma_{j} = -1$ can only newly violate constraint (3) for $\gamma_{j}$, meaning that $t_j$ outputs $\texttt{insample}$.
+
+    Otherwise, if $t_j$ is an assignment transition, let $t_{at(k)}$ be the latest assignment transition after $t_{i}$ such that for all $j\leq at(l)< at(k)$, $\gamma_{at(l)} =0$ and $c_{at(k)} = \lguard[\texttt{x}]$. Then there must exist some $at(l), j\leq at(l)< at(k)$ such that setting $\gamma_{at(l)}=-1$ would newly violate constraint (1) for some non-assignment $\gamma_{l'}$ where $at(l') = at(l)$; as before, this means that $t_{l'}$ outputs $\texttt{insample}$.  
+
+    Otherwise, if $\gamma_i = 1$, then setting $\gamma_i = -1$ must newly violate constraint (1) for some $\gamma_j$ where $at(j) = i$. If $t_{j}$ is not an assignment transition, then setting $\gamma_{j} = -1$ can only newly violate constraint (5) for $\gamma_{j}$, meaning that $t_j$ is in an \lcycle. 
+
+    Otherwise, if $t_j$ is an assignment transition, let $t_{at(k)}$ be the latest assignment transition after $t_{i}$ such that for all $j\leq at(l)< at(k)$, $\gamma_{at(l)} =0$ and $c_{at(k)} = \lguard[\texttt{x}]$. Then there must exist some $at(l), j\leq at(l)< at(k)$ such that setting $\gamma_{at(l)}=-1$ would newly violate constraint (1) for some non-assignment $\gamma_{l'}$ where $at(l') = at(l)$; as before, this means that $t_{l'}$ is in an \lcycle.  
+
+    Thus, if $\gamma_i =0$, then there is $\texttt{AL}$-path from $t_i$ to some other transition that has guard $\lguard[\texttt{x}]$ and outputs $\texttt{insample}$. Otherwise, if $\gamma_i = 1$, there is an $\texttt{AL}$-path from $t_i$ to some other transition that is in an \lcycle. 
+
+    \textbf{Case 1.2.3.2.1: Setting $\gamma_{at(i)} = \gamma_i$ would violate constraint (1) for $\gamma_{at(i)}$}
+
+    Let $t_{at(j)}$ be the earliest assignment transition before $t_{at(i)}$ such that for all $at(j)\leq at(k)< at(i)$, $\gamma_{at(k)} =-1$ and $c_{at(k)} = \lguard[\texttt{x}]$. Then there must exist some $at(k), at(j)\leq at(k)< at(i)$ such that setting $\gamma_{at(k)}=\gamma_i$ would newly violate constraint (2) for some non-assignment $\gamma_l$ where $at(l) = at(k)$.
+
+    First note that $c_l = \gguard[\texttt{x}]$ and there is an $\texttt{AL}$-path from $t_l$ to $t_i$. 
+    
+    If $\gamma_i = 0$, then setting $\gamma_l = \gamma_{at(k)} = \gamma_i = 0$ can only newly violate constraint (5) for $\gamma_l$. Thus, $\gamma_l$ is in a \gcycle. Since $\gamma_i = 0$, there exists some $t_{l'}$ such that there is an $\texttt{AL}$-path from $t_i$ to $t_{l'}$ and $t_{l'}$ has guard $\lguard[\texttt{x}]$ and outputs $\texttt{insample}$. Thus, there is an $\texttt{AL}$ path from $t_l$ to $t_{l'}$, and so there is a privacy violating path from $t_l$ to $t_{l'}$. 
+    
+    If $\gamma_i = 1$, then setting $\gamma_l = \gamma_{at(k)} = \gamma_i = 1$ can newly violate constraints (3) or (5) for $\gamma_l$. Further, since $\gamma_i =1$, there exists some $t_{l'}$ such that there is an $\texttt{AL}$-path from $t_i$ to $t_{l'}$ and $t_{l'}$ is in an \lcycle. Thus, there is an $\texttt{AL}$ path from $t_l$ to $t_{l'}$.
+    
+    If constraint (3) is newly violated, then $t_l$ is a transition with guard $\gguard[\texttt{x}]$ that outputs $\texttt{insample}$. Thus, there is a privacy violating path from $t_l$ to $t_{l'}$. 
+
+    If constraint (5) is newly violated, then $t_l$ is in a \gcycle. Thus, there is a leaking pair composed of the cycles containing $t_l$ and $t_{l'}$, respectively.
+
+    \textbf{Case 1.2.3.2.2: Setting $\gamma_{at(i)}=\gamma_i$ would violate constraint (3) for $\gamma_{at(i)}$}
+
+    First, $t_{at(i)}$ is an assignment transition that outputs $\texttt{insample}$. Since $\gamma_i = 1$, there exists some $t_j$ such that there is an $\texttt{AL}$-path from $t_{at(i)}$ to $t_j$ and $t_j$ is in an \lcycle. Then there is a privacy violating path from $t_{at(i)}$ to $t_j$.
+
+    \textbf{Case 1.2.3.2.3: Setting $\gamma_{at(i)}=\gamma_i$ would violate constraint (2) for some $\gamma_j$ such that $at(j) = at(i)$}
+
+    Observe that $t_j$ is not an assignment transition and has guard $\gguard[\texttt{x}]$. Additionally, there is an $\texttt{AL}$-path from $t_j$ to $t_i$ since there are no assignments between $t_j$ and $t_i$. 
+
+    If $\gamma_i =0$, then setting $\gamma_j = \gamma_{at(i)} = 0$ can only newly violate constraint (5) for $\gamma_j$. Thus, $\gamma_j$ is in a \gcycle. Since $\gamma_i = 0$, there exists some $t_{k}$ such that there is an $\texttt{AL}$-path from $t_i$ to $t_{k}$. Thus, there is an $\texttt{AL}$ path from $t_j$ to $t_{k}$, and so there is a leaking pair composed of the cycles containing $t_j$ and $t_{k}$, respectively. 
+
+    If $\gamma_i = 1$, then setting $\gamma_j = \gamma_{at(i)}=1$ can newly violate constraints (3) or (5) for $\gamma_l$. Further, since $\gamma_i =1$, there exists some $t_{k}$ such that there is an $\texttt{AL}$-path from $t_i$ to $t_{k}$ and $t_{k}$ is in an \lcycle. Thus, there is an $\texttt{AL}$ path from $t_j$ to $t_{k}$.
+    
+    If constraint (3) is newly violated, then $t_j$ is a transition with guard $\gguard[\texttt{x}]$ that outputs $\texttt{insample}$. Thus, there is a privacy violating path from $t_j$ to $t_{k}$. 
+
+    If constraint (5) is newly violated, then $t_j$ is in a \gcycle. Thus, there is a leaking pair composed of the cycles containing $t_j$ and $t_{k}$, respectively.
+
+    \textbf{Case 2: (2) is unsatisfied for $\gamma_i$}
+
+    This case is exactly symmetric to case (1).
+
+    \textbf{Case 3: (3) is unsatisfied for $\gamma_i$}
+
+    First note that if $t_i$ is in a cycle, then that cycle will be a disclosing cycle because $t_i$ outputs $\texttt{insample}$. Thus, we will assume that $t_i$ is not in a cycle.
+
+    Because $C$ is maximal, setting $\gamma_i=0$ must violate at least one of constraints (1) or (2) for $\gamma_i$ or (1) for some $\gamma_l$ such that $at(l) = i$.
+
+    \textbf{Case 3.1: Satisfying (3) for $\gamma_i$ would violate (1) for $\gamma_i$}
+
+    This means that $\gamma_{at(i)}<0\implies \gamma_{at(i)} = -1$. Further, $c_i = \lguard[\texttt{x}]$. Then changing $\gamma_{at(i)}=0$ can newly violate constraints (1) or (5) for $\gamma_{at(i)}$ or constraint (2) for some $\gamma_j$ such that $at(j) = at(i)$.
+
+    If constraint (5) is newly violated, then $t_{at(i)}$ is in a cycle. In particular, the cycle must be a leaking cycle; if $t_i$ and $t_{at(i)}$ are both contained in a cycle, then it must be leaking because $c_i = \lguard[\texttt{x}]$. Otherwise, there still must be some transition in the cycle containing $t_{at(i)}$ that has a non-$\texttt{true}$ guard since otherwise a path from $t_{at(i)}$ to $t_i$ could not exist. 
+
+    By similar reasoning, we can assume that for every assignment transition $t_{at(j)}$before $t_{at(i)}$ on a complete path to $t_i$, $t_{at(j)}$ is not in a cycle. 
+
+    If constraint (1) is newly violated for $\gamma_{at(i)}$, then $c_{at(i)} = \lguard[\texttt{x}]$. Let $t_{at(j)}$ be the earliest assignment transition before $t_{at(i)}$ such that $\gamma_{at(l)} = -1$ and for all assignment transitions $t_{at(k)}$ between $t_{at(j)}$ and $t_{at(i)}$, $c_{at(k)} = \lguard[\texttt{x}]$ and $\gamma_{at(k)} = -1$. 
+    
+    Then there must exist some assignment transition $t_{at(k)}$, $at(j)\leq at(k)\leq at(i)$ between $t_{at(j)}$ and $t_{at(i)}$ such that setting $\gamma_{at(k)} = 0$ would newly violate constraint (2) for some $l$ where $at(l) = at(k)$. In particular, this must be because $t_l$ is in a cycle and setting $\gamma_l = 0$ would violate constraint (5). Thus, $t_l$ is in a $\texttt{G}$-cycle. Then there is an $\texttt{AL}$-path from $t_l$ to $t_i$, creating a privacy violating path from $t_l$ to $t_i$. 
+
+    If changing $\gamma_{at(i)}$ from $-1$ to $0$ means that constraint (2) would be newly violated for some $\gamma_j$ such that $at(j) = at(i)$, note that $\gamma_j < 0$ and $c_j = \gguard[\texttt{x}]$. 
+    
+    So setting $\gamma_j = 0$ can violate either (2) for some $\gamma_l$ where $at(l) = j$ or (5) for $\gamma_j$. 
+
+    If setting $\gamma_j = 0$ would violate constraint (2) for some $\gamma_l$ where $at(l) = j$, then let let $t_{at(m)}$ be the latest assignment transition after $t_{at(j)}$ such that $\gamma_{at(m)} = -1$ and for all assignment transitions $t_{at(k)}$ between $t_{at(j)}$ and $t_{at(m)}$, $c_{at(k)} = \gguard[\texttt{x}]$ and $\gamma_{at(k)} = -1$. 
+    
+    Then there must exist some assignment transition $t_{at(k)}$, $at(j)\leq at(k)\leq at(m)$ between $t_{at(j)}$ and $t_{at(m)}$ such that setting $\gamma_{at(k)} = 0$ would newly violate constraint (2) for some $l'$ where $at(l') = at(k)$. 
+    In particular, this must be because $t_{l'}$ is in a cycle and setting $\gamma_l = 0$ would violate constraint (5). Thus, $t_l$ is in a $\texttt{G}$-cycle. Then there is an $\texttt{AG}$-path from $t_i$ to $t_l$, creating a privacy violating path from $t_i$ to $t_l$. 
+
+    Otherwise, if setting $\gamma_j = 0$ would violate constraint (5) for $\gamma_j$, then $t_j$ is in a $\texttt{G}$-cycle. We can assume that $j\neq i$ because otherwise, the cycle containing $t_j$ would be a disclosing cycle. Additionally, note that there are no assignment transitions between $t_i$ and $t_j$ or vice versa, since $at(j) = at(i)$.
+    Thus, if $j<i$, then there is an $\texttt{AL}$-path from $t_j$ to $t_i$, which forms a privacy violating path. Symmetrically, if $i<j$, then there is an $\texttt{AG}-$path from $t_i$ to $t_j$, which again forms a privacy violating path. 
+
+    \textbf{Case 3.2: Satisfying (3) for $\gamma_i$ would violate (2) for $\gamma_i$}
+
+    This case is exactly symmetric to case (3a).
+
+    \textbf{Case 3.3: Satisfying (3) for $\gamma_i$ would violate (1) for some $\gamma_l$ where $at(l) = i$}
+
+    Note that $t_i$ must be an assignment transition. Further, we know that $\gamma_l>0$ and $c_l = \lguard[\texttt{x}]$. 
+    
+    Because $C$ is maximal, setting $\gamma_l=0$ would now violate either constraint (1) for some $\gamma_{l'}$ where $at(l') = l$ or constraint (5) for $\gamma_l$. Note that because $\gamma_l>0$, constraint (2) cannot be newly violated for some $\gamma_{l'}$ where $at(l') = l$.
+
+    If constraint (5) would be newly violated for $\gamma_l$, then $\gamma_l$ is in an $\texttt{L}$-cycle. Additionally, note that the path from $t_{i+1}$ to $t_l$ is an $\texttt{AL}$-path, so there is a privacy violating path from $t_i$ to $t_l$. 
+
+    Otherwise, if setting $\gamma_l = 0$ would violate constraint (1) for some $\gamma_{l'}$ where $at(l')=l$, let $t_{at(j)}$ be the latest assignment transition such that $c_{at(j)} = \lguard[\texttt{x}]$ and $\gamma_{at(j)}<1$ and, for all assignment transitions $t_{at(k)}$ between $t_l$ and $t_{at(j)}$, $c_{at(k)} = \lguard[\texttt{x}]$ and $\gamma_{at(k)}<1$. 
+
+    If $at(j) = l$, then $l'$ is not an assignment transition. Then, setting $\gamma_{l'} = 0$ could only violate constraint (5). In this case, as before, there is a privacy violating path from $t_i$ to $t_l$. 
+
+    Otherwise, since $C$ is maximal, we cannot set $\gamma_{at(k)}=0$ for any $l<at(k)\leq at(j)$ without violating another constraint. In particular, there must be some $at(k)$ such that setting $\gamma_{at(k)} = 0$ would violate constraint (1) for some $\gamma_{k'}$ such that $at(k') = at(k)$. Note that there must be an \texttt{AL}-path from $t_i$ to $t_{k'}$. Then, as before, there must be a privacy violating path from $t_i$ to $t_{k'}$. 
+
+
+    \textbf{Case 3.4: Satisfying (3) for $\gamma_i$ would violate (2) for some $\gamma_l$ where $at(l) = i$} 
+
+    This case is exactly symmetric to case (3c).
+
+    \textbf{Case 4: (4) is unsatisfied for $\gamma_i'$}
+    
+    Because $C$ is maximal, setting $\gamma_i'=0$ must violate some other constraint. In particular, this must mean that constraint (6) is now violated. However, this would imply that $t_i$ is in a cycle, and so the cycle containing $t_i$ would be a disclosing cycle.
+
+    \textbf{Case 5: (5) is unsatisfied for $t_i$:} Because $C$ is maximal, we know that if $\gamma_i = -\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}$ then another constraint must be violated. In particular, at least one of constraints (1), (2), or (3) must be violated for $\gamma_i$. 
+    
+    \textbf{Case 5.1: Satisfying (5) for $t_i$ would violate (1)}
+
+    If (1) is now violated, then either $t_i$ is an assignment transition or $c_i = \lguard[\texttt{x}]$ and $\gamma_{at(i)}<1$. If $t_i$ is an assignment transition, then the cycle containing $t_i$ has a transition with a non-$\texttt{true}$ guard ($t_i$) and an assignment transition, so it must be a leaking cycle. 
+
+    Otherwise, if $t_i$ is not an assignment transition, $c_i = \lguard[\texttt{x}]$, and constraint (1) is violated for $\gamma_i$, we must have that $\gamma_{at(i)}<1$ due to other constraints.
+    
+    Consider all assignment transitions in $\rho$ before $t_i$. Note that if any such assignment transition is in a cycle, then that cycle must be a leaking cycle since either the assignment transition is in the same cycle as $t_i$ or there must be some non-$\texttt{true}$ transition in the cycle because otherwise $t_i$ is unreachable.
+
+    So assume that all assignment transitions in $\rho$ before $t_i$ are not in a cycle. Then if $c_{at(i)} \neq \lguard[\texttt{x}]$, because $C$ is maximal, this must mean that $t_{at(i)}$ outputs $\texttt{insample}$. Note that the path from $t_{at(i)+1}$ to $t_i$ is an $\texttt{AL}$-path (since there are no assignment transitions on it) and $t_i$ is in an $\texttt{L}$-cycle since $t_i$ is in a cycle and $c_i = \lguard[\texttt{x}]$. 
+    Then the path from $t_{at(i)}$ (an assignment transition that outputs $\texttt{insample}$) to $t_i$ is a privacy violating path. 
+
+    If $c_{at(i)} = \lguard[\texttt{x}]$, then let $c_{at(j)}$ be the earliest assignment transition such that $c_{at(j)} = \lguard[\texttt{x}]$ and $\gamma_{at(j)} < 1$ and, for all assignment transitions $t_{at(k)}$ between $t_{at(j)}$ and $t_i$, $c_{at(k)} = \lguard[\texttt{x}]$ and $\gamma_{at(k)} < 1$. Note that such an $t_{at(j)}$ must exist. 
+
+    If $t_{at(j)} = t_{at(i)}$, then setting $\gamma_{at(i)} =1$ must violate either constraint (2) for some other $\gamma_l$ such that $at(l)=at(i)$, or constraint (3) for $\gamma_{at(i)}$. Without loss of generality, we will assume that $l\neq i$. If constraint (3) would be violated, then as before, there exists a privacy violating path from $t_{at(j)}$ to $t_i$. 
+    If constraint (2) would be violated for some $\gamma_l$ such that $at(l)=at(i)$, then either $t_l$ must output $\texttt{insample}$ or $t_l$ must be in a cycle. 
+    
+    Suppose that $i<l$; then that the path from $t_i$ to $t_l$ is both an $\texttt{AG}$-path and an $\texttt{AL}$-path (since there are no assignment transitions on it). Thus, if $t_l$ outputs $\texttt{insample}$, there exists a privacy violating path from $t_i$ to $t_l$ and if $t_l$ is in a cycle, then the cycle containing $t_i$ and the cycle containing $t_l$ together make up a leaking pair, since the cycle containing $t_l$ is a $\texttt{G}$-cycle by definition. 
+    Symmetrically, if $l>i$, then either the path from $t_l$ to $t_i$ is a privacy violating path or the cycle containing $t_l$ and the cycle containing $t_i$ make up a leaking pair.
+    
+    Otherwise, note that the path from $t_{at(j)}$ to $t_i$ is an $\texttt{AL}-$path. Since $C$ is maximal, we cannot set $\gamma_{at(k)}=1$ for $\gamma_{at(j)}$ or for any of the other assignment transitions $t_{at(k)}$ between $t_{at(j)}$ and $t_i$ without violating another constraint. 
+    In particular, there must be some $t_{at(k)}$ where $at(j)\leq at(k)<i$ such that setting $\gamma_{at(k)} = 1$ would mean that either constraint (2) for some $\gamma_l$ such that $at(l) = at(k)$ or constraint (3) would be violated for $\gamma_{at(k)}$. 
+    If constraint (3) would be violated for $\gamma_{at(k)}$ then $t_{at(k)}$ outputs $\texttt{insample}$, so as before, there is a privacy violating path from $t_{at(k)}$ to $t_i$. Otherwise if constraint (2) would be violated for some $\gamma_l$ such that $at(l) = at(k)$, then as before, $\gamma_l$ must either output $\texttt{insample}$ or $t_l$ is in a cycle. 
+    Just like before, this means that there must be either a privacy violating path from $t_l$ to $t_i$ or the cycle containing $t_l$ and the cycle containing $t_i$ together make up a leaking pair. 
+
+    \textbf{Case 5.2: Satisfying (5) for $t_i$ would violate (2)}
+
+    This case is exactly symmetric to case (5a).
+
+    \textbf{Case 5.3: Satisfying (5) for $t_i$ would violate (3)}
+
+    If (3) would be violated, then $t_i$ must output $\texttt{insample}$. Then the cycle containing $t_i$ must be a disclosing cycle. 
+    
+    \textbf{Case 6: (6) is unsatisfied for $t_i$:} Because $C$ is maximal, we know that if $\gamma_i' = -\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}$ then another constraint must be violated for $\gamma_i'$. In particular, constraint (4) must be violated, since no other constraint involves $\gamma_i'$. 
+    Then $t_i$ is a transition in a cycle that outputs $\texttt{insample}'$, so $A$ has a disclosing cycle.
+\end{proof}
+
+
+\begin{defn}[Leaking Cycles~\cite{chadhaLinearTimeDecidability2021}]
+    A path $\rho = q_0\to\ldots \to q_n$ in a DiPA $A$ is a leaking path if there exist indices $i, j$ where $0\leq i < j < n$ such that the $i$'th transition $q_i\to q_{i+1}$ in $\rho$ is an assignment transition and the guard of the transition $q_j \to q_{j+1}$ is not $\texttt{true}$. If $\rho$ is also a cycle, then we call it a leaking cycle.
+\end{defn}
+
+\begin{defn}[\cite{chadhaLinearTimeDecidability2021}]
+    A cycle $\rho$ in a DiPA $A$ is an \lcycle~if for some transition $q_i\to q_{i+1}$ in $\rho$, $\guard(q_i\to q_{i+1}) = \lguard[\texttt{x}]$. Similarly, $\rho$ is a \gcycle~if for some transition $q_i\to q_{i+1}$ in $\rho$, $\guard(q_i\to q_{i+1}) = \gguard[\texttt{x}]$.
+    
+    Additionally, a path $\rho$ of a DiPA $A$ is an \texttt{AL}-path (respectively, \texttt{AG}-path) if all assignment transitions in $\rho$ have guard $\lguard[\texttt{x}]$ (respectively, $\gguard[\texttt{x}]$)
+\end{defn}
+
+\begin{defn}[Leaking Pairs \cite{chadhaLinearTimeDecidability2021}]
+    A pair of cycles $(C, C')$ is called a leaking pair if one of the following two conditions is satisfied.
+    \begin{enumerate}
+        \item $C$ is an \lcycle, $C'$ is a \gcycle~and there is an \texttt{AG}-path from a location in $C$ to a location in $C'$.
+        \item $C$ is a \gcycle, $C'$ is an \lcycle~and there is an \texttt{AL}-path from a location in $C$ to a location in $C'$.
+    \end{enumerate}
+\end{defn}
+
+\begin{defn}[Disclosing Cycles \cite{chadhaLinearTimeDecidability2021}]
+    A cycle $C = q_0\to \ldots \to q_n \to q_0$ of a DiPA $A$ is a disclosing cycle if there is an $i$, $0 \leq i < |C|$ such that $q_i\in Q_{in}$ and the transition $q_i\to q_{i+1}$ that outputs either \texttt{insample} or \texttt{insample}'.
+\end{defn}
+
+\begin{defn}[Privacy Violating Paths \cite{chadhaLinearTimeDecidability2021}]
+    We say that a path $\rho = q_0\to\ldots \to q_n $ of a DiPA $A$ is a privacy violating path if one of the following conditions hold:
+    \begin{itemize}
+        \item  $tail(\rho)$ is an \texttt{AG}-path (resp., \texttt{AL}-path) such that $last(\rho)$ is in a \gcycle~(resp., \lcycle) and the 0th transition $q_0\to q_1$ is an assignment transition that outputs \texttt{insample}.
+        \item $\rho$ is an \texttt{AG}-path (resp., \texttt{AL}-path) such that $q_n$ is in a \gcycle~(resp., \lcycle) and the first transition $q_0\to q_1$ has guard $\lguard[\texttt{x}]$ (resp., $\gguard[\texttt{x}]$) and outputs \texttt{insample}
+        \item $\rho$ is an \texttt{AG}-path (resp., \texttt{AL}-path) such that $q_0$ is in an \lcycle~(resp., \gcycle) and the last transition $q_{n-1}\to q_n$ has guard $\gguard[\texttt{x}]$ (resp., $\lguard[\texttt{x}]$) and outputs \texttt{insample}
+    \end{itemize}
+\end{defn}

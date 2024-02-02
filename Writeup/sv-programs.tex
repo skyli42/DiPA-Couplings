@@ -1,0 +1,140 @@
+
+\subsection{Programs}
+
+We now introduce our complete program model. 
+
+\begin{defn}
+    A program $P$ is a finite union of looping branches over a valid finite alphabet of transitions. 
+\end{defn}
+
+Equivalently, $P$ is a language described by a regular expression in union normal form such that each individual term describes a looping branch. 
+
+As illustrated by branching programs, we cannot do any better with regards to coupling strategies than simply choosing one coupling strategy per looping branch. 
+
+\begin{lemma}
+    If, for every looping branch $L$ in $P$, there exists a valid coupling strategy $C_L$, then $P$ is $(\max_{L\subseteq P} cost(C_L))\varepsilon$-differentially private. 
+\end{lemma}
+
+\subsection{Deciding Privacy}
+
+In this section, we discuss the boolean or decision problem of privacy; that is, deciding whether or not there exists \textit{any} finite $d>0$ such that a program is $d\varepsilon$-differentially private. 
+
+Clearly, we can algorithmically show that at least some subset of differentially private programs are private through the use of couplings and coupling strategies. 
+
+\begin{lemma}
+    If, for every looping branch $L\subseteq P$ in a program $P$, there exists a coupling strategy $C_L$ that satisfies the privacy constraint system, then there exists some finite $d>0$ such that $P$ is $d\varepsilon$-differentially private.    
+\end{lemma}
+\begin{proof}
+    Follows immediately from proposition \ref{privacyFiniteCostProp}.
+\end{proof}
+
+As previously mentioned, we show that coupling proofs are \textbf{complete} for programs of this form; every differentially private program can be proved to be private using couplings. 
+
+\begin{lemma}\label{ProgramCounterexampleLemma}
+    If, for some looping branch $L\subseteq P$ in a program $P$, there does not exist a coupling strategy $C_L$ that satisfies the privacy constraint system, then there does not exist any finite $d>0$ such that $P$ is $d\varepsilon$-differentially private.
+\end{lemma}
+
+To complete the proof, we introduce a previously analyzed program model known as DiPA, which we claim captures the same class of programs as our program model. 
+
+\subsection{DiPA}
+
+We now discuss a previously defined program model, DiPA, which turns out to be exactly equivalent to our own program model. The equivalence between DiPA and programs allows us to construct our completeness proof. 
+
+\begin{defn}[\cite{chadhaLinearTimeDecidability2021}]
+    A Differentially Private Automaton (DiPA) $A$ is an 8-tuple $(Q, \Sigma, C, \Gamma, q_{init}, X, P, \delta)$ where
+    \begin{itemize}
+        \item $Q$ is a finite set of locations partitioned into input locations $Q_{in}$ and non-input locations $Q_{non}$. 
+        \item $\Sigma = \RR$ is the input alphabet
+        \item $C = \{\texttt{true}, \lguard, \gguard\}$ is a set of guard conditions
+        \item $\Gamma$ is a finite output alphabet
+        \item $q_{init}\in Q$ is the initial location
+        \item $X = \{\texttt{x}, \texttt{insample}, \texttt{insample}'\}$ is a set of variables
+        \item $P: Q\to \QQ\times \QQ^{\geq 0}\times \QQ\times  \QQ^{\geq 0}$ is a parameter function that assigns sampling parameters for the Laplace distribution for each location
+        \item $\delta:(Q\times C)\to (Q\times (\Gamma \cup \{\texttt{insample}, \texttt{insample}'\})\times \{\texttt{true}, \texttt{false}\})$ is a partial transition function. 
+    \end{itemize}
+    In addition, $\delta$ must satisfy some additional conditions:
+    \begin{itemize}
+        \item \textbf{Determinism:} For any location $q\in Q$, if $\delta(q,\texttt{true})$ is defined, then $\delta(q,\lguard)$ and $\delta(q,\gguard)$ are not defined. 
+
+        \item \textbf{Output Distinction:} For any location $q\in Q$, if $\delta(q, \gguard) = (q_1, o_1, b_1)$ and $\delta(q, \lguard) = (q_2, o_2, b_2)$, then $o_1\neq o_2$ and at least one of $o_1\in \Gamma$ and $o_2\in \Gamma$ is true.
+
+        \item \textbf{Initialization:} The initial location $q_0$ has only one outgoing transition of the form $\delta(q_0, \texttt{true}) = (q, o, \texttt{true})$.
+
+        \item \textbf{Non-input transition:} From any $q\in Q_{non}$, if $\delta(q, c)$ is defined, then $c=\texttt{true}$.
+    \end{itemize}
+\end{defn}
+
+A DiPA operates as follows: 
+\begin{itemize}
+    \item At each location, a real-valued input $\texttt{in}$ is read in and two variables $\texttt{insample}\sim \Lap(\texttt{in}, d\varepsilon)$ and $\texttt{insample}'\sim\Lap(\texttt{in}, d\varepsilon)$ are sampled.
+    \item $\texttt{insample}$ is compared to the stored variable $\texttt{x}$, and depending on the guards of the transitions out of the current location, changes the current location and outputs a value. This value can either be $\texttt{insample}, \texttt{insample}'$, or a symbol from $\Gamma$.
+    \item Finally, the  value of $\texttt{x}$ is optionally updated with the value of $\texttt{insample}$.
+\end{itemize}
+
+Just like with programs, a path $\rho$ in a DiPA $A$ reads a real-valued input sequence $\texttt{in}\in \RR^n$; the same definitions of adjacency and validity apply to DiPA input sequences.
+
+We first establish notation for discussing the probabilities of different paths in a DiPA, which allows us to define $d\varepsilon$-differential privacy. 
+
+\begin{defn} 
+    Let $\rho$ be a path in a DiPA $A$, let $\texttt{in}$ be a valid input sequence and let $o$ be a possible output of $\rho$. In particular, if $\sigma_i\in \{\texttt{insample}, \texttt{insample}'\}$, then we require that $o_i$ is an \textit{interval} $(a, b)\subseteq \RR$, rather than simply a measurable set as before. 
+    Then $\texttt{Pr}[x, \rho, \texttt{in}, o]$ is the probability of $\rho$ being taken with input sequence $\texttt{in}$ and outputting $o$. If the first location in $\rho$ is $q_{init}$, then $\texttt{Pr}[x, \rho, \texttt{in}, o]$ may be shortened to $\texttt{Pr}[\rho, \texttt{in}, o]$, since the initial value of $\texttt{x}$ is irrelevant.
+\end{defn}
+
+For a full definition of DiPA semantics, we refer back to the original work. 
+
+\begin{defn}
+    A DiPA $A$ is $d\varepsilon$-differentially private for some $d>0$ if for all paths $\rho$ in $A$, for all possible outputs $o$ of $\rho$ and valid adjacent input sequences $\texttt{in}\brangle{1}\sim \texttt{in}\brangle{2}$, \[
+        \PP[\rho, \texttt{in}\brangle{1}, o]\leq e^{d\varepsilon} \PP[\rho, \texttt{in}\brangle{2}, o]
+    \]
+\end{defn}
+
+Notably, we show an equivalence between programs and DiPAs.
+
+\begin{prop}
+    Every path $\rho$ through a DiPA $A$ is represented by a complete path $\hat{\rho}$ comprised of transitions from a valid transition alphabet $\Sigma_T$; further, the set of all possible paths through $A$ is a regular language over $\Sigma_T$.
+\end{prop}
+\begin{proof}
+    Let $\rho = q_0\to q_1\to\ldots \to q_n$ be a path in a DiPA $A=(Q, \RR, C, \Gamma, q_0, X, P, \delta)$. 
+
+    For all $i\in 0\ldots n-1$, there must be some $c_i$ such that $\delta(q_i, c_i) = (q_{i+1}, \sigma_i, \tau_i)$. Let $t_i = (q_i, q_{i+1}, c_i, \sigma_i, \tau_i)$ and let $\Sigma_\rho = \{t_i: i\in 0\ldots n-1\}$ be the set of all such transitions. Note that because $\delta$ satisfies the conditions of determinism, output distinction, initialization, and non-input transition, $\Sigma_\rho$ must as well. 
+    Then let $\hat{\rho} = t_0\cdot t_1\cdot \ldots\cdot t_{i-1}$ be the representation of $\rho$ as a word over $\Sigma_\rho$. 
+
+    Let $\Sigma_T = \bigcup_{\rho\in A}\Sigma_\rho$. Note that $\Sigma_T$ must have finite size because $A$ is a finite automaton and must still be a valid transition alphabet.
+
+    Let $D = (Q, \Sigma_T, \delta_D, q_0, F=Q)$ be an NFA defined over the set of program locations $Q$ such that $\delta_D$ is defined as follows:
+    Let $q\in Q$ be an arbitrary location. If $\delta(q, c) = (q', \sigma, \tau)$ is defined for some $c\in C$, let $\delta_D(q, (q, q', c, \sigma, \tau)) = q'$.
+
+    Then clearly every path in $A$ is also a path in $D$ and vice versa; since every location in $D$ is an accepting location, $\mathcal{L}(D) = \{\hat{\rho}: \rho\in A\}$. Thus, the set of (representations of) all paths in $A$ must be a regular language. 
+\end{proof}
+
+\begin{prop}
+    For every program $P$ over a valid transition alphabet $\Sigma_T$, there exists a corresponding DiPA $A$ such that there exists a path $\rho$ in $A$ if and only if its representation is in $P$. 
+\end{prop}
+\begin{proof}
+    The DiPA can be directly constructed from $P$.
+\end{proof}
+
+As expected, the probability of a path ``succeeding'' in a program is the same as the probability of a path being traversed in a DiPA. 
+
+\begin{prop}
+    For all paths $\rho$ in a DiPA $A$ and for all input sequences $\texttt{in}$ and possible outputs $\sigma$ of $\rho$, $\PP[\rho, \texttt{in}, \sigma] = \PP[\hat{\rho}, \texttt{in}, \sigma]$.
+\end{prop}
+
+
+Interestingly, the privacy of any DiPA $A$ is completely characterized by four graph-theoretic structures---we refer to the original work for full definitions.
+
+\begin{thm}[\cite{chadhaLinearTimeDecidability2021}]\label{DiPACounterexamplesThm}
+    A DiPA $A$ does not have a leaking cycle, leaking pair, disclosing cycle, or privacy violating path if and only if there exists some $d>0$ such that for all $\varepsilon>0$, $A$ is $d\varepsilon$-differentially private. 
+\end{thm}
+
+This provides us with a method of demonstrating that a program is not $d\varepsilon$-differentially private for any $d>0$.
+
+\begin{cor}
+    If the corresponding DiPA $A$ to a program $P$ contains a leaking cycle, leaking pair, disclosing cycle, or privacy violating path, then does not exist a finite $d>0$ such that $P$ is $d\varepsilon$-differentially private. 
+\end{cor}
+
+Our key result relates the privacy constraint system and these graph-theoretic structures.
+
+\begin{lemma}
+    If, for a looping branch $L$, there does not exist a coupling strategy $C$ that satisfies the privacy constraint system for $L$, then the corresponding DiPA to $L$ must contain either a leaking cycle, a leaking pair, a disclosing cycle, or a privacy violating path. 
+\end{lemma}

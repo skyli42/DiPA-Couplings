@@ -1,0 +1,26 @@
+
+\section{Introduction}
+
+Differential privacy is a framework for privacy that gives rigorous guarantees on the amount of data leakage any one person's data can be subjected to when releasing statistical data. Since being introduced in 2006~\cite{DP2006}, differential privacy has become the gold standard for private statistical analysis. 
+Differentially private algorithms, whose efficacy are characterized by a ``privacy cost'' $\varepsilon$, primarily rely on the addition of statistical noise, ensuring that statistical results remain approximately correct while preventing any one person's information from being revealed. 
+
+Differentially private algorithms are notoriously tricky to analyze for correctness; most famously, the Sparse Vector Technique (SVT) algorithm has gone through multiple iterations, some of which were later shown to completely fail at protecting privacy~\cite{10.14778/3055330.3055331}. Previous implementations of differential privacy by Apple have similarly been shown to have an increase from the claimed privacy cost by a factor of up to 16~\cite{appleleakprivacy}. 
+
+Thus, much work has been done on developing methods for automatic verification of differentially private algorithms, both in their overall privacy and in the specific privacy costs they claim to achieve. 
+Because even for limited programs the problem of determining if a program is differentially private is undecidable\cite{barthe.etal2020decidingdp}, previous work tends to focus on semi-decidability or further restricting program models. 
+
+Recently, a line of work has emerged around \textbf{approximate liftings}~\cite{BartheEtAl2016,bartheKopfOlmedo2012ProbabilisticRelationalReasoningforDifferentialPriv,BartheOlmedo2013,HsuThesis2017}. Approximate liftings are a generalization of probabilistic couplings, themselves a well-known technique in probability theory for analyzing relationships between random variables. 
+Approximate liftings allow for a more structured proof approach to many algorithms that themselves are not conducive to a standard compositional analysis, such as SVT.\@ Because of their structure, liftings also lend themselves to automated proof construction~\cite{AlbarghouthiHsu2018}. 
+
+Our contributions:
+\begin{itemize}
+    \item We develop a simple program model centred around comparing an input to a threshold value for which we show that there is a simple and, most notably, complete class of privacy proofs (``coupling proofs'') built from approximate liftings
+    \begin{itemize}
+        \item Every program in our model is a language over an alphabet of individual program transitions
+        \item We can use the structure of these programs to automatically build privacy proofs for any program using approximate liftings
+        \item Importantly, if we cannot build a privacy proof for a program, we show that it is in fact not private at all; i.e. these privacy proofs are complete
+        \item We also demonstrate methods for computing the minimal privacy cost of a coupling proof directly and in approximation
+    \end{itemize}
+    \item This program model exactly coincides with a previously developed, automaton-theoretic, model known as DiPA. 
+    \item We additionally demonstrate how this model, and along with it coupling proofs, can be extended to accomodate two threshold variables such that coupling proofs again characterize the model completely. 
+\end{itemize}

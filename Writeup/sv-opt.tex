@@ -1,0 +1,314 @@
+
+\subsection{Minimizing a privacy budget}
+
+If we have a differentially private program, we'd also like to optimize its privacy cost. Because we must have separate coupling strategies for every looping branch of a program, we optimize the privacy cost of each looping branch independently.
+
+\begin{prop}
+    \label{prop:compute_opt_cost}
+    Let $L$ be a looping branch in a program $P$ consisting of $n$ transitions. The cost $opt(L)$ of the optimal coupling strategy for $L$ can be computed by the following optimization problem: 
+    \sky{should this be written without the $\Delta$? it needs to be explained at least}
+    \begin{align*}
+        opt(L) = \max_{\Delta \in [-1, 1]^n} &\min_{\gamma, \gamma' \in [-1, 1]^n} \sum_{i = 1}^n \left(|\Delta_i - \gamma_i| d_i + |\Delta_i - \gamma_i'|d_i' \right)\\ 
+            \text{subject to }
+            &\ \gamma_{at(i)} \leq \gamma_i \text{ if } c_i = \gguard, \\
+            &\ \gamma_{at(i)} \geq \gamma_i \text{ if } c_i = \lguard, \\
+            &\ \gamma_i = 0 \text{ if } \sigma_i = \texttt{insample}, \\
+            &\ \gamma_i' = 0 \text{ if } \sigma_i = \texttt{insample}'\\
+            &\ \gamma_i = \gamma_i'= \Delta_i \text{ if } t_i \text{ is in a cycle}
+    \end{align*}
+    If a looping branch $L$ is not differentially private, a solution to this optimization problem does not exist, and we write $opt(L) = \infty$.
+\end{prop}
+
+\begin{proof}
+    Assume that $L$ is differentially private. Then there exists a valid coupling strategy for $L$ with finite cost, showing that the constraints above are feasible, and a finite solution to the optimization problem exists.  
+
+    We will specify a valid coupling strategy $C^* = (\gamma^*, {\gamma'}^*)$ for $L$ with the cost stated above, and then show it is optimal. Define $\Gamma: [-1, 1]^n \to [-1, 1]^n \times [-1, 1]^n$ as follows, where $\Gamma(\Delta)$ is a pair $(\gamma, \gamma')$: 
+    \begin{align*}
+        \Gamma(\Delta) = &\argmin_{\gamma, \gamma' \in [-1, 1]^n} \sum_{i = 1}^n \left(|\Delta_i - \gamma_i| d_i + |\Delta_i - \gamma_i'|d_i' \right)\\ 
+        \text{subject to }
+        &\ \gamma_{at(i)} \leq \gamma_i \text{ if } c_i = \gguard, \\
+        &\ \gamma_{at(i)} \geq \gamma_i \text{ if } c_i = \lguard, \\
+        &\ \gamma_i = 0 \text{ if } \sigma_i = \texttt{insample}, \\
+        &\ \gamma_i' = 0 \text{ if } \sigma_i = \texttt{insample}'\\
+        &\ \gamma_i = \gamma_i'= \Delta_i \text{ if } t_i \text{ is in a cycle}
+    \end{align*}
+    Then define \[(\gamma^*(\texttt{in}\brangle{1}, \texttt{in}\brangle{2}), {\gamma'}^*(\texttt{in}\brangle{1}, \texttt{in}\brangle{2})) = \Gamma(\texttt{in}\brangle{1} - \texttt{in}\brangle{2})\]
+
+    Notice the following: 
+
+    \begin{enumerate}
+        \item $C^*$ is a valid coupling strategy for $L$, since the privacy constraints on $\gamma^*$ and ${\gamma'}^*$ are satisfied by construction.
+        \item $C^*$ has the cost given by the solution to the optimization problem, since 
+        \begin{align*}
+            cost(C^*) &= \max_{\texttt{in}\brangle{1}\sim \texttt{in}\brangle{2}} \sum_{i = 1}^n  |\texttt{in}_i\brangle{1} - \texttt{in}_i\brangle{2} - \gamma_i^*(\texttt{in}\brangle{1}, \texttt{in}\brangle{2})| d_i \\ 
+            \phantom{cost(C^*)} &\phantom{=\max_{\texttt{in}\brangle{1}\sim \texttt{in}\brangle{2}}\qquad } + |\texttt{in}_i\brangle{1} - \texttt{in}_i\brangle{2} - {\gamma'}_i^*(\texttt{in}\brangle{1}, \texttt{in}\brangle{2})|d_i' \\
+            &= \max_{\texttt{in}\brangle{1}\sim \texttt{in}\brangle{2}} \sum_{i = 1}^n  |\texttt{in}_i\brangle{1} - \texttt{in}_i\brangle{2} - \Gamma_1(\texttt{in}\brangle{1} - \texttt{in}\brangle{2})_i| d_i \\ 
+            \phantom{cost(C^*)} &\phantom{=\max_{\texttt{in}\brangle{1}\sim \texttt{in}\brangle{2}}\qquad } + |\texttt{in}_i\brangle{1} - \texttt{in}_i\brangle{2} - \Gamma_2(\texttt{in}\brangle{1} - \texttt{in}\brangle{2})_i|d_i' \\
+            &= \max_{\Delta \in [-1, 1]^n} \sum_{i = 1}^n  |\Delta_i - \Gamma_1(\Delta)_i| d_i + |\Delta_i - \Gamma_2(\Delta)_i|d_i' \\
+            &= \max_{\Delta \in [-1, 1]^n} \min_{\gamma, \gamma' \in [-1, 1]^n} \sum_{i = 1}^n  |\Delta_i - \gamma_i| d_i + |\Delta_i - \gamma_i'|d_i'
+        \end{align*}
+        \item $C^*$ is optimal, since for any valid coupling strategy $C = (\delta, \delta')$ for $L$, we have
+        \begin{align*}
+            cost(C) &= \max_{\texttt{in}\brangle{1}\sim \texttt{in}\brangle{2}} \sum_{i = 1}^n  |\texttt{in}_i\brangle{1} - \texttt{in}_i\brangle{2} - \delta_i(\texttt{in}\brangle{1}, \texttt{in}\brangle{2})| d_i \\
+            \phantom{cost(C)} &\phantom{=\max_{\texttt{in}\brangle{1}\sim \texttt{in}\brangle{2}}\qquad } + |\texttt{in}_i\brangle{1} - \texttt{in}_i\brangle{2} - \delta_i'(\texttt{in}\brangle{1}, \texttt{in}\brangle{2})|d_i' \\
+            &\geq \max_{\Delta \in [-1, 1]^n} \sum_{i = 1}^n  |\Delta_i - \delta_i(0, \Delta_i)| d_i + |\Delta_i - \delta_i'(0, \Delta_i)|d_i' \\
+            &\geq \max_{\Delta \in [-1, 1]^n} \min_{\gamma, \gamma' \in [-1, 1]^n} \sum_{i = 1}^n \left(|\Delta_i - \gamma_i| d_i + |\Delta_i - \gamma_i'|d_i' \right)\\
+            &= cost(C^*)
+        \end{align*}
+    \end{enumerate}
+    which shows that the optimization problem computes the optimal cost of a coupling strategy for $L$ that satisfies the privacy constraints.
+\end{proof}
+
+We observe that the inner problem is convex, and so the outer problem is that of convex maximization. 
+
+In the absence of an immediate polynomial time algorithm for solving this optimization problem, we analyze an approximation of the problem. 
+
+\begin{defn}
+    Define the approximate privacy cost of a differentially private looping branch $L$ to be as follows. Let $I$ be the set of transitions in $L$ that do $\textit{not}$ appear in a cycle.  
+    \begin{align*} 
+        approx(L) = &\sum_{t_i \text{outputs \texttt{insample}}} d_i' + \min_{\gamma \in [-1, 1]^n} \sum_{i \in I} \left(1 + |\gamma_i| \right) d_i  \\
+            \text{subject to } 
+            &\ \gamma_{at(i)} \leq \gamma_i \text{ if } c_i = \gguard, \\
+            &\ \gamma_{at(i)} \geq \gamma_i \text{ if } c_i = \lguard, \\
+            &\ \gamma_i = 0 \text{ if } \sigma_i = \texttt{insample}, \\
+            &\ \gamma_i = 1 \text{ if } t_i \text{ is in a cycle and has } c_i = \lguard,\\ 
+            &\ \gamma_i = -1 \text{ if } t_i \text{ is in a cycle and has } c_i = \gguard
+    \end{align*}
+    which is the cost of a coupling strategy in which $\gamma$ and $\gamma'$ are constant with respect to $\texttt{in}\brangle{1}$ and $\texttt{in}\brangle{2}$ on non-cyclic transitions. 
+\end{defn}
+
+Solving this approximation still provides us with a valid coupling strategy.
+
+\begin{prop}
+    \label{prop:approx_exists}
+    Given a differentially private looping branch $L$, there exists a valid coupling strategy $C_L$ for $L$ such that $cost(C_L) = approx(L)$.
+
+    Moreover, if $\gamma \in [-1, 1]^n$ satisfies the approximate privacy constraints, then there is a valid coupling strategy $C_L = (\gamma^*, {\gamma'}^*)$ for $L$ such that $\gamma_i^*(\texttt{in}\brangle{1}, \texttt{in}\brangle{2}) = \gamma_i$ for all $t_i$ that do not appear in cycles. 
+\end{prop}
+
+
+\begin{proof}
+    Let 
+    \[\gamma = \argmin_{\gamma \in [-1, 1]^n} \sum_{i \in I} \left(1 + |\gamma_i| \right) d_i\]
+    subject to the constraints above. Define $C_L = (\gamma^*, {\gamma'}^*)$ where
+    \begin{align*}
+        \gamma_i^*(\texttt{in}\brangle{1}, \texttt{in}\brangle{2}) &= \begin{cases}
+            \texttt{in}\brangle{1}_i - \texttt{in}\brangle{2}_i &\text{ if } t_i \text{ is in a cycle} \\
+            \gamma_i &\text{ otherwise}
+        \end{cases} \\[1em]
+        {\gamma'}_i^*(\texttt{in}\brangle{1}, \texttt{in}\brangle{2}) &= \begin{cases}
+            0 &\text{ if } t_i \text{ outputs \texttt{insample}} \\
+            \texttt{in}\brangle{1}_i - \texttt{in}\brangle{2}_i &\text{ otherwise}
+        \end{cases}
+    \end{align*}
+    Notice the following: 
+
+    \begin{itemize}
+        \item $C_L$ satisfies the privacy constraints, and so is valid.
+        
+        If $t_i$ is in a cycle with $c_i = \lguard$, then the constraints on $\gamma$ require that $\gamma_i = 1$, and so $1 = \gamma_i \leq \gamma_{at(i)} = 1$. As a result, we will satisfy the privacy constraint $\gamma_{at(i)}^* \geq \gamma_i^*$: 
+        \[\gamma_i^* = \texttt{in}\brangle{1}_i - \texttt{in}\brangle{2}_i \leq 1 = \gamma_{at(i)}^*\]
+        A similar argument holds for if $t_i$ is in a cycle with $c_i = \gguard$.
+
+        All other privacy constraints are satisfied by construction.
+
+        \item $C_L$ has the cost given by the solution to the optimization problem, since
+        
+        \begin{align*}
+            cost(C_L) &= \max_{\texttt{in}\brangle{1}\sim \texttt{in}\brangle{2}} \sum_{i = 1}^n  |\texttt{in}_i\brangle{1} - \texttt{in}_i\brangle{2} - \gamma_i^*(\texttt{in}\brangle{1}, \texttt{in}\brangle{2})| d_i \\ 
+            \phantom{cost(C_L)} &\phantom{=\max_{\texttt{in}\brangle{1}\sim \texttt{in}\brangle{2}}\qquad } + |\texttt{in}_i\brangle{1} - \texttt{in}_i\brangle{2} - {\gamma'}_i^*(\texttt{in}\brangle{1}, \texttt{in}\brangle{2})|d_i' \\
+            &= \max_{\texttt{in}\brangle{1}\sim \texttt{in}\brangle{2}} \left(\sum_{i \in I} |\texttt{in}_i\brangle{1} - \texttt{in}_i\brangle{2} - \gamma_i^*(\texttt{in}\brangle{1}, \texttt{in}\brangle{2})| d_i\right) \\
+            \phantom{cost(C_L)} &\phantom{=\max_{\texttt{in}\brangle{1}\sim \texttt{in}\brangle{2}}\qquad } + \left(\sum_{t_i \text{outputs \texttt{insample}}}|\texttt{in}_i\brangle{1} - \texttt{in}_i\brangle{2} - {\gamma'}_i^*(\texttt{in}\brangle{1}, \texttt{in}\brangle{2})|d_i'\right)\\
+            &= \max_{\texttt{in}\brangle{1}\sim \texttt{in}\brangle{2}} \left(\sum_{i \in I} |\texttt{in}_i\brangle{1} - \texttt{in}_i\brangle{2} - \gamma_i| d_i\right) \\
+            \phantom{cost(C_L)} &\phantom{=\max_{\texttt{in}\brangle{1}\sim \texttt{in}\brangle{2}}\qquad } + \left(\sum_{t_i \text{outputs \texttt{insample}}}|\texttt{in}_i\brangle{1} - \texttt{in}_i\brangle{2}|d_i'\right)\\
+            &= \sum_{i \in I} (1 + |\gamma_i|) d_i + \sum_{t_i \text{outputs \texttt{insample}}} d_i' \\
+            &= approx(L)
+        \end{align*}
+    \end{itemize}
+\end{proof}
+
+Importantly, the approximate LP is solvable in polynomial time through an application of the ellipsoid method.
+
+
+\begin{prop}
+    The approximate privacy cost of $L$ can be computed in time polynomial in $n$, the number of transitions in $L$.
+\end{prop}
+
+\begin{proof}
+    To compute the solution to the minimization problem, we can set up the following linear program: 
+    \begin{align*}
+        \min_{\gamma, A_i \in [-1, 1]^n} &\sum_{i = 1}^n \left(1 + A_i \right) d_i \\ 
+            \text{subject to } 
+            &\ \gamma_{at(i)} \leq \gamma_i \text{ if } c_i = \lguard, \\
+            &\ \gamma_{at(i)} \geq \gamma_i \text{ if } c_i = \gguard, \\
+            &\ \gamma_i = 0 \text{ if } \sigma_i = \texttt{insample}, \\
+            &\ \gamma_i = 1 \text{ if } t_i \text{ is in a cycle and has } c_i = \lguard,\\ 
+            &\ \gamma_i = -1 \text{ if } t_i \text{ is in a cycle and has } c_i = \gguard,\\
+            &\ \gamma_i \leq A_i, -\gamma_i \leq A_i \text{ for all } i \in \{1, \dots, n\} 
+    \end{align*}
+    This program can be solved using the ellipsoid method in polynomial time.
+\end{proof}
+
+Further, we obtain an approximation factor bounded by a term linear in the number of non-cyclic transitions in $L$. 
+
+\begin{prop}
+    \label{prop:approx_opt_are_close}
+    For a looping branch $L$ with $n$ distinct transitions, we have 
+    \[opt(L) \leq approx(L) \leq opt(L) + \sum_{i \in I }^n d_i + \sum_{t_i \text{outputs \texttt{insample}}} d_i'\]
+    where $I$ is the set of transitions in $L$ that do $\textit{not}$ appear in a cycle.
+\end{prop}
+
+\begin{proof}
+    We have $opt(L) \leq approx(L)$ by Proposition \ref{prop:compute_opt_cost}. Let $I$ be the set of transitions in $L$ that do $\textit{not}$ appear in a cycle. Then we have
+    \begin{align*}
+        opt(L) &= \max_{\Delta \in [-1, 1]^n} \min_{\gamma, \gamma' \in [-1, 1]^n} \sum_{i = 1}^n \left(|\Delta_i - \gamma_i| d_i + |\Delta_i - \gamma_i'|d_i' \right)\\
+        &= \max_{\Delta \in [-1, 1]^n} \min_{\gamma, \gamma' \in [-1, 1]^n} \sum_{i \in I} \left(|\Delta_i - \gamma_i| d_i + |\Delta_i - \gamma_i'|d_i' \right)\\
+        &= \max_{\Delta \in [-1, 1]^n} \min_{\gamma, \gamma' \in [-1, 1]^n} \left(\sum_{i \in I} \left(|\Delta_i - \gamma_i| d_i \right) + \sum_{t_i \text{outputs \texttt{insample}}} |\Delta_i| d_i' \right)\\
+        &\geq \max_{\Delta \in [-1, 1]^n} \min_{\gamma, \gamma' \in [-1, 1]^n} \left(\sum_{i \in I} \left(|\gamma_i| - |\Delta_i| \right) d_i  + \sum_{t_i \text{outputs \texttt{insample}}} |\Delta_i| d_i' \right)\\
+        &= \max_{\Delta \in [-1, 1]^n} \left(- \sum_{i \in I} |\Delta_i| d_i + \sum_{t_i \text{outputs \texttt{insample}}} |\Delta_i| d_i' + \min_{\gamma, \gamma' \in [-1, 1]^n} \sum_{i \in I}|\gamma_i| d_i \right)\\
+        &\geq \min_{\gamma, \gamma' \in [-1, 1]^n} \sum_{i \in I}|\gamma_i| d_i \\
+        &= approx(L) - \sum_{t_i \text{outputs \texttt{insample}}} d_i' - \sum_{i \in I} d_i'
+    \end{align*}
+    showing the second inequality.
+\end{proof}
+
+We conjecture that the optimal coupling cost, as represented by the un-approximated LP, exactly matches the ``true'' privacy cost of a program. In this case, coupling proofs would truly be ``complete'' for this program model. 
+
+\begin{conj}
+    The optimal coupling cost is the ``true'' privacy cost of a looping branch. That is, 
+    \begin{align*}
+        opt(L) = \sup_{\rho \in L} \sup_{\texttt{in}\brangle{1} \sim \texttt{in}\brangle{2}} D_\infty(\PP[\rho, \texttt{in}\brangle{1}, o]\; ||\; \PP[\rho, \texttt{in}\brangle{2}, o])
+    \end{align*}
+    representing the worst-case privacy loss over all possible paths in $L$ and all possible adjacent inputs.
+\end{conj}
+
+\subsection{Deciding Privacy}
+
+We now turn to algorithms for the decision problem of privacy.
+
+We can check whether a looping branch is differentially private by checking whether the approximate privacy cost of the looping branch is finite. This is true if and only if the \textit{approximate privacy constraints} are feasible.
+
+We will give an algorithm to check whether the approximate privacy constraints are feasible. Although this is equivalent to solving a 2SAT instance, we will encode these constraints in a graph which preserves some of the structure of our program. 
+
+\begin{defn}[Privacy constraint graph]
+    Let $L$ be a looping branch in a program $P$. The \textbf{privacy constraint graph} $G_L = (V, E)$ of $L$ is a directed graph where: 
+    \begin{itemize}
+        \item For every transition $t_i$ in $L$, there is a vertex $v_i \in V$ representing the shift $\gamma_i$ on $t_i$.
+        \item For every pair of transitions $(t_i, t_j)$ which have the privacy constraint $\gamma_i \leq \gamma_j$, there is an edge $(v_i, v_j) \in E$.
+        \item There are nodes ${\bf 1, -1}\ \in V$ such that: 
+        \begin{itemize}
+            \item The edges $({\bf -1}, v)$ exist for all $v \in V$.
+            \item The edges $(v, {\bf 1})$ exist for all $v \in V$.
+            \item For every transition $t_i$ with the privacy constraint $\gamma_i = 1$, there is an edge $({\bf 1}, v_i) \in E$.
+            \item For every transition $t_i$ with the privacy constraint $\gamma_i = -1$, there is an edge $(v_i, {\bf -1}) \in E$. 
+        \end{itemize}
+    \end{itemize}
+
+\end{defn}
+
+\begin{prop}
+    A looping branch $L$ is differentially private if and only if there does not exist a path from $\bf 1$ to $\bf -1$ in the privacy constraint graph of $L$.
+\end{prop}
+
+\begin{proof}
+    $(\implies)$ Let $L$ be differentially private. Then $approx(L) < \infty$, and so there exists $\gamma \in [-1, 1]^n$ such that the approximate privacy constraints are satisfied by $\gamma$. Aiming for a contradiction, assume that there exists a path ${\bf 1} \to v_{i_1} \to \dots \to v_{i_k} \to {\bf -1}$ in the privacy constraint graph of $L$. This corresponds to the sequence of privacy constraint inequalities
+    \[1 \leq \gamma_{i_1} \leq \dots \leq \gamma_{i_k} \leq -1\]
+    which is a contradiction, showing that no such $\gamma$ could exist. Therefore, there is no path from $\bf 1$ to $\bf -1$ in the privacy constraint graph of $L$.
+
+    $(\impliedby)$ Let there exist no path from $\bf 1$ to $\bf -1$ in the privacy constraint graph of $L$. Define 
+    \begin{align*}
+        \gamma_i = \begin{cases}
+            1 &\text{ if there exists a path from } {\bf 1} \text{ to } v_i \text{ in } G_L \\
+            -1 &\text{ otherwise}
+        \end{cases}
+    \end{align*}
+    We claim that the approximate privacy constraints are satisfied by $\gamma$. \vishnu{Need to do a better job of stating what approximate privacy constraints are and why they only depend on $\gamma \in [-1, 1]^n$ and not some function of $\texttt{in}\brangle{1}$ and $\texttt{in}\brangle{2}$}.
+    
+    \begin{itemize}
+        \item Consider the approximate privacy constraint $\gamma_i \leq \gamma_j$. This corresponds to the edge $(v_i, v_j)$ in $G_L$. If $\gamma_i = 1$, there is a path from $\bf 1$ to $v_i$, and so there is a path from $\bf 1$ to $v_j$, and so $\gamma_j = 1$, satisfying the constraint. If $\gamma_i = -1$, then any assignment of $\gamma_j$ satisfies the constraint. 
+        \item Consider the constraint $\gamma_i = 1$. This corresponds to the edge $({\bf 1}, v_i)$ in $G_L$. Since there is a path from $\bf 1$ to $v_i$, we have $\gamma_i = 1$, satisfying the constraint.
+        \item Consider the constraint $\gamma_i = -1$. This corresponds to the edge $(v_i, {\bf -1})$ in $G_L$. Since there is no path from $\bf 1$ to $\bf -1$ in $G_L$, there must be no path from $\bf 1$ to $v_i$. Thus, $\gamma_i = -1$, satisfying the constraint.
+    \end{itemize}
+    
+    Thus, the approximate privacy constraints are satisfied by $\gamma$, which means that $approx(L) < \infty$ and $L$ is differentially private.
+\end{proof}
+
+We have specified a linear time algorithm only to check whether a given looping branch is private. However, we can check whether \textit{all} looping branches are private at once in linear time by combining the privacy constraint graphs for each looping branch into a single graph.
+
+\begin{defn}
+    The privacy constraint graph $G_P$ of a program $P$ is the union of the privacy constraint graphs of each looping branch in $P$.
+\end{defn}
+
+\begin{prop}
+    \label{prop:paths_in_privacy_graph}
+    Let $v_{i_0}, \dots, v_{i_k}$ be vertices in $G_P$ corresponding to transitions $t_{i_0}, \dots, t_{i_k}$ in $P$. If $v_{i_0} \to \dots \to v_{i_k}$ is a path in $G_P$, then there exists a path $\rho \in P$ such that 
+    \begin{align*}
+        t_{i_0} \cdots t_{i_k} \text{ is a subsequence of } \rho \text{ with } guard(t_{i_j}) = \gguard \text { for all } j \in \{1, \dots, k\}
+    \end{align*}
+    or
+    \begin{align*}
+        t_{i_k} \cdots t_{i_0} \text{ is a subsequence of } \rho \text{ with } guard(t_{i_j}) = \lguard \text { for all } j \in \{k - 1, \dots, 0\}
+    \end{align*}
+\end{prop}
+
+
+\begin{proof}
+    We will use induction on the length of the path $v_{i_0} \to \dots \to v_{i_k}$ in $G_P$. 
+
+    \begin{itemize}
+        \item Base Case ($k = 1$)
+        
+        If $k = 1$, then the path $v_{i_0} \to v_{i_1}$ comprises of a single edge $(v_{i_0}, v_{i_1})$ in $G_P$. So, there is a looping branch $L$ for which $(v_{i_0}, v_{i_1}) \in G_L$, for which there is the privacy constraint $\gamma_{i_0} \leq \gamma_{i_1}$. 
+        
+        We either have that $i_0 = at(i_1)$ and $c_{i_1} = \gguard$, or $i_1 = at(i_0)$ and $c_{i_0} = \lguard$. In the first case, we have that $t_{i_0} t_{i_1}$ is a subsequence of some path $\rho$ in $L$ with $guard(t_{i_1}) = \gguard$. In the second case, we have that $t_{i_1} t_{i_0}$ is a subsequence of some path $\rho$ in $L$ with $guard(t_{i_0}) = \lguard$.
+
+        \item Inductive Step ($k > 1$)
+        
+        By the inductive hypothesis, we have one of the following cases: 
+
+        \begin{enumerate}
+            \item There exists a path $\rho_1 \in P$ such that $t_{i_0} \cdots t_{i_{k - 1}}$ is a subsequence of $\rho_1$ with $guard(t_{i_j}) = \gguard$ for all $j \in \{1, \dots, k - 1\}$.
+            
+            Since we have the edge $(v_{i_{k - 1}}, v_{i_k})$ in $G_P$, there exists a looping branch $L$ for which $(v_{i_{k - 1}}, v_{i_k}) \in G_L$, for which there is the privacy constraint $\gamma_{i_{k - 1}} \leq \gamma_{i_k}$.
+
+            We either have that $i_{k - 1} = at(i_k)$ and $c_{i_k} = \gguard$ ($t_{i_{k - 1}}$ precedes $t_{i_k}$ in $L$), or $i_k = at(i_{k - 1})$ and $c_{i_{k - 1}} = \lguard$ ($t_{i_k}$ precedes $t_{i_{k - 1}}$ in $L$). Notice, however, that we cannot have that $t_{i_k}$ precedes $t_{i_{k - 1}}$, since we have assumed $c_{i_{k - 1}} = \gguard$. 
+
+            So, there exists a path $\rho_2 \in L$ such that $t_{i_{k - 1}} t_{i_k}$ is a subsequence of $\rho_2$ with $guard(t_{i_k}) = \gguard$. 
+
+            Let $j_1$ be the index at which $t_{i_{k - 1}}$ appears in $\rho_1$, and $j_2$ be the index at which it appears in $\rho_2$. Then, the path $\rho_1[:j_1] \rho_2[j_2:]$ is a path in $P$ such that $t_{i_0} \cdots t_{i_k}$ is a subsequence of $\rho_1[:j_1] \rho_2[j_2:]$ with $guard(t_{i_j}) = \gguard$ for all $j \in \{1, \dots, k\}$.
+
+            \item There exists a path $\rho_1 \in P$ such that $t_{i_{k - 1}} \cdots t_{i_0}$ is a subsequence of $\rho_1$ with $guard(t_{i_j}) = \lguard$ for all $j \in \{k - 2, \dots, 0\}$.
+            
+            Similar to the argument above, we either have that $t_{i_{k - 1}}$ precedes $t_{i_k}$, or $t_{i_k}$ precedes $t_{i_{k - 1}}$ in some looping branch. We cannot have that $t_{i_{k - 1}}$ precedes $t_{i_k}$, and so $c_{i_{k - 1}}$ is forced to be $\lguard$. We can then construct a path $\rho \in P$ such that $t_{i_k} \cdots t_{i_0}$ is a subsequence of $\rho$ with $guard(t_{i_j}) = \lguard$ for all $j \in \{k - 1, \dots, 0\}$. 
+        \end{enumerate}
+    \end{itemize}
+
+    This completes the proof. 
+\end{proof}
+
+
+\begin{cor}
+    The path $v_{i_0} \to \dots \to v_{i_k}$ is in $G_P$ if and only if there is a looping branch $L$ in $P$ such that $v_{i_0} \to \dots \to v_{i_k}$ is a path in $G_L$.
+\end{cor}
+
+\begin{prop}
+    A program $P$ is differentially private if and only if there does not exist a path from $\bf 1$ to $\bf -1$ in the privacy constraint graph of $P$.
+\end{prop}
+
+\begin{proof}
+    There is a path from $\bf 1$ to $\bf -1$ in the privacy constraint graph of $P$ if and only if there is a path from $\bf 1$ to $\bf -1$ in the privacy constraint graph of some looping branch $L$ in $P$ by Proposition \ref{prop:paths_in_privacy_graph}. This is true if and only if there exists some $L$ which is not differentially private, which is true if and only if $P$ is not differentially private.
+\end{proof}
+
+\sky{clarify what ``size of'' $P$ is - ambiguous}
+
+\begin{thm}
+    Given a program $P$, we can check whether $P$ is differentially private in linear time in the size of $P$.
+\end{thm}
+
+\begin{proof}
+    Constructing the privacy constraint graph $G_P$ takes linear time in the size of $P$, on which we can perform a breadth first search to check whether there is a path from $\bf 1$ to $\bf -1$. This can be done in linear time in the size of $G_P$, which is linear in the size of $P$.
+\end{proof}
+
+\sky{add a note about this matching DiPA bounds}
+
+

@@ -1,0 +1,72 @@
+
+\subsection{Loops}
+
+We now introduce loops into our program model through the star operator.
+
+\begin{defn}
+    A looping branch $L$ is a (possibly infinite) set of complete paths such that $L$ is the language described by a single union-free regular expression over a valid transition alphabet $\Sigma_T$.
+\end{defn}
+
+For a looping branch $L$, we will use $R_L$ to denote the minimal union-free regular expression that defines $L$. 
+
+Intuitively, a looping branch is a single, straight-line path except that we allow for cycles to be inserted within the path. Looping branches are closely related to general ``star-dot'' or union-free regular languages and their associated 1-cycle-free-path-automata (see, for example, \cite{nagy2006union}).
+
+We will associate entire looping branches with a \textbf{single} coupling strategy.
+
+\begin{defn}[Coupling strategy for a looping branch]
+    Let $r$ be the union-free regular expression describing paths in a looping branch $L$. Let $T_r$ be the set of all transitions that appear in $r$. Then a coupling strategy $C = (\gamma, \gamma')$ for a looping branch is a function $C:T_r\times\RR \times\RR\to [-1, 1]\times[-1, 1]$ that computes shifts for each transition in $L$ as a function of two adjacent inputs.
+\end{defn}
+
+
+We will sometimes call these coupling strategies ``class'' coupling strategies if necessary to distinguish them from coupling strategies for individual paths.
+
+Observe that a class coupling strategy implicitly defines a coupling strategy for each path in $L$.
+
+\begin{defn}[Induced Coupling Strategy]
+    \sky{not sure how necessary this is}
+    Given a coupling strategy $C = (\gamma, \gamma')$ for a looping branch $L$ and a specific path $\rho\in L$, the coupling strategy for $\rho=t_0\cdots t_{n-1}$ induced by $C$ is the pair of functions $\gamma_\rho, \gamma'_\rho$ such that 
+    \begin{align*}
+        \gamma_\rho(\texttt{in}\brangle{1}, \texttt{in}\brangle{2}) &= (\gamma(t_0)(\texttt{in}\brangle{1}, \texttt{in}\brangle{2}), \gamma(t_1)(\texttt{in}\brangle{1}, \texttt{in}\brangle{2}), \ldots,\gamma(t_{n-1})(\texttt{in}\brangle{1}, \texttt{in}\brangle{2}) )\\
+        \gamma'_\rho(\texttt{in}\brangle{1}, \texttt{in}\brangle{2}) &= (\gamma'(t_0)(\texttt{in}\brangle{1}, \texttt{in}\brangle{2}), \gamma'(t_1)(\texttt{in}\brangle{1}, \texttt{in}\brangle{2}), \ldots,\gamma'(t_{n-1})(\texttt{in}\brangle{1}, \texttt{in}\brangle{2}) )
+    \end{align*}
+\end{defn}
+
+Perhaps surprisingly, we show that it is in fact optimal to only consider a single coupling strategy for an entire looping branch; not only is finding individual coupling strategies for every single path in a looping branch intractable, but it also does not lead to a better overall privacy cost. 
+
+\begin{prop}\label{ClassCouplingStrategiesAreEnoughProp}
+    If there exists a valid coupling strategy $C_\rho$ with cost $cost(C_\rho)$ for every path $\rho$ of looping branch $L$ and $\sup_{\rho\in L}cost(C_\rho)< \infty$, then there exists a valid class coupling strategy $C'$ for $L$ such that $cost(C') \leq \sup_{\rho\in L}cost(C_\rho)$. 
+\end{prop}
+
+Note that, because of the introduction of stars (i.e. cycles) to our model, it is possible for a looping branch to fail to be private for \textit{any} $d>0$; in other words, every coupling strategy for a looping branch has infinite cost. We can characterize whether or not a coupling strategy has infinite cost through another constraint:
+
+\begin{lemma}\label{finiteCostConstraintLemma}
+    For a looping branch $L$, a valid coupling strategy $C = (\mathbf{\gamma}, \mathbf{\gamma}')$ has finite cost $cost(C)<\infty$ if and only if the following constraint applies for all $i$:
+    \begin{itemize}
+        \item If $t_i$ is contained within a star in $R_L$ (i.e. $t_i$ is in a cycle), then $\gamma_i = -\texttt{in}\brangle{1}_i+\texttt{in}\brangle{2}_i$ and $\gamma_i' = -\texttt{in}\brangle{1}_i+\texttt{in}\brangle{2}_i$.
+    \end{itemize}
+\end{lemma}
+
+Intuitively, a finite-cost coupling strategy must assign shifts such that every cycle transition has 0 privacy cost. 
+
+
+In particular, we can combine this constraint that gives us \textit{finite cost} class coupling strategies with the four constraints that ensure that coupling strategies are valid.
+
+\begin{defn}[Privacy Constraint System]\label{privacyConstraintSystem}
+    Let $L$ be a looping branch over a valid transition alphabet $\Sigma_T$. If, for a candidate coupling strategy $C_L = (\gamma, \gamma')$ for $L$, the following constraints are satisfied for all $i$: \begin{enumerate}
+        \item If $c_i = \lguard[\texttt{x}]$, then $\gamma_i\leq\gamma_{at(i)}$
+        \item If $c_i = \gguard[\texttt{x}]$, then $\gamma_i\geq\gamma_{at(i)}$
+        \item If $\sigma_i = \texttt{insample}$, then $\gamma_i=0$
+        \item If $\sigma_i = \texttt{insample}'$, then $\gamma_i'=0$
+        \item If $t_i$ is in a cycle, then $\gamma_i = -\texttt{in}\brangle{1}_i+\texttt{in}\brangle{2}_i$
+        \item If $t_i$ is in a cycle, then $\gamma_i' = -\texttt{in}\brangle{1}_i+\texttt{in}\brangle{2}_i$
+    \end{enumerate}
+    then we say that $C$ satisfies the privacy constraint system for $L$. 
+\end{defn}
+
+As expected, if there exists a solution to the privacy constraint system for a looping branch $L$, then $L$ is private.
+
+\begin{prop}\label{privacyFiniteCostProp}
+    If there exists a coupling strategy $C$ for a looping branch $L$ that satisfies the privacy constraint system, then there exists a finite $d>0$ such that $L$ is $d\varepsilon$-differentially private. 
+\end{prop}
+
+Perhaps surprisingly, we will also later show that the privacy constraint system is complete; that is, if there does not exist a solution to the privacy constraint system, we can prove that there also does not exist any finite $d>0$ such that $L$ is $d\varepsilon$-differentially private. 
