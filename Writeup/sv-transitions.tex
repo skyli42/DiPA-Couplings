@@ -1,42 +1,17 @@
 
 \subsection{Individual Transitions}
 
-We will define transitions over an underlying finite set of program \textbf{locations}; a transition defines how a program moves from one location to the next. 
-
-\begin{defn}[Program locations]
-    $Q$ is a finite set of program locations partitioned into input locations $Q_{in}$ and non-input locations $Q_{non}$. We will also associate each program location with two \textbf{noise parameters} using the function $P: Q\to \RR^{\geq 0}\times \RR^{\geq 0}$.
-\end{defn}
-
 Transitions act as guarded statements whose guard is dependent on a persistent real-valued variable $\texttt{x}$ and a real-valued input to which random noise is added; we can thus formally define individual transitions as follows:
 
 \begin{defn}[Transitions]
-    Given a finite set of program locations $Q$, a transition is a tuple $t = (q, q', c, \sigma, \tau)$, where \begin{itemize}
-        \item $q\in Q$ is the initial location.
-        \item $q'\in Q$ is the following location.
+    A transition is a tuple $t = (c, \sigma, \tau)$, where \begin{itemize}
         \item $c\in \{\texttt{true}, \lguard[\texttt{x}], \gguard[\texttt{x}]\}$ is a guard for the transition.
         \item $\sigma \in \Gamma\cup\{\texttt{insample}, \texttt{insample}'\}$ is the output of $t$.
         \item $\tau\in\{\texttt{true}, \texttt{false}\}$ is a boolean value indicating whether or not the stored value of $\texttt{x}$ will be updated.
     \end{itemize}
-    Depending on context, we may also notate $t$ as $q\to q'$. 
 \end{defn}
 
-
-\subsubsection{Constructing an alphabet}
-
-As mentioned, we will consider individual transitions as part of an \textit{alphabet}; in particular, we will show that there is an interesting set of regular languages over an alphabet of transitions that we can apply the coupling framework to. 
-
-However, in order to ensure that these languages do in fact correspond to semantically coherent programs, we need to restrict possible transition alphabets as follows. 
-
-\begin{defn}[Valid Transition Alphabets]
-    Let $\Sigma_T$ be a finite alphabet of transitions. We call $\Sigma_T$ \textbf{valid} if it satisfies the following conditions:
-    \begin{itemize}
-        \item \textbf{Initialization:} There exists some $t_{init}\in \Sigma_T$ such that $t_{init} = (q_0, q_1, \texttt{true}, \sigma, \texttt{true})$ for some $q_0, q_1\in Q$, $\sigma \in \Gamma\cup\{\texttt{insample}, \texttt{insample}'\}$. 
-        \item \textbf{Determinism}: If any transition $t\in \Sigma_T$ is of the form $t=(q, q', c, \sigma, \tau)$, then no other transitions of the form $(q, q^*, c, \sigma', \tau')$ for $q, q', q^*\in Q$ exist in $\Sigma_T$. 
-        Additionally, if there exists a transition $t=(q, q', \texttt{true}, \sigma, \tau)$ such that $t\in \Sigma_T$, then transitions of the form $(q, q^*, \lguard[\texttt{x}], \sigma', \tau')$ or $(q, q^*, \lguard[\texttt{x}], \sigma', \tau')$ are not in $\Sigma_T$. 
-        \item \textbf{Output distinction}: If there exist some $\sigma, \sigma', \tau, \tau'$ such that $(q, q', \lguard[\texttt{x}], \sigma, \tau)\in \Sigma_T$  and $(q, q^*, \gguard[\texttt{x}], \sigma', \tau') \in \Sigma_T$, then $\sigma \neq \sigma'$. Additionally, at least one of $\sigma\in \Gamma$, $\sigma'\in \Gamma$ is true.
-        \item \textbf{Non-input location condition}: For all locations $q\in Q_{non}$, if there exists a transition $t=(q, q', c, \sigma, \tau)$ such that $t\in \Sigma_T$, then $c = \texttt{true}$.
-    \end{itemize}
-\end{defn}
+We additionally associate two real-valued noise parameters $P(t) = (d, d')$ with each transition. 
 
 \subsubsection{Transition Semantics}
 
@@ -45,43 +20,36 @@ We can think of each transition as defining an extremely small program; beginnin
 More specifically, given some threshold value $\texttt{x}$, each transition $t = (q, q', c, \sigma, \tau)$ will first read a real number input $\texttt{in}$, sample two random variables $z\sim\Lap(0, \frac{1}{d\varepsilon})$, $z'\sim\Lap(0, \frac{1}{d'\varepsilon})$, where $P(q) = (d, d')$, and then assign two variables $\texttt{insample} = \texttt{in} + z$ and $\texttt{insample}' = \texttt{in} + z'$. 
 If the guard $c$ is satisfied by comparing $\texttt{insample}$ to $\texttt{x}$, then we transition to location $q'$, outputting $\sigma$ and, if $\tau = \texttt{true}$, reassigning $\texttt{x} = \texttt{insample}$. 
 
-We can describe the semantics of a transition as a function that maps an initial program location and a real-valued input to a distribution of subsequent program locations, an output value, and a possibly new value for $\texttt{x}$. 
+We can describe the semantics of a transition as a function that maps an initial program state and a real-valued input to a subsequent program state. 
 
-To be precise, we define a program state as a tuple consisting of a program location and a value for the program variable $\texttt{x}$. Let $S = Q\times\RR$ be the set of all possible program states. As expected, every possible input is simply an element of $\RR$. 
-An output can either be a symbol from some finite alphabet $\Gamma$ or a real number; thus, the set of all possible output events is $\Gamma \cup \Sigma$, where $\Sigma$ is some $\sigma$-algebra over $\RR$.
-In particular, we will take $\Sigma$ to be the standard $\sigma$-algebra of all Lebesgue measurable sets. 
+We define a program state as a tuple consisting of a distribution of possible values for the program value $\texttt{x}$, and a distribution of possible values for the current output $\sigma$. 
 
-It follows that the semantics of a transition $t$ can be defined as a function $\Phi_t: S\times \RR\to dist(S\times (\Gamma\cup\RR\cup \lambda))$ that maps an initial program location $q\in Q$ and an input $\texttt{in}\in \RR$ to a distribution of subsequent program locations and an output event following the expected semantics; $\lambda$ here denotes the empty string (i.e. no output). 
+Let $S = dist(\RR)\times (\Gamma \cup dist(\RR))^*$ be the set of all possible program states. 
+As expected, every possible input is simply an element of $\RR$.
 
-{\color{red}[If we need space, move the following section to appendix]}
+Then the semantics of a transition $t$ can be defined as a function $\Phi_t:dist_\downarrow(S)\times \RR \to dist_\downarrow (S)$ that maps a subdistribution of initial program states and an input to a subdistribution of subsequent program states. 
 
-Let $q\in Q$ be an initial location, $\texttt{x}\in \RR$ be an initial threshold value, and $P(q) = (d_q, d_q')$ be the distributional parameters associated with $q$. Let $t = (q, q', c, \sigma, \tau)$ be the transition whose semantics we are defining. 
+More precisely, if $t = (c, \sigma, \tau)$, let $P(t) = (d_t, d_t')$, let $\texttt{insample}$ be the Laplace distribution $\Lap(\texttt{in}, \frac{1}{d_t\varepsilon})$, and $\texttt{insample}'$ be the independent Laplace distribution $\Lap(\texttt{in}, \frac{1}{d_t'\varepsilon})$. Let $\theta$ be a subdistribution of program states. 
 
-Let $\texttt{in}\in \RR$ be a real-valued input and $o\in (\Gamma\cup\Sigma\cup\lambda)$ be a possible output event of $t$.
+Then $\Phi_t(\theta, \texttt{in})$ is a subdistribution $O$ such that for all states $(\texttt{x}, \sigma_0)$, \begin{align*}
+   \PP_O[(\texttt{x}, \sigma_0\cdot \sigma)]&= \begin{cases}
+    \PP_\theta[(\texttt{x}, \sigma_0)]\PP[c \text{ is satisfied}]& \tau = \texttt{false}\\
+    0 & \tau = \texttt{true}
+  \end{cases} \\
+  \PP_O[(\texttt{insample}, \sigma_0\cdot \sigma)]&= \begin{cases}
+    \PP_\theta[(\texttt{x}, \sigma_0)]\PP[c \text{ is satisfied}]& \tau = \texttt{true}\\
+    0 & \tau = \texttt{false}
+  \end{cases} 
+\end{align*}
 
-Let $I\sim \Lap(\texttt{in}, \frac{1}{d_q\varepsilon})$ and $I'\sim \Lap(\texttt{in}, \frac{1}{d_q'\varepsilon})$ be independent random variables corresponding to $\texttt{insample}$ and $\texttt{insample}'$. 
+Every other possible state is assigned probability 0 by $O$; with probability $1-\sum_{s\in S} \PP_O[s]$, we consider the transition to have halted.
 
-For both $I$ and $I'$, given $o$, we say that $I$ (or $I'$, respectively) matches $o$ if $o\subseteq \RR$ and $I\in o$. 
+We primarily are concerned with the probability that a transition ``succeeds'', that is, the probability that from location $q$, the program defined by $t$ transitions to location $q'$ and outputs a certain value $o$, where $o$ is either a symbol from a finite alphabet $\Gamma$ or a measurable event of $\RR$. 
 
-Let $T$ be the event that $c$ is satisfied given $\texttt{x}$ and $\texttt{insample}=I$ and let $O$ be the event that, if $\sigma=\texttt{insample}$, then $I$ matches $o$ and if $\sigma = \texttt{insample}'$, then $I'$ matches $o$. 
+We denote this probability as $\PP[\texttt{x}, t, \texttt{in}, o]$, where $\texttt{x} \in dist(\RR)$ is the initial distribution of $\texttt{x}$, $t$ is a transition, $\texttt{in}\in \RR$ is a real-valued input, and $o\in \Gamma\cup \mathcal{P}(\RR)$ is a possible output of $t$. 
+Specifically, let $O = \Phi_t((q, \texttt{x}, \lambda), \texttt{in})$, where $\lambda$ represents the empty string, be a subdistribution; we abuse notation here by using $(q, \texttt{x}, \lambda)$ to represent the subdistribution that assigns probability 1 to the state $(q, \texttt{x}, \lambda)$. Then $\PP[\texttt{x}, t, \texttt{in}, o] = \int_{-\infty}^\infty\PP_O[\texttt{x} = x]\PP_O[(q', x, o)]dx$. \sky{is $\PP_O[\texttt{x}=x]$ coherent?}
 
-Then $\Phi_t((q, \texttt{x}), \texttt{in})$ is a distribution that assigns probabilities to output events as follows:
-
-If $\tau = \texttt{false}$, then $\Phi_t((q, \texttt{x}), \texttt{in})$ assigns probability 0 to all events $((q', \texttt{x}'), o)$ such that $\texttt{x}'\neq \texttt{x}$. For all other events $((q', \texttt{x}), o)$. $\Phi_t((q, \texttt{x}), \texttt{in})$ assigns probability $\PP[T\land O]$ to $((q', \texttt{x}), o)$ and probability $\PP[\lnot T]$ to the event $((q_{term}, \texttt{x}), \lambda)$.
-
-
-Similarly, if $\tau = \texttt{true}$, then $\Phi_t((q, \texttt{x}), \texttt{in})$ assigns probability $\PP[T\land O] $ to the event $((q', I), o)$ and assigns probability $\PP[\lnot T]$ to the event $((q_{term}, I), \lambda)$.
-
-Here, $q_{term}$ is a sink or terminal location with no transitions allowed out of it. Equivalently, we could say that the program simply terminates and fails to transition to any new state.
-
-We primarily are concerned with the probability that a transition ``succeeds'', that is, the probability that from location $q$, the program defined by $t$ transitions to location $q'$ and outputs a certain value. 
-
-We denote this probability as $\PP[\texttt{x}, t, \texttt{in}, o]$, where $\texttt{x} \in \RR$ is the initial value of $\texttt{x}$, $t$ is a transition, $\texttt{in}\in \RR$ is a real-valued input, and $o\in \Gamma\cup\Sigma$ is a possible output of $t$. Specifically, $\PP[\texttt{x}, t, \texttt{in}, o] = \int_{-\infty}^\infty\PP[\texttt{x}\gets \texttt{x}']\Phi_t((q, \texttt{x}), \texttt{in})((q', \texttt{x}'), o)d\texttt{x}'$, 
-where $\PP[\texttt{x}\gets \texttt{x}']$ is the probability that $\texttt{x}$ is updated to have the value $\texttt{x}'$.
-
-Note that this is an aggregated probability over all possible final values of $\texttt{x}$---it is not particularly important what the specific final value of $\texttt{x}$ is. 
-
-
+Note that this is an aggregated probability over all possible final values of $\texttt{x}$ --- it is not particularly important what the specific final value of $\texttt{x}$ is. 
 
 \subsubsection{Couplings}
 

@@ -3,10 +3,8 @@
 
 We now demonstrate how to concatenate transitions and their corresponding coupling strategies together into program \textit{paths}.
 
-\begin{defn}[Program paths]
-    Let $\Sigma_T$ be a valid transition alphabet with underlying location space $Q$. A program \textbf{path} is a sequence of transitions $t_0\cdot t_1\cdot \ldots\cdot t_{n-1}$ such that for all $i\in 0\ldots n-1$, $t_i = (q_i, q_{i+1}, c_i, \sigma_i, \tau_i)$ for some $c_i, \sigma_i, \tau_i$. We will often notate an path $\rho$ as $\rho = q_0\to q_1\to \ldots \to q_n$. 
-
-    If a path $\rho$ is of the form $\rho = t_{init}\cdot \rho'$ for $\rho'\in \Sigma_T^*$, then we call $\rho$ a \textbf{complete} path. 
+\begin{defn}[Paths]
+    A path is a string composed of transitions. For a path $\rho = t_0\cdot t_1\cdot\ldots\cdot t_{n-1}$, if $t_0$ is of the form $t_0 = (\texttt{true}, \sigma, \texttt{true})$ for some $\sigma$, then we call $\rho$ a \textbf{complete} path.
 \end{defn}
 
 The length of a path $\rho$ is simply the number of transitions that are concatenated together to form $\rho$. 
@@ -25,6 +23,8 @@ As before, we need to restrict the space of possible inputs to a path based on w
 
 We will assume that all input sequences are valid from now on. 
 
+
+\sky{move this prop to much later}
 Interestingly, the constraints on valid transition alphabets, specifically the constraints of determinism and output distinction, mean that outputs uniquely correspond to paths; in other words, given a valid transition alphabet, knowing an output sequence uniquely determines which path must have produced the output. 
 
 \begin{prop}
@@ -35,50 +35,18 @@ Interestingly, the constraints on valid transition alphabets, specifically the c
 
 As with transitions, we can think of paths as very limited programs consisting of a series of transitions concatenated together with a persistent threshold variable $\texttt{x}$. Naturally, paths will now consider as input a \textbf{sequence} of real numbers, and similarly output a \textbf{sequence} of real numbers or symbols - each transition reads in an input and outputs some value.
 
-In particular, the semantics of a path $\rho = q_0\to \ldots \to q_n = t_0t_1\cdots t_{n-1}$ can be defined as the function $\Phi_{\rho}((q, \texttt{x}), \texttt{in}): S\times \RR^n\to dist(S\times (\RR\cup\Gamma\cup\lambda)^n)$ mapping an initial program state and a input sequence to a distribution of final program states and output sequences. 
+The semantics of a path can be defined as a function mapping a subdistribution of program states and a real-valued input sequence to a subdistribution of final program states. 
 
-$\Phi_{\rho}$ can be computed by composing the program semantics of individual transitions in the natural manner:
+More specifically, the semantics of a path $\rho = t_0t_1\cdots t_{n-1}$ are a function $\Phi_\rho: dist_\downarrow(S)\times \RR^n \to dist_\downarrow(S)$. $\Phi_\rho$ can be defined by composing transition semantics in the expected manner:
 
-As before, let $\texttt{in}\in \RR^n$ be a sequence of inputs and let $\sigma \in (\Sigma\cup\Gamma\cup\lambda)^n$ be a sequence of possible output events.
-Let $I\sim \Lap(\texttt{in}_0, \frac{1}{d_q\varepsilon})$ and $I'\sim \Lap(\texttt{in}_0, \frac{1}{d_q'\varepsilon})$ be independent random variables corresponding to $\texttt{insample}$ and $\texttt{insample}'$. 
+\[\Phi_\rho(s, \texttt{in}) = \begin{cases}
+    \Phi_{t_0}(s, \texttt{in}_0)& |\rho| = 1\\
+    \Phi_{t_{n-1}}(\Phi_{\rho_{0:n-1}}(s, \texttt{in}_{0:n-1}), \texttt{in}_{n-1})& |\rho| >1
+\end{cases}\]
+\sky{Is there a nicer way to write this that I'm forgetting}
 
-Let $t_0 = (q, q', c_0, \sigma_0, \tau_0)$
-
-Then \[
-    \Phi_{\rho}((q, \texttt{x}), \texttt{in})((q', \texttt{x}'), \sigma) = \begin{cases}
-        1 & ((q', \texttt{x}'), \sigma)=((q_0, \texttt{x}), \lambda)\land n = 0\\
-        \PP[c_0\text{ is not satisfied}] & ((q', \texttt{x}'), \sigma) = ((q_{term}, \texttt{x}), \lambda)\land \tau_0 = \texttt{false} \\
-        \PP[c_0\text{ is not satisfied}] & ((q', I), \sigma) = ((q_{term}, \texttt{x}), \lambda)\land \tau_0 = \texttt{true}\\
-        \begin{gathered}
-            \PP[c_0\text{ is satisfied}]*\\
-            \Phi_{tail(\rho)}((q',\texttt{x}), tail(\texttt{in}))((q', \texttt{x}'), tail(\sigma))
-        \end{gathered} & \sigma_0 \in \Gamma\land \tau_0 = \texttt{false}\\[15pt]
-        \begin{gathered}
-            \PP[c_0\text{ is satisfied}]*\\
-            \Phi_{tail(\rho)}((q',I), tail(\texttt{in}))((q', \texttt{x}'), tail(\sigma))
-        \end{gathered} & \sigma_0 \in \Gamma\land\tau_0 = \texttt{true}\\[15pt]
-        \begin{gathered}
-            \PP[c_0\text{ is satisfied}\land I \text{ matches }\sigma_0]*\\
-            \Phi_{tail(\rho)}((q',\texttt{x}), tail(\texttt{in}))((q', \texttt{x}'), tail(\sigma))
-        \end{gathered} & \sigma_0 = \texttt{insample}\land \tau_0 = \texttt{false}\\[15pt]
-        \begin{gathered}
-            \PP[c_0\text{ is satisfied}\land I \text{ matches }\sigma_0]*\\
-            \Phi_{tail(\rho)}((q',I), tail(\texttt{in}))((q', \texttt{x}'), tail(\sigma))
-        \end{gathered} & \sigma_0 = \texttt{insample}\land\tau_0 = \texttt{true}\\[15pt]
-        \begin{gathered}
-            \PP[c_0\text{ is satisfied}\land I' \text{ matches }\sigma_0]*\\
-            \Phi_{tail(\rho)}((q',\texttt{x}), tail(\texttt{in}))((q', \texttt{x}'), tail(\sigma))
-        \end{gathered} & \sigma_0 = \texttt{insample}'\land \tau_0 = \texttt{false}\\[15pt]
-        \begin{gathered}
-            \PP[c_0\text{ is satisfied}\land I' \text{ matches }\sigma_0]*\\
-            \Phi_{tail(\rho)}((q',I), tail(\texttt{in}))((q', \texttt{x}'), tail(\sigma))
-        \end{gathered} & \sigma_0 = \texttt{insample}'\land\tau_0 = \texttt{true}\\[15pt]
-        0 & otherwise
-    \end{cases}.
-\]
-
-As before, we primarily care about the probability of a ``successful'' execution of a path with a particular output, which we will denote as $\PP[\texttt{x}_0, \rho, \texttt{in}, \sigma]$, where $\texttt{x} \in \RR$ is the initial value of $\texttt{x}$, $\rho$ is the path we are concerned about, $\texttt{in}\in \RR^n$ is a real-valued input sequence, and $o\in (\Gamma\cup\Sigma\cup\lambda)^n$ is a possible output sequence of $\rho$. 
-As before, $\PP[\texttt{x}_0, \rho, \texttt{in}, \sigma] =\int_{-\infty}^{\infty} \PP[\texttt{x}\gets \texttt{x}']\Phi_\rho((q_0, \texttt{x}_0), \texttt{in})((q_n, \texttt{x}'), \sigma)d\texttt{x}'$, where $t_0 = (q_0, q_1, c_0, \sigma_0, \tau_0)$ is the first character of $\rho$ and $t_{n-1} = (q_{n-1}, q_n, c_{n-1}, \sigma_{n-1}, \tau_{n-1})$ is the final character of $\rho$.
+Like with transitions, we denote the probability that a path $\rho = q_0\to\ldots\to q_n$ ``succeeds'' given an initial $\texttt{x}\in dist(\RR)$, input sequence $\texttt{in} \in \RR^n$, and possible output sequence $o \in (\Gamma\cup\Sigma)^n$as $\PP[\texttt{x}, \rho, \texttt{in}, o] = \int_{-\infty}^\infty\PP_O[\texttt{x} =x]\PP_O[(q_{n}, x, o)]dx$, where $O$ is the subdistribution produced by $\Phi_\rho((q, \texttt{x}, \lambda), \texttt{in})$.
+\sky{Same issue with $\PP_O[\texttt{x}=x]$}
 
 For a complete path $\rho$, note that the initial value of $\texttt{x}$ is irrelevant, so we will shorthand $\PP[\texttt{x}_0, \rho, \texttt{in}, \sigma]$ to $\PP[\rho, \texttt{in}, \sigma]$.
 
