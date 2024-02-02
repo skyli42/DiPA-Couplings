@@ -306,3 +306,7 @@ TSWLatexianTemp*
 .vscode/*
 
 */.idea/*
+
+writeup_edits/*
+
+*/DiPACouplings.pdf
