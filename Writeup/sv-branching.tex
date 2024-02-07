@@ -1,35 +1,39 @@
 
 \subsection{Branching} 
-{\color{red} considering cutting this section - the major function it serves is to emphasize that, excepting loops, paths should all have their own coupling strategies, which could just be explained in the program section}
+\sky{possibly cut this section - revisit later}
 
+We will model programs as simply sets of program traces; each trace is represented by a path as defined above. To this end, we introduce ``branching programs'' as a simple subset of programs under this paradigm. 
 
 \begin{defn}[Branching program]
-    A branching program $B$ is a finite set of complete paths over a valid transition alphabet $\Sigma_T$.
+    A branching program is a finite set of complete paths.
 \end{defn}
 
-Equivalently, a branching program is a language over $\Sigma_T$ that can be represented by a regular expression only using concatenation and finite union; every word in the language must also be of the form $t_{init}\Sigma_T^*$ and satisfy the path condition. 
-
-Branching programs exemplify our conception of programs as simply collections of possible program executions; indeed, we will demonstrate that for the purposes of privacy, we can do no better than treating them as collections of paths.
+Branching programs exemplify our conception of programs as simply sets of possible program executions; indeed, we will demonstrate that for the purposes of privacy, we can do no better than treating them as collections of paths.
 
 \subsubsection{Privacy}
 
-We first extend the definition of coupling strategies to sets of paths in the natural manner.
+We first extend the definition of privacy to sets of paths. 
+
+\begin{defn}
+    Let $S$ be a set of complete paths and let $O$ be a set of all possible outputs of paths in $S$. 
+    Then $S$ is $d\varepsilon$-differentially private for some $d>0$ if, for all paths $\rho\in S$ and outputs $\sigma\in O$, $\forall \varepsilon>0$, for all valid adjacent input sequences $\texttt{in}\brangle{1}\sim \texttt{in}\brangle{2}$, $\PP[\rho, \texttt{in}\brangle{1}, \sigma]\leq e^{d\varepsilon}\PP[\rho, \texttt{in}\brangle{2}, \sigma]$.
+\end{defn}
+
+We can also extend the definition of coupling strategies to sets of paths in the natural manner.
 
 \begin{defn}[Coupling strategies]
-    A coupling strategy $C$ for a branching program $B$ is a collection of (path) coupling strategies where each complete path $\rho\in B$ is assigned a coupling strategy $C_\rho$. 
+    A coupling strategy $C$ for a branching program $B$ is a collection of coupling strategies where each path $\rho\in B$ is assigned a coupling strategy $C_\rho$. Additionally, a coupling strategy $C$ for a branching program $B$ is valid if, for every constituent path coupling strategy $C_\rho$, $C_\rho$ is valid. 
 \end{defn}
 
 \begin{defn}
-    A coupling strategy $C$ for a branching program $B$ is valid if, for every constituent path coupling strategy $C_\rho$, $C_\rho$ is valid. 
+    The cost of a coupling strategy $C$ for a branching program $B$ is $\max_{\rho\in B}cost(\rho)$.
 \end{defn}
 
-\begin{defn}
-    The cost of a coupling strategy $C$ for a branched program $B$ is $\max_{\rho\in B}cost(\rho)$.
-\end{defn}
+\sky{missing prop about valid coupling strategies --> private}
 
 Notably, for a general branching program, there is no ``smart'' way to combine coupling strategies together; that is, in order to obtain the optimal coupling cost, we must find different coupling strategies for each path in a branching program. We provide a simple counterexample.
 
-\sky{note: rephrase this proposition slightly}
+\sky{These have to be rewritten without locations}
 \begin{prop}\label{costDependspathProp}
     Optimal cost is dependent on path. There exists a valid transition alphabet $\Sigma_T$, a location space $Q$, and a branching program $B$ for which the optimal cost of a coupling strategy $C$ for $B$ is dependent on the path $\rho$. 
     

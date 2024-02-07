@@ -24,7 +24,7 @@ We can describe the semantics of a transition as a function that maps an initial
 
 We define a program state as a tuple consisting of a distribution of possible values for the program value $\texttt{x}$, and a distribution of possible values for the current output $\sigma$. 
 
-Let $S = dist(\RR)\times (\Gamma \cup dist(\RR))^*$ be the set of all possible program states. 
+Let $S = dist(\RR\times (\Gamma \cup \RR)^*)$ be the set of all possible distributions over program states. 
 As expected, every possible input is simply an element of $\RR$.
 
 Then the semantics of a transition $t$ can be defined as a function $\Phi_t:dist_\downarrow(S)\times \RR \to dist_\downarrow (S)$ that maps a subdistribution of initial program states and an input to a subdistribution of subsequent program states. 
@@ -44,12 +44,11 @@ Then $\Phi_t(\theta, \texttt{in})$ is a subdistribution $O$ such that for all st
 
 Every other possible state is assigned probability 0 by $O$; with probability $1-\sum_{s\in S} \PP_O[s]$, we consider the transition to have halted.
 
-We primarily are concerned with the probability that a transition ``succeeds'', that is, the probability that from location $q$, the program defined by $t$ transitions to location $q'$ and outputs a certain value $o$, where $o$ is either a symbol from a finite alphabet $\Gamma$ or a measurable event of $\RR$. 
+We primarily are concerned with the probability that a transition outputs a specific value, that is, the probability that from location $q$, the program defined by $t$ transitions to location $q'$ and outputs a certain value $o$, where $o\subseteq (\Gamma\cup\RR)^*$ is a measurable event.
 
 We denote this probability as $\PP[\texttt{x}, t, \texttt{in}, o]$, where $\texttt{x} \in dist(\RR)$ is the initial distribution of $\texttt{x}$, $t$ is a transition, $\texttt{in}\in \RR$ is a real-valued input, and $o\in \Gamma\cup \mathcal{P}(\RR)$ is a possible output of $t$. 
-Specifically, let $O = \Phi_t((q, \texttt{x}, \lambda), \texttt{in})$, where $\lambda$ represents the empty string, be a subdistribution; we abuse notation here by using $(q, \texttt{x}, \lambda)$ to represent the subdistribution that assigns probability 1 to the state $(q, \texttt{x}, \lambda)$. Then $\PP[\texttt{x}, t, \texttt{in}, o] = \int_{-\infty}^\infty\PP_O[\texttt{x} = x]\PP_O[(q', x, o)]dx$. \sky{is $\PP_O[\texttt{x}=x]$ coherent?}
-
-Note that this is an aggregated probability over all possible final values of $\texttt{x}$ --- it is not particularly important what the specific final value of $\texttt{x}$ is. 
+Specifically, let $O = \Phi_t((\texttt{x}, \lambda), \texttt{in})$, where $\texttt{x}$ is a distribution over real numbers and $\lambda$ represents the distribution that assigns probability 1 to the empty string, be a subdistribution.
+ We abuse notation by using $(\texttt{x}, \lambda)$ to represent, depending on context, a tuple of distributions, the joint distribution of $\texttt{x}$ and $\lambda$, or the subdistribution that assigns probability 1 to the state $(\texttt{x}, \lambda)$. Then $\PP[\texttt{x}, t, \texttt{in}, o]$ is the marginal of $\Phi_t((\texttt{x}, \lambda), \texttt{in})$ on $(\cdot, o)$.\sky{come back to this phrasing}
 
 \subsubsection{Couplings}
 

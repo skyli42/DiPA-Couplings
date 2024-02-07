@@ -69,12 +69,7 @@ Thus, we have the following definition of privacy for complete paths:
     A complete path $\rho$ of length $n$ is $d\varepsilon$-differentially private for some $d>0$ if $\forall \varepsilon>0$, for all valid adjacent input sequences $\texttt{in}\brangle{1}\sim \texttt{in}\brangle{2}$ of length $n$ and all possible output sequences $\sigma$ of length $n$, $\PP[\rho, \texttt{in}\brangle{1}, \sigma]\leq e^{d\varepsilon}\PP[\rho, \texttt{in}\brangle{2}, \sigma]$.
 \end{defn}
 
-Because, under our model, a program is simply a collection of paths, it will also be convenient to define a notion of privacy for sets of (complete) paths:
-\begin{defn}
-    Let $S$ be a set of complete paths and let $O$ be a set of all possible outputs of paths in $S$. 
-    Then $S$ is $d\varepsilon$-differentially private for some $d>0$ if, for all paths $\rho\in S$ and outputs $\sigma\in O$, $\forall \varepsilon>0$, for all valid adjacent input sequences $\texttt{in}\brangle{1}\sim \texttt{in}\brangle{2}$, $\PP[\rho, \texttt{in}\brangle{1}, \sigma]\leq e^{d\varepsilon}\PP[\rho, \texttt{in}\brangle{2}, \sigma]$.
-\end{defn}
-
+\sky{move these later}
 We observe that because of the path-output correspondence, we can equivalently look at each path of a set in isolation:
 \begin{prop}
     Let $S$ be a set of complete paths; $S$ is $d\varepsilon$-differentially private for some $d>0$ if and only if, for all paths $\rho\in S$, $\rho$ is $d\varepsilon$-differentially private.
