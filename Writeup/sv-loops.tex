@@ -10,7 +10,7 @@ In addition, we require that every edge in $G$ is labeled\footnote{These objects
 Additionally, to ensure that $G$ represents a coherent program, we require that $G = (V, E)$ satisfies the following conditions: 
 \begin{itemize}
     \item \textbf{Determinism:} For all locations $\ell\in V$, if there exists an edge $(\ell, \ell')$ labeled by $t'=(c, \sigma', \tau')$, then no other edge $(\ell, \ell^*)$ labeled by a transition of the form $t^* = (c, \sigma^*, \tau^*)$ exists. 
-    Additionally, if there exists an edge $(\ell, \ell')$ labeled by a transition of the form $(\texttt{true}, \sigma, \tau)$, then there does not exist another edge with source at $\ell$.
+    Additionally, if there exists an edge $(\ell, \ell')\in E$ labeled by a transition of the form $(\texttt{true}, \sigma, \tau)$, then there does not exist another edge in $E$ with source at $\ell$.
     \item \textbf{Shared Noise:} For all locations $\ell\in V$ and any two edges $(\ell, \ell')$ labeled by $t'=(c', \sigma', \tau')$ and $(\ell, \ell^*)$ labeled by $t^* = (c^*, \sigma^*, \tau^*)$, $P(t') = P(t^*)$. 
 \end{itemize}
 

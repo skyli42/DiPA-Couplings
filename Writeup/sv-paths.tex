@@ -12,24 +12,9 @@ The length of a path $\rho$ is simply the number of transitions that are concate
 We define some useful notation for dealing with paths and sequences more generally. 
 
 Given a path (or sequence) $\rho = t_0\cdot t_1\cdot \ldots\cdot t_{n-1}$, the \textbf{tail} of $\rho$ is notated by $tail(\rho) = t_1\cdot \ldots\cdot t_{n-1}$. 
-We may additionally use the notation $\rho_{i:j}$ to represent the subpath (or subsequence) $q_i\to q_{i+1}\to \ldots \to q_j$ of $\rho$. Using this notation, $tail(\rho) = \rho_{1:} = \rho_{1:n}$.
+We may additionally use the notation $\rho_{i:j}$ to represent the subpath  $t_i t_{i+1} \ldots t_{j-1}$ of $\rho$. Using this notation, $tail(\rho) = \rho_{1:} = \rho_{1:n}$.
 
 Whereas an individual transition reads in one real-valued input and outputted one output value, a path reads in a \textbf{sequence} of inputs and outputs a sequence of outputs, one for each transition in the path.
-
-As before, we need to restrict the space of possible inputs to a path based on which locations in the path actually read in user input.
-\begin{defn}
-    For a path $\rho$ of length $n$, an input sequence $\texttt{in}\in \RR^n$ is valid if, for all $q_i$ in $\rho$ such that $q_i \in Q_{non}$, $\texttt{in}_i = 0$.  
-\end{defn} 
-
-We will assume that all input sequences are valid from now on. 
-
-
-\sky{move this prop to much later}
-Interestingly, the constraints on valid transition alphabets, specifically the constraints of determinism and output distinction, mean that outputs uniquely correspond to paths; in other words, given a valid transition alphabet, knowing an output sequence uniquely determines which path must have produced the output. 
-
-\begin{prop}
-    Let $\Sigma_T$ be a valid transition alphabet and let $\Gamma$ be the finite output alphabet associated with $\Sigma_T$. Let $O\subset (\Gamma\cup\{\texttt{insample}, \texttt{insample}'\})^*$ be the set of all possible outputs of complete paths over $\Sigma_T$. There exists an injection $f: \Sigma_T\to t_{init}\Sigma_T^*$ from the set of all possible outputs to complete paths over $\Sigma_T$. 
-\end{prop}
 
 \subsubsection{Path Semantics}
 
@@ -43,10 +28,9 @@ More specifically, the semantics of a path $\rho = t_0t_1\cdots t_{n-1}$ are a f
     \Phi_{t_0}(s, \texttt{in}_0)& |\rho| = 1\\
     \Phi_{t_{n-1}}(\Phi_{\rho_{0:n-1}}(s, \texttt{in}_{0:n-1}), \texttt{in}_{n-1})& |\rho| >1
 \end{cases}\]
-\sky{Is there a nicer way to write this that I'm forgetting}
 
-Like with transitions, we denote the probability that a path $\rho = q_0\to\ldots\to q_n$ ``succeeds'' given an initial $\texttt{x}\in dist(\RR)$, input sequence $\texttt{in} \in \RR^n$, and possible output sequence $o \in (\Gamma\cup\Sigma)^n$as $\PP[\texttt{x}, \rho, \texttt{in}, o] = \int_{-\infty}^\infty\PP_O[\texttt{x} =x]\PP_O[(q_{n}, x, o)]dx$, where $O$ is the subdistribution produced by $\Phi_\rho((q, \texttt{x}, \lambda), \texttt{in})$.
-\sky{Same issue with $\PP_O[\texttt{x}=x]$}
+
+Like with transitions, we denote the probability that a path $\rho = t_0 t_1\ldots t_{n-1}$ outputs a specific value given an initial $\texttt{x}\in dist(\RR)$, input sequence $\texttt{in} \in \RR^n$, and possible output sequence $o \in (\Gamma\cup\Sigma)^n$ as $\PP[\texttt{x}, \rho, \texttt{in}, o]$. As before, $\PP[\texttt{x}, t, \texttt{in}, o]$ is the marginal of $\Phi_\rho((\texttt{x}, \lambda), \texttt{in})$ on $(\cdot, o)$.
 
 For a complete path $\rho$, note that the initial value of $\texttt{x}$ is irrelevant, so we will shorthand $\PP[\texttt{x}_0, \rho, \texttt{in}, \sigma]$ to $\PP[\rho, \texttt{in}, \sigma]$.
 
@@ -69,16 +53,10 @@ Thus, we have the following definition of privacy for complete paths:
     A complete path $\rho$ of length $n$ is $d\varepsilon$-differentially private for some $d>0$ if $\forall \varepsilon>0$, for all valid adjacent input sequences $\texttt{in}\brangle{1}\sim \texttt{in}\brangle{2}$ of length $n$ and all possible output sequences $\sigma$ of length $n$, $\PP[\rho, \texttt{in}\brangle{1}, \sigma]\leq e^{d\varepsilon}\PP[\rho, \texttt{in}\brangle{2}, \sigma]$.
 \end{defn}
 
-\sky{move these later}
-We observe that because of the path-output correspondence, we can equivalently look at each path of a set in isolation:
-\begin{prop}
-    Let $S$ be a set of complete paths; $S$ is $d\varepsilon$-differentially private for some $d>0$ if and only if, for all paths $\rho\in S$, $\rho$ is $d\varepsilon$-differentially private.
-\end{prop}
-
 Note that, following \cite{chadhaLinearTimeDecidability2021}, we slightly redefine $\varepsilon$-differential privacy as $d\varepsilon$-differential privacy, treating $\varepsilon$ as a universal scaling parameter that can be fine-tuned by users for their own purposes. 
 We argue that this definition is functionally equivalent, since if we are targeting $\varepsilon^*$-differential privacy overall, we can always take $\varepsilon = \frac{\varepsilon^*}{d}$.
 
-\subsubsection{Concatenating couplings}
+\subsubsection{Sequential composition of couplings}
 
 Just as individual transitions can be concatenated to form program paths, we can compose together couplings associated with each transition to produce a coupling proof of privacy for an entire path. 
 
@@ -88,9 +66,7 @@ then in order to show that a program path $\rho$ is differentially private we wa
 As it turns out, directly composing together the couplings from lemma \ref{indTransitionCoupling} are essentially sufficient; the constraints imposed upon shifts for a coupling for transition $t_i$ depend solely on the shift at the most recent \textbf{assignment transition} in $\rho$ (i.e. the most recent transition $t_j$ such that $\tau_j = \texttt{true}$). 
 The coupling shifts for \textit{non-assignment transitions} can thus never impact each other. 
 
-\begin{defn}[Assignment transitions]
-    Let $A_\rho = \{t_i=(q_i, q_{i+1}, c_i, \sigma_i, \tau_i): \tau_i = \texttt{true}\}$ be the set of \textbf{assignment transitions} in a path $\rho$. Additionally, for every transition $t_i$ in $\rho$, let $t_{at(i)}$ be the most recent assignment transition in $\rho$; i.e., $at(i) = \max\{j<i: t_j\in A_\rho\}$. If such a $j$ does not exist, we set $at(i)=-1$. 
-\end{defn}
+We will let $A_\rho = \{t_i=(c_i, \sigma_i, \tau_i): \tau_i = \texttt{true}\}$ be the set of \textbf{assignment transitions} in a path $\rho$. Additionally, for every transition $t_i$ in $\rho$, let $t_{at(i)}$ be the most recent assignment transition in $\rho$; i.e., $at(i) = \max\{j<i: t_j\in A_\rho\}$. If such a $j$ does not exist, we set $at(i)=-1$. 
 
 In particular, note that for transition $t_i$, $\gamma_x = \gamma_{at(i)}$, where $\gamma_{-1}$ is the shift applied to the initial $\texttt{x}$-values $\texttt{x}_0\brangle{1}$ and $\texttt{x}_0\brangle{2}$ (for complete paths, note that $\gamma_{-1}$ is irrelevant).
 
@@ -99,8 +75,8 @@ Thus, for an individual transition $t_i$ of $\rho$, we have a family of valid co
 We can merge these coupling strategies together to create a proof of privacy for the entire path: 
 
 \begin{lemma}\label{multTransitionsCouplingProof}
-    Let $\rho = q_0\to \ldots \to q_n$ be a complete path of length $n$. 
-    Let $\texttt{in}\brangle{1}\sim \texttt{in}\brangle{2}$ be arbitrary adjacent input sequences of length $n$. Additionally, fix some potential output $\sigma$ of $\rho$ of length $n$ and let $\sigma\brangle{1}$, $\sigma\brangle{2}$ be random variables representing possible outputs of $\rho$ given inputs $\texttt{in}\brangle{1}$ and $\texttt{in}\brangle{2}$, respectively. Additionally, for all $q_i$, let $P(q_i) = (d_i, d_i')$.
+    Let $\rho = t_0\ldots t_{n-1}$ be a complete path of length $n$. 
+    Let $\texttt{in}\brangle{1}\sim \texttt{in}\brangle{2}$ be arbitrary adjacent input sequences of length $n$. Additionally, fix some potential output $\sigma$ of $\rho$ of length $n$ and let $\sigma\brangle{1}$, $\sigma\brangle{2}$ be random variables representing possible outputs of $\rho$ given inputs $\texttt{in}\brangle{1}$ and $\texttt{in}\brangle{2}$, respectively. Additionally, for all $t_i$, let $P(t_i) = (d_i, d_i')$.
 
     Then $\forall \varepsilon>0$ and for all $\{\gamma_i, \gamma_i'\}_{i=0}^{n-1}$ that, for all $i$, satisfy the constraints \[
         \begin{cases}

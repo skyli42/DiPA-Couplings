@@ -42,19 +42,13 @@ Composition therefore allows us to view privacy parameters $\varepsilon$ as a ``
 
 \subsection{Sensitivity and the Laplace Mechanism}
 
-Because we are typically interested in analyzing \textit{functions} of a dataset (for example, the average age of a town), it is often useful to examine differential privacy through a similar model - instead of comparing two adjacent datasets $X\sim X'$, we compare \textbf{queries} $f(X)$ and $f(X')$. In this world, we care about the \textit{sensitivity} of functions: how much a function \textit{changes} when considering adjacent inputs.  
-
-\begin{defn}
-    The ($\ell_1$-)sensitivity of a function $f: X\to \RR$, often denoted $\Delta f$, is defined as $\Delta f = \max_{X\sim X'}||f(X)-f(X')||_1$.
-\end{defn}
+Because we are typically interested in analyzing \textit{functions} of a dataset (for example, the average age of a town), it is often useful to examine differential privacy through a similar model - instead of comparing two adjacent datasets $X\sim X'$, we compare \textbf{queries} $f(X)$ and $f(X')$. In this world, we care about the \textit{sensitivity} of functions: how much a function \textit{changes} when considering adjacent inputs. 
+Specifically, the ($\ell_1$-)sensitivity of a function $f: X\to \RR$, often denoted $\Delta f$, is defined as $\Delta f = \max_{X\sim X'}||f(X)-f(X')||_1$.
 
 If we know a function's sensitivity, we can easily make it differentially private through the use of the Laplace Mechanism.
 
-For completeness, we first define the Laplace distribution. 
 
-\begin{defn}
-    The Laplace distribution $\Lap(\mu, b)$ with mean $\mu$ and spread parameter $b$ is the probability distribution with probability density function $f(x) = \frac{1}{2b}\exp(-\frac{|x-\mu|}{b})$. If $\mu =0$, we may abbreviate $\Lap(0, b)$ as $\Lap(b)$. 
-\end{defn}
+Recall that the Laplace distribution $\Lap(\mu, b)$ with mean $\mu$ and spread parameter $b$ is the probability distribution with probability density function $f(x) = \frac{1}{2b}\exp(-\frac{|x-\mu|}{b})$. If $\mu =0$, we may abbreviate $\Lap(0, b)$ as $\Lap(b)$. 
 
 The Laplace Mechanism, as expected, simply adds noise sampled from the Laplace distribution to a query result. In particular, the noise is dependent on the sensitivity of the input function; as expected, the higher the sensitivity of a function is, the more noise the Laplace mechanism will add to it.   
 
@@ -86,7 +80,7 @@ A previous line of work has extended the concept of couplings to reason about pr
     \end{enumerate}
 \end{defn}
 
-In some sense, approximate liftings can be considered ``half-couplings'', where ``half'' (the first marginal distribution) of $\mu_L$ is coupled with ``half'' (the second marginal distribution) of $\mu_R$. 
+In some sense, approximate liftings can be considered ``half-couplings'', where ``half'' (the first marginal) of $\mu_L$ is coupled with ``half'' (the second marginal) of $\mu_R$. 
 
 Because of the close relationship between couplings and approximate liftings, we will often use ``couplings'' to generically refer to both approximate liftings and couplings in the technical sense.
 

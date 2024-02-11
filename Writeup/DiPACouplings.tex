@@ -25,6 +25,8 @@
 \newcommand{\notimplies}{\;\not\!\!\!\implies}
 \newcommand{\gguard}[1][x]{\texttt{insample}\geq#1}
 \newcommand{\lguard}[1][x]{\texttt{insample} < #1}
+\newcommand{\mvgguard}[1][\texttt{x}_1]{\texttt{insample}^{(#1)}\geq#1}
+\newcommand{\mvlguard}[1][\texttt{x}_1]{\texttt{insample}^{(#1)}<#1}
 \newcommand{\gaguard}{n<N \text{ AND } \texttt{insample} \geq\ \texttt{x}}
 \newcommand{\laguard}{n<N\text{ AND }\texttt{insample} < \texttt{x}}
 \newcommand{\itgguard}{\texttt{input}\neq\tau\text{ AND } \texttt{insample}\geq\texttt{x}}
