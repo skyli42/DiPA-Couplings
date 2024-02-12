@@ -1,5 +1,5 @@
 
-\section{Program Model Extensions}
+\section{Program Model Extensions - Multivariable Programs}
 
 The class of programs we have defined is rather limited, leading to the natural question of whether our results can be extended to more powerful program models. 
 
@@ -8,9 +8,7 @@ We discovered that every DiPA equipped with a counter can be rewritten as a stan
 
 However, there are other extensions that warrant further study. In particular, we analyze one extension of DiPA that allows for two real-valued program variables $\texttt{x}, \texttt{y}$.
 
-\subsection{Multivariable Programs}
-
-\subsubsection{Multivariable Transitions}
+\subsection{Multivariable Transitions}
 
 We begin by defining a multiple-variable transition, as in the single variable case. 
 
@@ -27,7 +25,7 @@ We begin by defining a multiple-variable transition, as in the single variable c
     Let $\mathcal{C}^{(k)}$ be the set of all possible guards with $k$ variables $\texttt{x}_1, \ldots \texttt{x}_k$.
 \end{defn}
 
-\sky{the associativity details of the guard have to be fixed - can assume left-associative or allow for any possible groupings}
+\sky{the associativity details of the guard have to be defined - we can assume left-associative or allow for any possible groupings; I \textit{think} most of the results don't care about the details here}
 
 \begin{defn}[$k$-variable transitions]
     A $k$-variable transition ($k$v-transition) is a tuple $(c, \sigma, \tau)$ where \begin{itemize}
@@ -40,7 +38,7 @@ We begin by defining a multiple-variable transition, as in the single variable c
 
 As with single variable transitions, we associate every transition $t$ with two real-valued noise parameters $P(t) = (d, d')$
 
-\subsubsection{$k$-Variable Program Semantics}
+\subsection{$k$-Variable Program Semantics}
 
 $k$-variable transitions semantically operate extremely similarly to single variable transitions: given some threshold values $\texttt{x}_i$ and a transition $t = (c, \sigma, \tau)$, let $P(t) = (d, d')$. Then $t$ will first read in a real number input $\texttt{in}$, 
 sample $k$ \textbf{independent} random variables $z^{(\texttt{x}_1)}\sim\Lap(0, \frac{1}{d\varepsilon}),\ldots, z^{(\texttt{x}_k)}\sim\Lap(0, \frac{1}{d\varepsilon})$ for comparing a noised version of the input to each threshold variable as well as one random variable $z' \sim\Lap(0, \frac{1}{d\varepsilon})$ to potentially be used for outputting a re-noised version of the input. 
@@ -62,17 +60,11 @@ Specifically, if $\vec{\texttt{x}}$ is a distribution over $\RR^k$ and $o$ is a 
 \begin{defn}[Valid Transition Alphabets]
     A finite 2v-transition alphabet $\Sigma_T$ is valid if it satisfies the following conditions: 
     \begin{itemize}
-        \item \textbf{Initialization:} There exist some $t_{init}^{(x)}, t_{init}^{(y)}\in \Sigma_T$ such that $t_{init}^{(x)} = (q_0, q_1, \texttt{true}, \sigma_0, 1)$ and $t_{init}^{(y)} = (q_1, q_2, \texttt{true}, \sigma_1, 2)$ for some $q_0, q_1, q_2\in Q$, $\sigma_0, \sigma_1 \in \Gamma\cup\{\texttt{insample}, \texttt{insample}'\}$. 
-        \item \textbf{Determinism}: If $\Sigma_T$ contains transition $t, t'$ such that $t=(q, q', c, \sigma, \tau)$ and $t'= (q, q^*, c', \sigma', \tau')$, then $c$ and $c'$ must be logically disjoint. 
         \item \textbf{Output distinction}: If there exist some $\sigma, \sigma', \tau, \tau'$ such that $(q, q', c, \sigma, \tau)\in \Sigma_T$  and $(q, q^*, c', \sigma', \tau') \in \Sigma_T$ for distinct guards $c, c'$, then $\sigma \neq \sigma'$. Additionally, at least one of $\sigma\in \Gamma$, $\sigma'\in \Gamma$ is true.
-        \item \textbf{Non-input location condition}: For all locations $q\in Q_{non}$, if there exists a transition $t=(q, q', c, \sigma, \tau)$ such that $t\in \Sigma_T$, then $c = \texttt{true}$.
-        \item \textbf{Assignment spread parameter condition}: There exists some constant $d_{at}>0$ such that for all transitions $t = (q, q', c, \sigma, \tau)\in \Sigma_T$ where $\tau \in \{1, 2\}$, $P(q) = (d_{at}, d_q')$.
     \end{itemize}
 \end{defn}
 
-For technical reasons that will become clear later, we introduce a new validity condition (the ``assignment spread parameter condition'') that requires that all assignment transitions have the same spread parameter on their Laplace noise.
-
-\subsubsection{Multivariable Couplings}
+\subsection{Multivariable Couplings}
 
 In this section, we introduce two methods for constructing two variable couplings for $k$v-transitions; one method combines couplings in parallel and the other combines couplings for different variables together. 
 
@@ -127,14 +119,14 @@ By lemma \ref{simplifiedIndTransitionCoupling}, we know that, given a $k$v-trans
 \begin{proof}
     From lemma \ref{indTransitionCoupling}, we know that if these constraints are satisfied, we can create liftings such that for all $i$, $c^{(\texttt{x}_i)}$ is satisfied in run $\brangle{1}\implies c^{(\texttt{x}_i)}$ is satisfied in run $\brangle{2}$.
     
-    Because $c$ is made of conjunctions and disjunctions of all $c^{(\texttt{x})_i}$, by [basic logical rules]\sky{is more specificity needed?}, this means that if $c$ is satisfied in run $\brangle{1}$, then $c$ must also be satisfied in $\brangle{2}$. 
+    Because $c$ is made of conjunctions and disjunctions of all $c^{(\texttt{x}_i)}$, by [basic logical rules]\sky{is more specificity needed?}, this means that if $c$ is satisfied in run $\brangle{1}$, then $c$ must also be satisfied in $\brangle{2}$. 
 
     Finally, as before, if $\sigma \in \{\texttt{insample}^{(x_1)}\ldots \texttt{insample}^{(x_k)},\texttt{insample}'\}$, then for all $\sigma$, $o\brangle{1}=\sigma \implies o\brangle{2} = \sigma$. Further, note that we only need to couple $\texttt{insample}'\brangle{1}$ and $\texttt{insample}'\brangle{2}$ once for all variables. By simply adding up the costs from lemma \ref{indTransitionCoupling}, we complete the proof.
 \end{proof}
 
 This provides an extremely straightforward method of combining coupling strategies for different variables together; indeed, this specific result is immediately extensible to an arbitrary number of variables. 
 
-As in the single variable case, we call a collection of shifts $\gamma_{x_1}, \ldots, \gamma_{x_k}, \gamma_t^{(x_1)}, \ldots, \gamma_t^{(x_k)}, \gamma_t'$ as a coupling strategy, which is valid if it satisfies the above constraints. 
+As in the single variable case, we call a collection of shifts $\gamma_{x_1}, \ldots, \gamma_{x_k}, \gamma_t^{(x_1)}, \ldots, \gamma_t^{(x_k)}, \gamma_t'$ a \textbf{coupling strategy}, which is valid if it satisfies the above constraints. 
 
 \sky{this might be redundant}
 \begin{cor}
@@ -142,258 +134,130 @@ As in the single variable case, we call a collection of shifts $\gamma_{x_1}, \l
 \end{cor}
 
 
-\subsubsection{Notes on $k$-variable cross couplings}
-\begin{lemma}
-    For any two adjacent initial variable distributions $\vec{X}\brangle{1}\sim \vec{X}\brangle{2}$ and a transition $t = (c, \sigma, \tau)$, if the boolean expression produced by setting all $\texttt{insample}$ variables to be equal to each other and every $\texttt{x}_i$ to be equal to the mean of the distribution $X_i\brangle{1}$ evaluates to a tautology or a contradiction,
-    then we can construct an approximate lifting that proves $\PP[\vec{X}\brangle{1}, t, \texttt{in}\brangle{1}, \sigma]\leq e^{d\varepsilon}\PP[\vec{X}\brangle{2}, t, \texttt{in}\brangle{2}, \sigma]$ for some constant $d>0$. 
-\end{lemma}
-
-
 \textbf{Cross-Couplings}
 
-We now introduce a new type of coupling strategy for a single (2v-)transition:
+\begin{lemma}\label{mvCrossCoupling}
+    Let $\vec{X}\brangle{1} = (X_1\brangle{1}, \ldots X_k\brangle{1})$ where $X_i\brangle{1}\sim \Lap(\mu_i\brangle{1}, \frac{1}{d_x\varepsilon})$ are independent random variables and $\vec{X}\brangle{2} = (X_1\brangle{2}, \ldots X_k\brangle{2})$ where $X_i\brangle{2}\sim \Lap(\mu_{x_i}\brangle{2}, \frac{1}{d_{x_i}\varepsilon})$ are independent random variables be such that, for all $i$, $\mu_i\brangle{1}\sim \mu_i\brangle{2}$.
 
-\begin{lemma}\label{mvIndTransitionCoupling}
-    Let $X\brangle{1}\sim \Lap(\mu_x\brangle{1}, \frac{1}{d_{at}\varepsilon}), X\brangle{2}\sim\Lap(\mu_x\brangle{2}, \frac{1}{d_{at}\varepsilon})$ respectively be random variables representing two possible initial values of $\texttt{x}$, 
-    and $Y\brangle{1}\sim \Lap(\mu_y\brangle{1}, \frac{1}{d_{at}\varepsilon}), Y\brangle{2}\sim\Lap(\mu_y\brangle{2}, \frac{1}{d_{at}\varepsilon})$ respectively be random variables representing two possible initial values of $\texttt{y}$. 
-
-    Let $t\in \Sigma_T$ be a (2v-)transition $t = (q, q^*, c, \sigma, \tau)$ from $q$ to $q^*\in Q$. Let $P(q) = (d_q, d_q')$.
-
-    Let $\texttt{in}\brangle{1}, \texttt{in}\brangle{2}$ be an arbitrary valid adjacent input pair for $t$ and let $o\brangle{1}$, $o\brangle{2}$ be random variables representing possible outputs of $t$ given inputs $\texttt{in}\brangle{1}$ and $\texttt{in}\brangle{2}$, respectively. 
-
-    Then for all $\gamma_T^{(x)}, \gamma_q^{(x)}, \gamma_q^{(x)\prime},\gamma_T^{(y)}, \gamma_q^{(y)}, \gamma_q^{(y)\prime} \in [-1, 1]$ that satisfy the constraints \[
-        \begin{cases}
-          \gamma_q^{(x)}=0 & \sigma = \texttt{insample}^{(x)}\\
-          \gamma_q^{(x)\prime}=0 & \sigma = \texttt{insample}^{(x)\prime}\\
-          \gamma_q^{(y)}=0 & \sigma = \texttt{insample}^{(y)}\\
-          \gamma_q^{(y)\prime}=0 & \sigma = \texttt{insample}^{(y)\prime}
-        \end{cases},
-      \]
-
-    The following four statements hold:\begin{enumerate}
-        \item If $c = \lguard[\texttt{x}] \land \gguard[\texttt{y}]$, then $\forall \varepsilon>0$, the lifting $o\brangle{1}\{(a, b): a=\sigma\implies b=\sigma\}^{\#d\varepsilon}o\brangle{2}$ is valid for $d = |\min(\mu_y\brangle{1}-\mu_x\brangle{1}, 0)|+(|\mu\brangle{1}-\mu\brangle{2}+\gamma_x|)d_{at}+(|-\texttt{in}\brangle{1}+\texttt{in}\brangle{2}-\gamma_q|)d_q+(|-\texttt{in}\brangle{1}+\texttt{in}\brangle{2}-\gamma_q'|)d_q'$. 
-        \item If $c = \gguard[\texttt{x}] \land \lguard[\texttt{y}]$, then $\forall \varepsilon>0$, the lifting $o\brangle{1}\{(a, b): a=\sigma\implies b=\sigma\}^{\#d\varepsilon}o\brangle{2}$ is valid for $d = |\min(\mu_x\brangle{1}-\mu_y\brangle{1}, 0)|+(|\mu\brangle{1}-\mu\brangle{2}+\gamma_x|)d_{at}+(|-\texttt{in}\brangle{1}+\texttt{in}\brangle{2}-\gamma_q|)d_q+(|-\texttt{in}\brangle{1}+\texttt{in}\brangle{2}-\gamma_q'|)d_q'$. 
-        \item If $c = \lguard[\texttt{x}] \lor \gguard[\texttt{y}]$, then $\forall \varepsilon>0$, the lifting $o\brangle{1}\{(a, b): a=\sigma\implies b=\sigma\}^{\#d\varepsilon}o\brangle{2}$ is valid for $d = |\max(0, \mu_y\brangle{1}+ \gamma_T^{(y)}-\mu_x\brangle{1}-\gamma_T^{(x)})|+(|\mu\brangle{1}-\mu\brangle{2}+\gamma_x|)d_{at}+(|-\texttt{in}\brangle{1}+\texttt{in}\brangle{2}-\gamma_q|)d_q+(|-\texttt{in}\brangle{1}+\texttt{in}\brangle{2}-\gamma_q'|)d_q'$. 
-        \item If $c = \gguard[\texttt{x}] \lor \lguard[\texttt{y}]$, then $\forall \varepsilon>0$, the lifting $o\brangle{1}\{(a, b): a=\sigma\implies b=\sigma\}^{\#d\varepsilon}o\brangle{2}$ is valid for $d = |\max(0, \mu_x\brangle{1}+ \gamma_T^{(x)}-\mu_y\brangle{1}-\gamma_T^{(y)})|+(|\mu\brangle{1}-\mu\brangle{2}+\gamma_x|)d_{at}+(|-\texttt{in}\brangle{1}+\texttt{in}\brangle{2}-\gamma_q|)d_q+(|-\texttt{in}\brangle{1}+\texttt{in}\brangle{2}-\gamma_q'|)d_q'$. 
-    \end{enumerate}
+    Then for any valid coupling strategy $\gamma_{x_1}, \ldots, \gamma_{x_k}, \gamma_t^{(x_1)}, \ldots, \gamma_t^{(x_k)}, \gamma_t'$ for a transition $t = (c, \sigma,\tau)$, if one of the following is true: \begin{itemize}
+        \item The boolean expression produced from $c$ by setting all $\texttt{insample}^{(\texttt{x}_i)}$ equal to each other and setting $\texttt{x}_i = \mu_i\brangle{1}$ for all $i$ is a contradiction.
+        \item The boolean expression produced from $c$ by setting all $\texttt{insample}^{(\texttt{x}_i)}$ equal to each other and setting $\texttt{x}_i = \mu_i\brangle{2}-\gamma_{x_i}$ for all $i$ is a tautology.
+    \end{itemize}
+    then we can construct an approximate lifting that proves $\PP[\vec{X}\brangle{1}, t, \texttt{in}\brangle{1}, \sigma]\leq e^{d\varepsilon}\PP[\vec{X}\brangle{2}, t, \texttt{in}\brangle{2}, \sigma]$ for some constant $d>0$ dependent only on $d_x$ and $\gamma$. 
 \end{lemma}
-\begin{proof}
-    For convenience, we will rewrite $X$ and $Y$ as $X = \mu_x + \zeta_x$ and $Y = \mu_y + \zeta_y$, where $\zeta_x \sim\Lap(0, \frac{1}{d_{at}\varepsilon})$ and $\zeta_y \sim\Lap(0, \frac{1}{d_{at}\varepsilon})$. 
-    As before, we also write $\texttt{insample}^{(x)} = \texttt{in} + z^{(x)}$, where $z\sim\Lap(0, \frac{1}{d_q\varepsilon})$ and $\texttt{insample}^{(x)\prime} = \texttt{in} + z^{(x)\prime}$, where $z'\sim\Lap(0, \frac{1}{d_q'\varepsilon})$ (and symmetrically for $\texttt{insample}^{(y)}$, $\texttt{insample}^{(y)\prime}$).
 
-    We show cases (1) and (3). Cases (2) and (4) follow symmetrically. 
+We note that cross couplings require every single component of the initial variable distribution to have the same spread parameter.
 
-    As in the single variable case, suppose that we have the liftings
-    \begin{itemize}
-        \item $X\brangle{1}+\gamma_T^{(x)} (=)^{\#(|\mu_x\brangle{1}-\mu_x\brangle{2}+\gamma_T^{(x)}|)d_x\varepsilon}X\brangle{2}$.
-        \item $\texttt{insample}^{(x)}\brangle{1} +\gamma_q^{(x)}{(=)}^{\#(|-\texttt{in}\brangle{1}+\texttt{in}\brangle{2}-\gamma_q^{(x)}|)d_q\varepsilon}\texttt{insample}^{(x)}\brangle{2}$
-        \item $\texttt{insample}^{(x)\prime}\brangle{1} +\gamma_q^{(x)\prime}{(=)}^{\#(|-\texttt{in}\brangle{1}+\texttt{in}\brangle{2}-\gamma_q^{(x)\prime}|)d_q'\varepsilon}\texttt{insample}^{(x)\prime}\brangle{2}$
-        \item $Y\brangle{1}+\gamma_T^{(y)} (=)^{\#(|\mu_y\brangle{1}-\mu_y\brangle{2}+\gamma_T^{(y)}|)d_y\varepsilon}Y\brangle{2}$.
-        \item $\texttt{insample}^{(y)}\brangle{1} +\gamma_q^{(y)}{(=)}^{\#(|-\texttt{in}\brangle{1}+\texttt{in}\brangle{2}-\gamma_q^{(y)}|)d_q\varepsilon}\texttt{insample}^{(y)}\brangle{2}$
-        \item $\texttt{insample}^{(y)\prime}\brangle{1} +\gamma_q^{(y)\prime}{(=)}^{\#(|-\texttt{in}\brangle{1}+\texttt{in}\brangle{2}-\gamma_q^{(y)\prime}|)d_q'\varepsilon}\texttt{insample}^{(y)\prime}\brangle{2}$
-    \end{itemize}
+Cross couplings allow us to construct liftings for certain transitions ``for free'' in a manner compatible with existing liftings, dependent on the initial threshold distributions. In particular, this construction applies to transitions whose guards correspond to checking if an input is within either the empty set or the entire real line, which are either always true or always false. 
 
-    \textbf{Case 1:}
+We say that a collection of means $\{\mu_i\brangle{1}, \mu_i\brangle{2}\}_{i=1}^k$ and shifts $\gamma_{x_1},\ldots,\gamma_{x_k}$ \textbf{allow for a cross coupling} for a transition $t$ if either of the conditions in the above lemma are satisfied for $\mu$ and $\gamma$. 
 
-    Create the lifting $\zeta_x\brangle{1} +\gamma_{xy}(=)^{\#|\gamma_{xy}|d_{at}\varepsilon}\zeta_y\brangle{1}$ where $\gamma_{xy} = -\min(\mu_y\brangle{1}-\mu_x\brangle{1}, 0)$. 
-
-    Then observe that if $\mu_x\brangle{1}\geq \mu_y\brangle{1}$, \begin{align*}
-        X\brangle{1}&= \mu_x\brangle{1} + \zeta_x\brangle{1}\\
-        &= \mu_x\brangle{1} + \zeta_y\brangle{1}+\mu_y\brangle{1}-\mu-x\brangle{1}\\
-        &=Y\brangle{1}
-    \end{align*}
-
-    Otherwise, if $\mu_x\brangle{1}<\mu_y\brangle{1}$, then \begin{align*}
-        X\brangle{1}&= \mu_x\brangle{1} + \zeta_x\brangle{1}\\
-        &\leq \mu_y\brangle{1}+\zeta_y\brangle{1}\\
-        &=Y\brangle{1}
-    \end{align*}
-    so $X\brangle{1}\leq Y\brangle{1}$.
-
-    Further, create the lifting $z^{(x)}\brangle{1}(=)^{\#0}z^{(y)}\brangle{1}$. Note that then $\texttt{insample}^{(x)}\brangle{1}=\texttt{in}_i\brangle{1} + z_i^{(x)}\brangle{1} =\texttt{in}_i\brangle{1} + z_i^{(y)}\brangle{1}=\texttt{insample}^{(y)}\brangle{1}$.
-
-    Then because $x\brangle{1} \leq y\brangle{1}$, $\texttt{insample}^{(x)}\brangle{1}<x\brangle{1}\land\texttt{insample}^{(y)}\brangle{1}\geq y\brangle{1}$ must be false. Thus, $\texttt{insample}^{(x)}\brangle{1}<x\brangle{1}\land\texttt{insample}^{(y)}\brangle{1}\geq y\brangle{1}\implies \texttt{insample}^{(x)}<x\brangle{2}\land\texttt{insample}^{(y)}\geq y\brangle{2}$.
-
-    This suffices to show that if the transition is taken in run $\brangle{1}$, then it is also taken in run $\brangle{2}$. Thus, if any of \begin{itemize}
-        \item $\sigma \in \Gamma$
-        \item $\sigma = \texttt{insample}^{(x)}$ and $\gamma_q^{(x)}=0$ 
-        \item $\sigma = \texttt{insample}^{(x)\prime}$ and $\gamma_q^{(x)\prime}=0$ 
-        \item $\sigma = \texttt{insample}^{(y)}$ and $\gamma_q^{(y)}=0$
-        \item $\sigma = \texttt{insample}^{(y)\prime}$ and $\gamma_q^{(y)\prime}=0$
-    \end{itemize}
-    are true, then the lifting holds as desired. 
-
-    \textbf{Case 3:}
-    
-    Create the lifting $\zeta_x\brangle{1} + \gamma_{xy} (=)^{\#|\gamma_{xy}|d_{at}\varepsilon} \zeta_y\brangle{1}$ where $\gamma_{xy} = -\max(0, \mu_y\brangle{1}+ \gamma_T^{(y)}-\mu_x\brangle{1}-\gamma_T^{(x)})$
-
-    Then if $\mu_x\brangle{1}+\gamma_T^{(x)}\leq \mu_y\brangle{1}+\gamma_T^{(y)}$, \begin{align*}
-        X\brangle{2} &= X\brangle{1} + \gamma_T^{(x)}\\
-        &=\mu_x\brangle{1} + \zeta_x\brangle{1} + \gamma_T^{(x)}\\
-        &=\mu_x\brangle{1} +\zeta_y\brangle{1} + \mu_y\brangle{1}+ \gamma_T^{(y)}-\mu_x\brangle{1}-\gamma_T^{(x)} +\gamma_T^{(x)}\\
-        &=Y\brangle{1} + \gamma_T^{(y)}\\
-        &= Y\brangle{2}
-    \end{align*}
-
-    Otherwise, if $\mu_x\brangle{1}+\gamma_T^{(x)}> \mu_y\brangle{1}+\gamma_T^{(y)}$, then \begin{align*}
-        X\brangle{2} &= X\brangle{1} + \gamma_T^{(x)}\\
-        &=\mu_x\brangle{1} + \zeta_x\brangle{1} + \gamma_T^{(x)}\\
-        &\geq \mu_y\brangle{1} +\gamma_T^{(y)}+\zeta_y\brangle{1}\\
-        &=Y\brangle{1} + \gamma_T^{(y)}\\
-        &= Y\brangle{2}
-    \end{align*}
-
-    Thus, $X\brangle{2}\geq Y\brangle{2}$.
-
-    Further, create the lifting $z^{(x)}\brangle{2}(=)^{\#0}z^{(y)}\brangle{2}$. Note that then $\texttt{insample}^{(x)}\brangle{2}=\texttt{in}_i\brangle{2} + z_i^{(x)}\brangle{2} =\texttt{in}_i\brangle{2} + z_i^{(y)}\brangle{2}=\texttt{insample}^{(y)}\brangle{2}$.
-
-    Then because $X\brangle{2} \geq Y\brangle{2}$, $\texttt{insample}^{(x)}\brangle{2}<x\brangle{2}\lor \texttt{insample}^{(y)}\brangle{2}\geq y\brangle{2}$ must be true. Thus, $\texttt{insample}^{(x)}\brangle{1}<x\brangle{1}\lor\texttt{insample}^{(y)}\brangle{1}\geq y\brangle{1}\implies \texttt{insample}^{(x)}<x\brangle{2}\lor\texttt{insample}^{(y)}\geq y\brangle{2}$.
-
-    As before, if any of \begin{itemize}
-        \item $\sigma \in \Gamma$
-        \item $\sigma = \texttt{insample}^{(x)}$ and $\gamma_q^{(x)}=0$ 
-        \item $\sigma = \texttt{insample}^{(x)\prime}$ and $\gamma_q^{(x)\prime}=0$ 
-        \item $\sigma = \texttt{insample}^{(y)}$ and $\gamma_q^{(y)}=0$
-        \item $\sigma = \texttt{insample}^{(y)\prime}$ and $\gamma_q^{(y)\prime}=0$
-    \end{itemize}
-    are true, then the lifting holds as desired. 
-
-\end{proof}
-
-Depending on the initial threshold values, this allows us to construct liftings for certain transitions ``for free'' in a manner compatible with existing liftings. In particular, this construction applies to transitions whose guards intuitively correspond to checking if an input is within either the empty set or the entire real line, which are either always true or always false. 
-
-\begin{defn}
-    Let $\Sigma_T$ be a valid 2v-transition alphabet. A 2v-path over $\Sigma_T$ is a sequence of transitions $\rho=t_0\cdot t_1\cdot \ldots \cdot t_{n-1}$ such that for all $i$ there exists a location $q_i\in Q$ such that $t_i = (q_i, q_{i+1}, c_i, \sigma_i, \tau_i)$. A 2v-path is \textbf{complete} if it is in the form $t_{init}^{(x)}t_{init}^{(y)}\cdot \rho$ for some $\rho\in \Sigma_T^*$.
+\begin{defn}[$k$-variable paths]
+    A $k$-variable path ($k$v-path) is a finite string of $k$v-transitions. Analogously to single variable paths, we call a $k$v-path $\rho = t_0t_1\ldots t_{n-1}$, \textbf{complete} if, for $0\leq i < k$, $t_i = (\texttt{true}, \sigma_i, i+1)$ for some $\sigma_i$.
 \end{defn}
 
-The semantics of a 2v-path are again defined exactly analogously to the single variable case; we denote the probability of a path $\rho$ ``succeeding'' as $\PP[\texttt{x}, \texttt{y}, \rho, \texttt{in}, \sigma]$ for initial values $\texttt{x}, \texttt{y}\in \RR$, input sequence $\texttt{in}$ and output sequence $\sigma$. 
+The semantics of a $k$v-path are again defined exactly by composing the semantics of each individual transition in the path; we will again denote the probability of a path $\rho$ outputting a specific input $\sigma$ given initial threshold distributions $\vec{\texttt{x}}$ and input sequence $\texttt{in}$ as $\PP[\vec{\texttt{x}}, \rho, \texttt{in}, \sigma]$, which we shorthand to $\PP[\rho, \texttt{in}, \sigma]$ when $\rho$ is complete.
 
-\sky{redefine privacy?}
+Analogously to single variable paths, we will use the notation $t_{at_j(i)}$ to refer to the assignment transition for variable $\texttt{x}_j$ that immediately precedes transition $t_i$ within a path. 
 
-We will allow cross-couplings only between assignment transitions of different variables; to avoid redundancy, we require that a cross-coupling is \textit{from} an assignment into $\texttt{x}$ and \textit{to} an assignment into $\texttt{y}$.
+As previously noted, cross couplings require that the spread parameter of threshold variables are identical across variables; we thus say that a path $\rho = t_0\ldots t_{n-1}$ \textbf{allows for cross couplings} if there exists some constant $d_{at}>0$ such that, for every assignment transition $t_i$ of $\rho$, $P(t_i) = (d_{at}, d'_i)$. 
+
 
 Combining our ``parallel'' and ``cross'' coupling strategies gives us the major lemma for multivariable path couplings.
 
-\begin{lemma}\label{mvcouplinglemma}
-    Let $\rho = q_0\to \ldots \to q_n$ be a complete path of length $n$. 
-    Let $\texttt{in}\brangle{1}\sim \texttt{in}\brangle{2}$ be arbitrary adjacent valid input sequences of length $n$. Additionally, fix some potential output $\sigma$ of $\rho$ of length $n$ and let $\sigma\brangle{1}$, $\sigma\brangle{2}$ be random variables representing possible outputs of $\rho$ given inputs $\texttt{in}\brangle{1}$ and $\texttt{in}\brangle{2}$, respectively. Additionally, for all $q_i$, let $P(q_i) = (d_i, d_i')$.
+\begin{lemma}\label{mvPathCouplingLemma}
+    Let $\rho = t_0\ldots t_{n-1}$ be a complete $k$v-path of length $n$ where $t_i = (c_i, \sigma_i, \tau_i)$ and $P(t_i) = (d_i, d'_i)$ for all $i$. 
+    Let $\texttt{in}\brangle{1}\sim \texttt{in}\brangle{2}$ be arbitrary adjacent input sequences of length $n$. Additionally, fix some potential output $\sigma$ of $\rho$ of length $n$ and let $\sigma\brangle{1}$, $\sigma\brangle{2}$ be random variables representing possible outputs of $\rho$ given inputs $\texttt{in}\brangle{1}$ and $\texttt{in}\brangle{2}$, respectively. 
 
-    Then $\forall \varepsilon>0$ and for all $\{\gamma_i, \gamma_i'\}_{i=0}^{n-1}$ that, for all $i$, satisfy the following constraints:\begin{enumerate}
-        \item If $c_i(x) = \lguard[\texttt{x}]$, then at least one of the following is true: \begin{itemize}
-            \item $\gamma_i^{(x)}\leq \gamma^{(x)}_{at_x(i)}$
-            \item $c_i = \lguard[\texttt{x}]\lor\gguard[\texttt{y}]$ and $\gamma_{(at_x(i), at_y(i))} = -\min(\texttt{in}_{at_y(i)}\brangle{1}-\texttt{in}_{at_x(i)}\brangle{1}, 0)$
-            \item $c_i = \lguard[\texttt{x}]\land\gguard[\texttt{y}]$ and $\gamma_{(at_x(i), at_y(i))} = -\max(0, \texttt{in}_{at_y(i)}\brangle{1}+ \gamma_{at_y(i)}^{(y)}-\texttt{in}_{at_x(i)}\brangle{1}-\gamma_{at_x(i)}^{(x)})$
-        \end{itemize}
-        \item If $c_i(x) = \gguard[\texttt{x}]$, then at least one of the following is true: \begin{itemize}
-            \item $\gamma_i^{(x)}\geq \gamma^{(x)}_{at_x(i)}$
-            \item $c_i = \gguard[\texttt{x}]\lor\lguard[\texttt{y}]$ and $\gamma_{(at_x(i), at_y(i))} = -\min(\texttt{in}_{at_x(i)}\brangle{1}-\texttt{in}_{at_y(i)}\brangle{1}, 0)$
-            \item $c_i = \gguard[\texttt{x}]\land\lguard[\texttt{y}]$ and $\gamma_{(at_x(i), at_y(i))} = -\max(0, \texttt{in}_{at_x(i)}\brangle{1}+ \gamma_{at_x(i)}^{(x)}-\texttt{in}_{at_y(i)}\brangle{1}-\gamma_{at_y(i)}^{(y)})$
-        \end{itemize}
-        \item If $c_i(y) = \lguard[\texttt{y}]$, then at least one of the following is true: \begin{itemize}
-            \item $\gamma_i^{(y)}\leq \gamma^{(y)}_{at_y(i)}$
-            \item $c_i = \gguard[\texttt{x}]\lor\lguard[\texttt{y}]$ and $\gamma_{(at_x(i), at_y(i))} = -\min(\texttt{in}_{at_x(i)}\brangle{1}-\texttt{in}_{at_y(i)}\brangle{1}, 0)$
-            \item $c_i = \gguard[\texttt{x}]\land\lguard[\texttt{y}]$ and $\gamma_{(at_x(i), at_y(i))} = -\max(0, \texttt{in}_{at_x(i)}\brangle{1}+ \gamma_{at_x(i)}^{(x)}-\texttt{in}_{at_y(i)}\brangle{1}-\gamma_{at_y(i)}^{(y)})$
-        \end{itemize}
-        \item If $c_i(y) = \gguard[\texttt{y}]$, then at least one of the following is true: \begin{itemize}
-            \item $\gamma_i^{(x)}\geq \gamma^{(x)}_{at_x(i)}$
-            \item $c_i = \lguard[\texttt{x}]\lor\gguard[\texttt{y}]$ and $\gamma_{(at_x(i), at_y(i))} = -\min(\texttt{in}_{at_y(i)}\brangle{1}-\texttt{in}_{at_x(i)}\brangle{1}, 0)$
-            \item $c_i = \lguard[\texttt{x}]\land\gguard[\texttt{y}]$ and $\gamma_{(at_x(i), at_y(i))} = -\max(0, \texttt{in}_{at_y(i)}\brangle{1}+ \gamma_{at_y(i)}^{(y)}-\texttt{in}_{at_x(i)}\brangle{1}-\gamma_{at_x(i)}^{(x)})$
-        \end{itemize}
-        \item If $\sigma_i = \texttt{insample}^{(x)}$, then $\gamma_i^{(x)}=0$
-        \item If $\sigma_i = \texttt{insample}^{(x)\prime}$, then $\gamma_i^{(x)\prime}=0$
-        \item If $\sigma_i = \texttt{insample}^{(y)}$, then $\gamma_i^{(y)}=0$
-        \item If $\sigma_i = \texttt{insample}^{(y)\prime}$, then $\gamma_i^{(y)\prime}=0$
+    Then $\forall \varepsilon>0$ and for all $\{\gamma_i^{(\texttt{x}_1)},\ldots, \gamma_i^{(\texttt{x}_k)}, \gamma_i'\}_{i=0}^{n-1}$ that, for all $0\leq i\leq n-1$ and $1\leq j\leq k$ satisfy the following constraints:\begin{enumerate}
+        \item If $c_i$ is satisfied in run $\brangle{1}$, then $c_i$ is satisfied in run $\brangle{2}$; i.e. at least one of the following is true:\begin{enumerate}
+            \item $\{\texttt{in}_{at_1(i)}\brangle{1}, \texttt{in}_{at_1(i)}\brangle{2}, \ldots, \texttt{in}_{at_k(i)}\brangle{1}, \texttt{in}_{at_k(i)}\brangle{2}\}$ and $\gamma_{at_1(i)}^{(\texttt{x}_1)}, \ldots, \gamma_{at_k(i)}^{(\texttt{x}_k)}$ allow for a cross coupling for $t_i$.
+            \item For all $1\leq j \leq k$, if $c_i^{(\texttt{x}_j)} = \mvlguard[\texttt{x}_j]$, then $\gamma_i^{(\texttt{x}_j)}\leq \gamma^{(\texttt{x}_j)}_{at_j(i)}$ and if $c_i^{(\texttt{x}_j)} = \mvgguard[\texttt{x}_j]$, then $\gamma_i^{(\texttt{x}_j)}\geq \gamma^{(\texttt{x}_j)}_{at_j(i)}$.
+            \item \sky{could be worth including the explicit $c_i =\texttt{true}$ case for clarity even if its technically covered already}
+        \end{enumerate}
+        \item If $t_i$ outputs the specific value $o_i$ in run $\brangle{1}$, then $t_i$ also outputs $o_i$ in run $\brangle{2}$; i.e. both of the following must be true: \begin{enumerate}
+            \item If $\sigma_i = \texttt{insample}^{(\texttt{x}_j)}$, then $\gamma_i^{(\texttt{x}_j)}=0$
+            \item If $\sigma_i = \texttt{insample}'$, then $\gamma_i'=0$
+        \end{enumerate}
     \end{enumerate}
-      the lifting $\sigma\brangle{1}\{(a, b): a=\sigma\implies b=\sigma\}^{\#d\varepsilon}\sigma\brangle{2}$ is valid for $d = \sum_{i=0}^{n-1}(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i|)d_i+(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i'|)d_i' + \sum_{i_x, i_y}|\gamma_{(i_x, i_y)}|d_{at}$, and therefore $t$ is $d\varepsilon$-differentially private. 
+     we can construct an approximate lifting that proves $\PP[\rho, \texttt{in}\brangle{1}, \sigma]\leq e^{d\varepsilon}\PP[\rho, \texttt{in}\brangle{2}, \sigma]$ for $d = \sum_{i=0}^{n-1}\left(|\texttt{in}\brangle{2}-\texttt{in}\brangle{1}-\gamma_i'|d_i'+\sum_{j=1}^k|\texttt{in}\brangle{2}-\texttt{in}\brangle{1}-\gamma_i^{(\texttt{x}_j)}|d_i\right)$.
 \end{lemma}
+
 \begin{proof}
-    Follows from lemma \ref{mvIndTransitionCoupling} exactly as lemma \ref{multTransitionsCouplingProof} follows from lemma \ref{indTransitionCoupling}.
+    Follows from lemmas \ref{simplifiedMvParallelCouplingsLemma} and \ref{mvCrossCoupling} exactly as lemma \ref{multTransitionsCouplingProof} follows from lemma \ref{indTransitionCoupling}.
 \end{proof}
 
-This leads to a natural definition of two variable coupling strategies for paths:
+This leads to a natural definition of coupling strategies for $k$v-paths:
 
-\begin{defn}[Two Variable Coupling Strategies]
-    A (2v)-coupling strategy for a 2v-path $\rho$ is a collection of shifts $(\gamma^{(x)}, \gamma^{(x)\prime}, \gamma^{(y)}, \gamma^{(y)\prime}, \gamma_{(i, j)})$ such that \begin{itemize}
-        \item $\gamma^{(x)}, \gamma^{(x)\prime}, \gamma^{(y)}$, and $\gamma^{(y)\prime}$ are functions of a transition $t_i$ in $\rho$ as well as two adjacent inputs $\texttt{in}_i\brangle{1}$ and $\texttt{in}_i\brangle{2}$ that output a shift in the range [-1, 1]. 
-        \item $\gamma_{(i, j)}$ is a function of an $\texttt{x}$-assignment transition $t_i$ and a $\texttt{y}$-assignment transition $t_j$ as well as the inputs $\texttt{in}_{i}\brangle{1}$ and $\texttt{in}_j\brangle{1}$ that outputs a real-valued shift. 
-        \item In particular, we require that $\gamma_{(i, j)}(\texttt{in}_{i}\brangle{1},\texttt{in}_{j}\brangle{1}) \in \{-\min(\texttt{in}_{j}\brangle{1}-\texttt{in}_{i}\brangle{1}, 0),-\max(0, \texttt{in}_{j}\brangle{1}+ \gamma_{j}^{(y)}-\texttt{in}_{i}\brangle{1}-\gamma_{i}^{(x)}), -\min(\texttt{in}_{i}\brangle{1}-\texttt{in}_{j}\brangle{1}, 0), -\max(0, \texttt{in}_{i}\brangle{1}+ \gamma_{i}^{(x)}-\texttt{in}_{j}\brangle{1}-\gamma_{j}^{(y)})\}$
-    \end{itemize}
+\begin{defn}[$k$-variable Coupling Strategies]
+    A $k$v-coupling strategy for a $k$v-path $\rho$ of length $n$ is a collection of shifts $\{\gamma_i^{(\texttt{x}_1)},\ldots, \gamma_i^{(\texttt{x}_k)}, \gamma_i'\}_{i=0}^{n-1}$ such that every $\{\gamma_i^{(\texttt{x}_1)},\ldots, \gamma_i^{(\texttt{x}_k)}, \gamma_i'\}_{i=0}^{n-1}$ is a function of two adjacent input sequences $\texttt{in}\brangle{1}\sim \texttt{in}\brangle{2}$ with range $[-1, 1]$. 
+    We call a coupling strategy \textbf{valid} if, for \textbf{all} input sequences $\texttt{in}\brangle{1}\sim\texttt{in}\brangle{2}$, it satisfies the constraints in lemma \ref{mvPathCouplingLemma}.
 \end{defn}
 
-The extension of 2v-paths to looping branches and programs is natural and follows exactly the same structure as single variable programs. 
+As before, we denote the cost of a coupling strategy $C=\{\gamma_i^{(\texttt{x}_1)},\ldots, \gamma_i^{(\texttt{x}_k)}, \gamma_i'\}_{i=0}^{n-1}$ for a $k$v-path $\rho$ as $cost(C) = \max_{\texttt{in}\brangle{1}\sim\texttt{in}\brangle{2}}\sum_{i=0}^{n-1}\left(|\texttt{in}\brangle{2}-\texttt{in}\brangle{1}-\gamma_i'|d_i'+\sum_{j=1}^k|\texttt{in}\brangle{2}-\texttt{in}\brangle{1}-\gamma_i^{(\texttt{x}_j)}|d_i\right)$.
 
-\sky{need to reintroduce graph here}
+\subsection{Syntactic structure}
 
-\begin{defn}[Two Variable Looping Branches]
-    A 2v-looping branch is a looping branch (i.e. a language of complete paths that can be represented by a union-free regular expression) over a valid 2v-transition alphabet $\Sigma_T$.
+Before we extend $k$v-paths to looping branches, we must again define an underlying structured graph from which collections of paths can be drawn.
+
+We again will represent a structured program as a directed graph $G = (V, E)$, where $V$ represents a set of program locations; as before, every edge $e\in E$ is additionally labeled with a $k$v-transition $t = (c, \sigma, \tau)$ and there must be some unique initial location $\ell_0\in V$. 
+
+Analogously to the single variable case, we require that $G = (V, E)$ satisfies the following conditions: 
+\begin{itemize}
+    \item \textbf{Determinism:} For all locations $\ell\in V$, if there exist distinct edges $(\ell, \ell')$ labeled by $t'=(c', \sigma', \tau')$ and $(\ell, \ell')$ labeled by $t'=(c', \sigma', \tau')$ labeled by $t^* = (c^*, \sigma^*, \tau^*)$, then $c'$ and $c^*$ must be logically disjoint; i.e. the boolean expression $c' \land c^*$ must be a contradiction. 
+    In particular, note that this means that if there exists an edge $(\ell, \ell')\in E$ labeled by a transition of the form $(\texttt{true}, \sigma, \tau)$, then there does not exist another edge in $E$ with source at $\ell$.
+    \item \textbf{Shared Noise:} For all locations $\ell\in V$ and any two edges $(\ell, \ell')$ labeled by $t'=(c', \sigma', \tau')$ and $(\ell, \ell^*)$ labeled by $t^* = (c^*, \sigma^*, \tau^*)$, $P(t') = P(t^*)$. 
+    \item \textbf{Cross Coupling Compatibility:} There exists some constant $d_{at}>0$ such that for every edge $e\in E$ labeled by the transition $t = (c, \sigma, \tau)$, if $\tau \neq 0$ (i.e. $t$ is an assignment transition), $P(t) = (d_{at}, d'_t)$ for some $d'_t >0$.
+\end{itemize}
+
+We will again use $\Psi(r)$ to denote the forgetful homomorphism from a run $r$ in $G$ that drops all states from $r$ to produce a $k$v-path. 
+
+\subsection{Loops and Programs}
+
+\begin{defn}[$k$-variable Looping Branches]
+    A $k$v-looping branch $L$ is a set of complete $k$v-paths generated by a structured program graph $G_L$ such that $L$ is a language described by a single union-free regular expression over a finite alphabet of transitions. 
 \end{defn}
 
-Just as with the single variable, a single constraint system can fully capture privacy for two variable programs.
+We can similarly define coupling strategies for $k$v-looping branches:
 
-We can also similarly define coupling strategies for looping branches:
-
-\begin{defn}
-    Let $r$ be the union-free regular expression describing paths in a looping branch $L$. Let $T_r$ be the set of all transitions that appear in $r$. Then a coupling strategy $C = (\gamma, \gamma', \gamma_{xy})$ for a looping branch is a function $C:T_r\times\RR \times\RR\to [-1, 1]\times[-1, 1]$ that computes shifts for each transition in $L$ as a function of two adjacent inputs.
+\begin{defn}[Coupling strategy for a $k$v-looping branch]
+    Let $L$ be a $k$v-looping branch generated by the graph $G_L = (V_L, E_L)$, where $m = |E_L|$. Then a coupling strategy $C = \{\gamma_i^{(\texttt{x}_1)},\ldots, \gamma_i^{(\texttt{x}_k)}, \gamma_i'\}_{i=0}^{m-1}$ for $L$ is a function $C:E_L\times\RR \times\RR\to [-1, 1]^{m(k+1)}$ that computes $k+1$ shifts for each transition-labeled edge in $L$ as a function of two adjacent inputs.
 \end{defn}
+
+Observe that a coupling strategy for a $k$v-looping branch $L$ induces a coupling strategy for each $k$v-path in $L$ in the same manner as the single variable case (see definition \ref{svInducedCouplingStrategy}). 
+
+As expected, the cost $cost(C)$ of a coupling strategy $C$ for a $k$v-looping branch $L$ is the supremum of the costs of the $k$v-path coupling strategies induced by $C$ over all paths in $L$.
+
+We translate the constraints for finite cost from single variable looping branches: 
 
 \begin{defn}\label{mvPrivacyConstraintSystem}
-    Let $L$ be a 2v-looping branch over a valid transition alphabet $\Sigma_T$. If, for a coupling strategy $C_L = (\gamma, \gamma', \gamma_{(i, j)})$ for $L$, the constraints from lemma \ref{mvcouplinglemma} and the following constraints are satisfied for all possible inputs $\texttt{in}\brangle{1}\sim\texttt{in}\brangle{2}$ and all $i$: \begin{enumerate}
-        \setcounter{enumi}{8}
-        \item If $t_i$ is in a cycle, then $\gamma_i = -\texttt{in}\brangle{1}_i+\texttt{in}\brangle{2}_i$
-        \item If $t_i$ is in a cycle, then $\gamma_i' = -\texttt{in}\brangle{1}_i+\texttt{in}\brangle{2}_i$
-        \item If $t_i$ is in a cycle, then for all $j$, $\gamma_{(i, j)} = 0$ and $\gamma_{(j, i)} = 0$
-        \item If $\gamma_{(at_x(i), at_y(i))} = -\min(\texttt{in}_{at_y(i)}\brangle{1}-\texttt{in}_{at_x(i)}\brangle{1}, 0)$, then $\texttt{in}_{at_y(i)}\brangle{1}\geq \texttt{in}_{at_x(i)}\brangle{1}$
-        \item If $\gamma_{(at_x(i), at_y(i))} = -\max(0, \texttt{in}_{at_y(i)}\brangle{1}+ \gamma_{at_y(i)}^{(y)}-\texttt{in}_{at_x(i)}\brangle{1}-\gamma_{at_x(i)}^{(x)})$, then $\texttt{in}_{at_y(i)}\brangle{1}\leq \texttt{in}_{at_x(i)}\brangle{1}$
-        \item If $\gamma_{(at_x(i), at_y(i))} = -\min(\texttt{in}_{at_x(i)}\brangle{1}-\texttt{in}_{at_y(i)}\brangle{1}, 0)$, then $\texttt{in}_{at_x(i)}\brangle{1}\geq \texttt{in}_{at_y(i)}\brangle{1}$
-        \item If $\gamma_{(at_x(i), at_y(i))} = -\max(0, \texttt{in}_{at_x(i)}\brangle{1}+ \gamma_{at_x(i)}^{(x)}-\texttt{in}_{at_y(i)}\brangle{1}-\gamma_{at_y(i)}^{(y)})$, then $\texttt{in}_{at_x(i)}\brangle{1}\leq \texttt{in}_{at_y(i)}\brangle{1}$
+    Let $L$ be a $k$v-looping branch generated by $G_L = (V_L, E_L)$ and let $C = \{\gamma_i^{(\texttt{x}_1)},\ldots, \gamma_i^{(\texttt{x}_k)}, \gamma_i'\}_{i=0}^{m-1}$ be a coupling strategy for $L$. If, for every path $\rho$ in $L$, the coupling strategy for $\rho$ induced by $C$ satisfies the constraints from lemma \ref{mvPathCouplingLemma} as well as the following constraints for all input sequences $\texttt{in}\brangle{1}\sim\texttt{in}\brangle{2}$ and all $i$: \begin{enumerate}
+        \setcounter{enumi}{2}
+        \item If $\Psi^{-1}(t_i)$ is in a cycle in $G_L$, then for all $1\leq j\leq k$, $\gamma_i^{(\texttt{x}_j)} = -\texttt{in}\brangle{1}_i+\texttt{in}\brangle{2}_i$
+        \item If $\Psi^{-1}(t_i)$ is in a cycle in $G_L$, then $\gamma_i' = -\texttt{in}\brangle{1}_i+\texttt{in}\brangle{2}_i$
     \end{enumerate}
     then we say that $C$ satisfies the privacy constraint system for $L$. 
 \end{defn}
 
-
 \begin{lemma}
-    If a coupling strategy $C$ satisfies the privacy constraint system for a 2v-looping branch $L$, then $cost(C)<\infty$ and $L$ is $cost(C)\varepsilon$-differentially private. 
+    If a coupling strategy $C$ satisfies the privacy constraint system for a $k$v-looping branch $L$, then $cost(C)<\infty$ and $L$ is $cost(C)\varepsilon$-differentially private. 
 \end{lemma}
 
 \begin{proof}
-    Because $C$ satisfies the privacy constraint system, we know that $C$ is a valid coupling strategy by lemma~\ref{mvcouplinglemma}. It remains to show that $C$ has finite cost. We can separate $cost(C)$ into cost contributed from $\gamma^{(x)}$ and $\gamma^{(x)\prime}$, $\gamma^{(y)}$ and $\gamma^{(y)\prime}$, and cross-coupling cost. We will denote these costs $c_x, c_{x\prime}, c_y, c_{y\prime}$, and $c_{xy}$ such that $cost(C) = c_x + c_{x\prime}+c_y+c_{y\prime}+c_{xy}$.
+    Because the privacy constraint system includes constraints for validity by definition, we know that $C$ is a valid coupling strategy. In particular, by lemma \ref{mvPathCouplingLemma}, this means that $C$ will produce a proof that $L$ is $cost(C)\varepsilon$-differentially private. 
+    
+    It remains to show that $C$ has finite cost. For every path $\rho\in L$, let $\rho^{(\texttt{x}_i)}$ be the single variable path created from $\rho$ by isolating every transition to the variable $\texttt{x}_i$. 
 
-    From lemma \ref{finiteCostConstraintLemma}, we know that $c_x + c_{x\prime}+c_y+c_{y\prime}$ is finite because of constraints (9) and (10). 
+    Because of constraints (3) and (4), we know that, for all $\texttt{x}_i$, $\sup_{\rho\in L}\sum_{i=0}^{|\rho|-1}|\texttt{in}\brangle{2}-\texttt{in}\brangle{1}+\gamma_i^{(\texttt{x}_i)}|d_i + |\texttt{in}\brangle{2}-\texttt{in}\brangle{1}+\gamma_i'|d_i'$ is finite by applying lemma \ref{finiteCostConstraintLemma} to $\rho^{(\texttt{x}_i)}$ and a single variable coupling strategy constructed using $(\gamma^{(\texttt{x}_i)}, \gamma')$. 
 
-    Similarly, observe that by constraints (12) through (15), $|\gamma_{(i, j)}|\leq 2$ because $\gamma_{at_x(i)}^{(x)},\gamma_{at_y(i)}^{(y)}\in [-1, 1]$. Because of constraint (11), this means that $c_{xy}\leq 2m$, where $m$ is the total number of distinct assignment transitions in $L$, which is finite because $L$ is constructed from a finite transition alphabet. This completes the proof.
+    This immediately implies that $cost(C)$ is finite as well, since there are a finite number of program variables. 
 \end{proof}
 
 
-\sky{ we can remove this section and just appeal directly to the graph}
-\subsubsection{Couplings for GDiPA}
 
-We introduce a two-variable analogue to DiPA, which allows us to reason about counterexamples more easily. 
+\subsection{Counterexamples when $k=2$}
 
-\begin{defn}
-    A GDiPA $A$ is an 8-tuple $(Q, \Sigma, \mathcal{C}, \Gamma, q_{init}, X, P, \delta)$ where
-    \begin{itemize}
-        \item $Q$ is a finite set of locations partitioned into input locations $Q_{in}$ and non-input locations $Q_{non}$. 
-        \item $\Sigma = \RR$ is the input alphabet
-        \item $\mathcal{C} = \mathcal{C}^{(2)}$ is a set of guard conditions
-        \item $\Gamma$ is a finite output alphabet
-        \item $q_{init}\in Q$ is the initial location
-        \item $X = \{\texttt{x}, \texttt{y}, \texttt{insample}^{(x)}, \texttt{insample}^{(x)}\prime, \texttt{insample}^{(y)}, \texttt{insample}^{(y)}\prime\}$ is a set of variables
-        \item $P: Q\to \QQ\times \QQ^{\geq 0}\times \QQ\times  \QQ^{\geq 0}$ is a parameter function that assigns sampling parameters for the Laplace distribution for each location
-        \item $\delta:(Q\times \mathcal{C})\to (Q\times (\Gamma \cup \{\texttt{insample}^{(x)}, \texttt{insample}^{(x)}\prime, \texttt{insample}^{(y)}, \texttt{insample}^{(y)}\prime\})\times \{0, 1, 2\})$ is a partial transition function. 
-    \end{itemize}
-    In addition, $\delta$ must satisfy some additional conditions:
-    \begin{itemize}
-        \item \textbf{Determinism:} For any location $q\in Q$, if $\delta(q, c)$ and $\delta(q, c')$ are defined for distinct guards $c, c'$,  then $c$ and $c'$ must be logically disjoint events.
-
-        \item \textbf{Output Distinction:} For any location $q\in Q$, if $\delta(q, c) = (q_1, o_1, b_1)$ and $\delta(q, c') = (q_2, o_2, b_2)$, for distinct guards $c, c'$, then $o_1\neq o_2$ and at least one of $o_1\in \Gamma$ and $o_2\in \Gamma$ is true.
-
-        \item \textbf{Initialization:} The initial location $q_0$ has only one outgoing transition of the form $\delta(q_0, \texttt{true}) = (q_1, o, 1)$ and $q_1$ has only one outgoing transition of the form $\delta(q_1, \texttt{true}) = (q, o', 2)$.
-
-        \item \textbf{Non-input transition:} From any $q\in Q_{non}$, if $\delta(q, c)$ is defined, then $c=\texttt{true}$.
-    \end{itemize}
-\end{defn}
-
-Just as with DiPAs and Programs, we can equivalently define a GDiPA as regular language that can be described as a finite union of 2-variable looping branches over a valid 2v-transition alphabet $\Sigma_T$. 
+\sky{TBD still working on this}
 
 Like the single variable case, whenever the privacy constraint system is not satisfiable for a 2v-program, we can identify at least one of four types of graph structures in the corresponding GDiPA.
 
