@@ -3,6 +3,247 @@
 
 \subsection{Proofs for section 4}
 
+\begin{lemma}[Detailed version of lemma \ref{simplifiedIndTransitionCoupling}]\label{indTransitionCoupling}
+    Let $X\brangle{1}\sim \Lap(\mu\brangle{1}, \frac{1}{d_x\varepsilon}), X\brangle{2}\sim\Lap(\mu\brangle{2}, \frac{1}{d_x\varepsilon})$ be random variables representing possible initial values of $\texttt{x}$ and let $t = (c, \sigma, \tau)$ be a transition from some valid transition alphabet $\Sigma_T$.
+    Let $P(t) = (d_t, d_t')$.
+
+    Let $\texttt{in}\brangle{1}\sim \texttt{in}\brangle{2}$ be an arbitrary valid adjacent input pair and let $o\brangle{1}$, $o\brangle{2}$ be random variables representing possible outputs of $t$ given inputs $\texttt{in}\brangle{1}$ and $\texttt{in}\brangle{2}$, respectively. 
+
+    Then $\forall \varepsilon>0$ and for all $\gamma_x, \gamma_t, \gamma_t'\in [-1, 1]$ that satisfy the constraints \[
+        \begin{cases}
+          \gamma_t\leq\gamma_x & c = \lguard[\texttt{x}]\\
+          \gamma_t\geq\gamma_x & c = \gguard[\texttt{x}]\\
+          \gamma_t=0 & \sigma = \texttt{insample}\\
+          \gamma_t'=0 & \sigma = \texttt{insample}'
+        \end{cases},
+      \]
+      the lifting $o\brangle{1}\{(a, b): a=\sigma\implies b=\sigma\}^{\#d\varepsilon}o\brangle{2}$ is valid for $d = (|\mu\brangle{1}-\mu\brangle{2}+\gamma_x|)d_x+(|-\texttt{in}\brangle{1}+\texttt{in}\brangle{2}-\gamma_t|)d_t+(|-\texttt{in}\brangle{1}+\texttt{in}\brangle{2}-\gamma_t'|)d_t'$.
+\end{lemma}
+
+\begin{proof}
+Fix $\varepsilon>0$.
+
+We can first create the lifting $X\brangle{1}+\gamma_x (=)^{\#(|\mu\brangle{1}-\mu\brangle{2}+\gamma_x|)d_x\varepsilon}X\brangle{2}$. 
+
+Additionally, create the lifting $z\brangle{1} (=)^{\#(|-\texttt{in}\brangle{1}+\texttt{in}\brangle{2}-\gamma_t|)d_t\varepsilon}z\brangle{2} - \texttt{in}\brangle{1}+\texttt{in}\brangle{2}-\gamma_t$, which is equivalent to creating the lifting $\texttt{insample}\brangle{1} +\gamma_t{(=)}^{\#(|-\texttt{in}\brangle{1}+\texttt{in}\brangle{2}-\gamma_t|)d_t\varepsilon}\texttt{insample}\brangle{2}$.
+
+Finally, create the lifting $z'\brangle{1} (=)^{\#(|-\texttt{in}\brangle{1}+\texttt{in}\brangle{2}-\gamma_t'|)d_t'\varepsilon}z'\brangle{2} - \texttt{in}\brangle{1}+\texttt{in}\brangle{2}-\gamma_t'$. As before, this is equivalent to creating the lifting $\texttt{insample}'\brangle{1} +\gamma_t'{(=)}^{\#(|-\texttt{in}\brangle{1}+\texttt{in}\brangle{2}-\gamma_t'|)d_t'\varepsilon}\texttt{insample}'\brangle{2}$.
+
+Thus, we emerge with three key statements to leverage:\begin{itemize}
+    \item $X\brangle{1} + \gamma_x = X\brangle{2}$
+    \item $z\brangle{1} = z\brangle{2} - \texttt{in}\brangle{1}+\texttt{in}\brangle{2}-\gamma_t$
+    \item $z'\brangle{1} = z'\brangle{2} - \texttt{in}\brangle{1}+\texttt{in}\brangle{2}-\gamma_t'$
+\end{itemize}
+
+So if $c=\lguard[\texttt{x}]$ and $\gamma_t\leq \gamma_x$, then \begin{align*}
+    \texttt{insample}\brangle{1}<X\brangle{1}&\implies \texttt{in}\brangle{1}+z\brangle{1}<X\brangle{1}\\
+    &\implies \texttt{in}\brangle{1}+z\brangle{2}-\texttt{in}\brangle{1}+\texttt{in}\brangle{2}-\gamma_t<X\brangle{2}-\gamma_x\\
+    &\implies \texttt{insample}\brangle{2}<X\brangle{2}
+\end{align*}
+
+Similarly, if $c=\gguard[\texttt{x}]$ and $\gamma_t\geq \gamma_x$, then \begin{align*}
+    \texttt{insample}\brangle{1}\geq X\brangle{1}&\implies \texttt{in}\brangle{1}+z\brangle{1}\geq X\brangle{1}\\
+    &\implies \texttt{in}\brangle{1}+z\brangle{2}-\texttt{in}\brangle{1}+\texttt{in}\brangle{2}-\gamma_t\geq X\brangle{2}-\gamma_x\\
+    &\implies \texttt{insample}\brangle{2}\geq X\brangle{2}
+\end{align*}
+
+With these liftings, we have ensured that if the first run satisfies the guard of $t$, then the second run does as well. 
+
+As noted, if $\sigma \in \Gamma$ and the first run taking transition $t$ implies that the second run does as well, then $o\brangle{1} = \sigma \implies o\brangle{2}=\sigma$ trivially.
+
+Now, if $\sigma=\texttt{insample}$ and $\gamma_t=0$, then clearly we have that $\texttt{insample}\brangle{1}=\texttt{insample}\brangle{2}$, so for all $a\in \RR$, $o\brangle{1} = a\implies o\brangle{2} = a$.
+
+Similarly, if $\sigma=\texttt{insample}'$ and $\gamma_t'=0$, we have that for all $a\in \RR$, $o\brangle{1} = a\implies o\brangle{2} = a$.
+
+Thus, given the constraints \[
+  \begin{cases}
+    \gamma_t\leq\gamma_x & c = \lguard[\texttt{x}]\\
+    \gamma_t\geq\gamma_x & c = \gguard[\texttt{x}]\\
+    \gamma_t=0 & \sigma = \texttt{insample}\\
+    \gamma_t'=0 & \sigma = \texttt{insample}'
+  \end{cases},
+\]
+we have shown that the lifting $o\brangle{1}\{(a, b): a=\sigma\implies b=\sigma\}^{\#d\varepsilon}o\brangle{2}$ is valid, where the cost $d = (|\mu\brangle{1}-\mu\brangle{2}+\gamma_x|)d_x+(|-\texttt{in}\brangle{1}+\texttt{in}\brangle{2}-\gamma_t|)d_t+(|-\texttt{in}\brangle{1}+\texttt{in}\brangle{2}-\gamma_t'|)d_t'$. 
+
+\end{proof}
+
+
+\begin{lemma}[Detailed version of \ref{simplifiedMultTransitionsCouplingProof}]\label{multTransitionsCouplingProof}
+    Let $\rho = t_0\ldots t_{n-1}$ be a complete path of length $n$. 
+    Let $\texttt{in}\brangle{1}\sim \texttt{in}\brangle{2}$ be arbitrary adjacent input sequences of length $n$. Additionally, fix some potential output $\sigma$ of $\rho$ of length $n$ and let $\sigma\brangle{1}$, $\sigma\brangle{2}$ be random variables representing possible outputs of $\rho$ given inputs $\texttt{in}\brangle{1}$ and $\texttt{in}\brangle{2}$, respectively. Additionally, for all $t_i$, let $P(t_i) = (d_i, d_i')$.
+
+    Then $\forall \varepsilon>0$ and for all $\{\gamma_i, \gamma_i'\}_{i=0}^{n-1}$ that, for all $i$, satisfy the constraints \[
+        \begin{cases}
+          \gamma_i\leq\gamma_{at(i)} & c_i = \lguard[\texttt{x}]\\
+          \gamma_i\geq\gamma_{at(i)} & c_i = \gguard[\texttt{x}]\\
+          \gamma_i=0 & \sigma_i = \texttt{insample}\\
+          \gamma_i'=0 & \sigma_i = \texttt{insample}'
+        \end{cases},
+      \]
+      the lifting $\sigma\brangle{1}\{(a, b): a=\sigma\implies b=\sigma\}^{\#d\varepsilon}\sigma\brangle{2}$ is valid for $d = \sum_{i=0}^{n-1}(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i|)d_i+(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i'|)d_i'$, and therefore $t$ is $d\varepsilon$-differentially private. 
+\end{lemma}
+\begin{proof}
+    From the proof of lemma \ref{indTransitionCoupling}, we know that we can create the couplings $\texttt{insample}_i\brangle{1} +\gamma_i{(=)}^{\#(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i|)d_i\varepsilon}\texttt{insample}_i\brangle{2}$ and $\texttt{insample}_i'\brangle{1} +\gamma_i'{(=)}^{\#(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i'|)d_i'\varepsilon}\texttt{insample}_i'\brangle{2}$ for all $q_i$ in $\rho$. 
+
+    Additionally, for some fixed $q_i$ in $\rho$, if we have the coupling $\texttt{x}_i\brangle{1}+\gamma_x (=)^{\#(|\hat{\mu_i}\brangle{1}-\hat{\mu_i}\brangle{2}+\gamma_x|)\hat{d_i}\varepsilon}x_i\brangle{2}$, where $\texttt{x}_i\brangle{1}\sim \Lap(\hat{\mu_i}\brangle{1}, \frac{1}{\hat{d_i}\varepsilon})$ and $\texttt{x}_i\brangle{2}\sim \Lap(\hat{\mu_i}\brangle{2}, \frac{1}{\hat{d_i}\varepsilon})$, then subject to the constraints \[
+        \begin{cases}
+          \gamma_i\leq\gamma_x & c_i = \lguard[\texttt{x}]\\
+          \gamma_i\geq\gamma_x & c_i = \gguard[\texttt{x}]\\
+          \gamma_i=0 & \sigma_i = \texttt{insample}_i\\
+          \gamma_i'=0 & \sigma_i = \texttt{insample}_i'
+        \end{cases},
+      \]
+    the coupling $\sigma_i\brangle{1}\{(a, b): a=\sigma_i\implies b=\sigma_i\}^{\#d\varepsilon}\sigma_i\brangle{2}$ is valid for some $d$. 
+
+    Indeed, note that for all $i$, $\texttt{x}_i = \texttt{insample}_{at(i)}$ by definition. Thus, we have that $\texttt{x}_i\brangle{1}+\gamma_x (=)^{\#(|-\texttt{in}_{at(i)}\brangle{1}+\texttt{in}_{at(i)}\brangle{2}+\gamma_{at(i)}|)d_{at(i)}\varepsilon}x_i\brangle{2}$, and we must satisfy the constraints \[
+        \begin{cases}
+          \gamma_i\leq\gamma_{at(i)} & c_i = \lguard[\texttt{x}]\\
+          \gamma_i\geq\gamma_{at(i)} & c_i = \gguard[\texttt{x}]\\
+          \gamma_i=0 & \sigma_i = \texttt{insample}_i\\
+          \gamma_i'=0 & \sigma_i = \texttt{insample}_i'
+        \end{cases}
+      \]
+      for all $i$.
+
+    Thus, we can put all of these couplings together to show that the coupling $\sigma_i\brangle{1}\{(a, b): a=\sigma_i\implies b=\sigma_i\}^{\#d\varepsilon}\sigma_i\brangle{2}$ is valid for some $d>0$.
+
+    In particular, note that we have created at most one pair of couplings (for $\texttt{insample}$ and $\texttt{insample}'$) for each $q_i$. Thus, the total coupling cost associated with each $q_i$ is at most $(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i|)d_i+(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i'|)d_i'$, 
+    which gives us an overall coupling cost of $d = \sum_{i=0}^{n-1}(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i|)d_i+(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i'|)d_i'$.
+\end{proof}
+
+
+
+\sky{These have to be rewritten without locations + moved to appendix}
+\begin{prop}\label{costDependspathProp}
+    Optimal cost is dependent on path. There exists a valid transition alphabet $\Sigma_T$, a location space $Q$, and a branching program $B$ for which the optimal cost of a coupling strategy $C$ for $B$ is dependent on the path $\rho$. 
+    
+    In other words, the optimal strategy $C$ must assign different coupling strategies to occurances of the same transition in different paths. 
+\end{prop}
+
+\begin{proof}
+    Let $Q = \{q_0, q_1, q_2, q_3\}$ consist only of input locations, each of which have both noise parameters equal to $1$. Let $\Sigma_T = \{t_{init}, t_{geq1}, t_{leq1}, t_{leq2}, t_{geq2}\}$ where 
+    \begin{align*}
+        t_{init} &= (q_0, q_1, \texttt{true}, \bot, 1)\\
+        t_{geq1} &= (q_1, q_2, \gguard[\texttt{x}], \top, 0)\\
+        t_{leq1} &= (q_1, q_3, \lguard[\texttt{x}], \bot, 0)\\
+        t_{geq2} &= (q_2, q_2, \gguard[\texttt{x}], \top, 0)\\
+        t_{leq2} &= (q_3, q_3, \lguard[\texttt{x}], \bot, 0)
+    \end{align*}
+    and let $B = \{t_{init}t_{geq1}t_{geq2}^n, t_{init}t_{leq1}t_{leq2}^n\}$ be the branching program consisting of two paths, each of which have $n$ repetitions of the cycle transitions $t_{geq2}$ and $t_{leq2}$, respectively.
+
+    Let $\rho_1 = t_{init}t_{geq1}t_{geq2}^n$ and $\rho_2 = t_{init}t_{leq1}t_{leq2}^n$ be the two paths in $B$. Notice the following: 
+    
+    \begin{itemize}
+        \item The cost of any coupling strategy for $B$ must be at least $2$.
+        
+        Let $C_{\rho_1}$ be a coupling strategy for $\rho_1$. We can bound its cost as follows: 
+        \begin{align*}
+            cost(C_{\rho_1}) &= \max_{\texttt{in}\brangle{1}\sim\texttt{in}\brangle{2}}\sum_{i=0}^{n+2}(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i(\texttt{in}_i\brangle{1}, \texttt{in}_i\brangle{2}))\\&\qquad+(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i'(\texttt{in}_i\brangle{1}, \texttt{in}_i\brangle{2})|)\\
+            &\geq \max_{\texttt{in}\brangle{1}\sim\texttt{in}\brangle{2}} \sum_{i=0}^{n+2}(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i(\texttt{in}_i\brangle{1}, \texttt{in}_i\brangle{2})|)\\
+            &= \max_{\Delta \in [-1, 1]^{n+2}} \sum_{i=0}^{n+2}(|\Delta_i-\gamma_i(0, \Delta_i)|)\\
+            &\geq |1 - \gamma_0(0, 1)| + \sum_{i=1}^{n+2}|-1-\gamma_i(0, -1)|\\
+            &= 1 - \gamma_0(0, 1) + \sum_{i=1}^{n+2} (1+\gamma_i(0, -1))\\
+            &= 1 - \gamma_0(0, 1) + (n + 2) + \sum_{i=1}^{n+2}\gamma_i(0, -1)\\
+            &\geq 1 - \gamma_0(0, 1) + (n + 2) + \sum_{i=1}^{n+2}\gamma_0(0, 1) \qquad \text{(privacy constraint)}\\
+            &= (n + 3) + (n + 1) \gamma_0(0, 1)\\
+            &\geq 2
+        \end{align*}
+
+    and by a similar argument, $cost(C_{\rho_2})\geq 2$ for any coupling strategy $C_{\rho_2}$.
+
+    \item There exists a coupling strategy $C^*$ for $B$ such that $cost(C^*) = 2$.
+    
+    We will first describe $C_{\rho_1}^* = (\gamma, \gamma')$. Since no transition outputs \texttt{insample}, we can set $\gamma_i'(\texttt{in}\brangle{1}, \texttt{in}\brangle{2}) = \texttt{in}\brangle{2} - \texttt{in}\brangle{1}$ for all $i$ with no privacy cost. Define 
+    \begin{align*}
+        \gamma_0(\texttt{in}\brangle{1}, \texttt{in}\brangle{2}) &= -1 \\
+        \gamma_i(\texttt{in}\brangle{1}, \texttt{in}\brangle{2}) &= \texttt{in}_i\brangle{2} - \texttt{in}_i\brangle{1} \qquad \text{for all $i>0$}
+    \end{align*}
+    We see that $C^*_{\rho_1}$ is valid, since $\gamma_i\geq \gamma_{0}$ for all $i>0$. Further, we see that 
+    \begin{align*}
+        cost(C^*_{\rho_1}) &= \max_{\texttt{in}\brangle{1}\sim\texttt{in}\brangle{2}}\sum_{i=0}^{n+2}(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i(\texttt{in}_i\brangle{1}, \texttt{in}_i\brangle{2}))\\&\qquad+(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i'(\texttt{in}_i\brangle{1}, \texttt{in}_i\brangle{2})|)\\
+        &= \max_{\texttt{in}\brangle{1}\sim\texttt{in}\brangle{2}} |-\texttt{in}_0\brangle{1}+\texttt{in}_0\brangle{2}-\gamma_0(\texttt{in}_0\brangle{1}, \texttt{in}_0\brangle{2})| \\
+        &= \max_{\texttt{in}\brangle{1}\sim\texttt{in}\brangle{2}} |-\texttt{in}_0\brangle{1}+\texttt{in}_0\brangle{2}+1|\\
+        &\leq 2 
+    \end{align*}
+    showing that $cost(C^*_{\rho_1}) = 2$. Similarly, there is a coupling strategy $C^*_{\rho_2}$ for which $cost(C^*_{\rho_2}) = 2$. This shows that there is a coupling strategy $C^*$, consisting of $C^*_{\rho_1}$ and $C^*_{\rho_2}$, for which $cost(C^*) = 2$.
+    
+    \item Any coupling strategy $C$ that assigns the same coupling strategy to $t_{init}$ in both $\rho_1$ and $\rho_2$ must have cost $>2$.
+    
+    Let $C$ be as described, and assume that $C$ has optimal cost, ie. $cost(C) = 2$. If $\gamma_0(0, 1) \neq -1$ in $C_{\rho_1}$, then $cost(C_{\rho_1}) > 2$ in the same method as the above, a contradiction.  
+
+    Thus, $\gamma_0(0, 1) = -1$ in $C_{\rho_1}$, which by hypothesis, means that $\gamma_0(0, 1) = -1$ in $C_{\rho_2}$. We have the privacy constraint $\gamma_i \leq \gamma_0$ on $\rho_2$, which also means that $\gamma_i = -1$ identically for all $i > 0$. However, this means that 
+    \begin{align*}
+        cost(C_{\rho_2}) &= \max_{\texttt{in}\brangle{1}\sim\texttt{in}\brangle{2}}\sum_{i=0}^{n+2}(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i(\texttt{in}_i\brangle{1}, \texttt{in}_i\brangle{2}))\\&\qquad+(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i'(\texttt{in}_i\brangle{1}, \texttt{in}_i\brangle{2})|)\\
+        &\geq \max_{\texttt{in}\brangle{1}\sim\texttt{in}\brangle{2}} \sum_{i=0}^{n+2}(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i(\texttt{in}_i\brangle{1}, \texttt{in}_i\brangle{2})|)\\
+        &\geq \max_{\Delta \in [-1, 1]^{n+2}} |\Delta_0 - \gamma_i(0, \Delta_0)| + \sum_{i=1}^{n+2}(|\Delta_i-\gamma_i(0, \Delta_i)|)\\
+        &\geq |1 - \gamma_i(0, 1)| + \sum_{i=1}^{n+2}(|1+1|)\\
+        &= 2 \cdot (n + 2)
+    \end{align*}
+    showing that $C$ is not optimal, a contradiction. Therefore $cost(C) > 2$.
+
+    \end{itemize}
+    
+    The above observations show that the optimal coupling strategy for $B$ must necessarily assign different coupling strategies to $t_{init}$ in $\rho_1$ and $\rho_2$.
+\end{proof}
+
+Indeed, there exist a family of counterexamples such that the relative ``cost'' of choosing a unified coupling strategy for a branching program increases quadratically in the size of the branching program.
+
+
+\begin{prop}
+    There exist a family of branching programs $\{B_n\}_{n\in \NN}$ for which the cost of any path-independent coupling strategy $C$ for $B_n$ is in $\Omega(n^2)$, but for which there exists a path-dependent coupling strategy $C'$ for $B_n$ with cost in $O(n)$.
+\end{prop}
+
+\begin{proof}
+    Construct $B_n$ as follows. Consider a path $\rho = t_{true}^{(1)} t_{geq}^{(1)} \left(t_{leq}^{(1)}\right)^n \dots t_{true}^{(n)} t_{geq}^{(n)} \left(t_{leq}^{(n)}\right)^n$ where:
+
+    \begin{itemize}
+        \item $t_{true}^{(i)}$ are assignment transitions with guard \texttt{true}.
+        \item $t_{geq}^{(i)}$ are assignment transitions with guard $\gguard$.
+        \item $t_{leq}^{(i)}$ are non-assignment transitions with guard $\lguard$.
+        \item The noise parameters for all transitions are $1$.
+        \item None of the transitions output \texttt{insample}.
+    \end{itemize}
+
+    For each $i$, construct also the looping branch $L_i = L\left(t_{true}^{(n + i)} \left(t_{loop}^{(i)}\right)^* t_{geq}^{(i)}\right)$ such that each transition $t_{geq}^{(i)}$ is preceded by an arbitrary number of transitions with guard $\lguard$.
+    
+    Let $C$ be a path-independent coupling strategy for $B_n$ -- this menas that $C$ must assign the same shift to each transition in $B_n$. 
+
+    From the privacy constraints on the looping branches $L_i$, we see that $\gamma_{t_{true}^{n + i}}(1, 0) = 1$ from the same method as in \ref{costDependspathProp}, which then implies from the constraint $\gamma_{t_{true}^{n + i}} \leq \gamma_{t_{geq}^{(i)}}$ that $\gamma_{t_{geq}^{(i)}}(1, 0) = 1$. 
+
+    Since the preceding assignment transition for $t_{leq}^{(i)}$ is given by $t_{geq}^{(i)}$, for which we have the privacy constraint $\gamma_{t_{geq}^{(i)}} \leq \gamma_{t_{leq}^{(i)}}$, we see that $\gamma_{t_{leq}^{(i)}}(1, 0) = 1$ as well. 
+
+    Computing the cost of the coupling strategy assigned to $\rho$, which has $n \cdot (n + 2)$ transitions, we get 
+
+    \begin{align*}
+        cost(C_\rho) &\geq \max_{\Delta = \texttt{in}\brangle{2} - \texttt{in}\brangle{1}} \sum_{i=1}^{n} \big(|\Delta_{t_{true}^{(i)}} - \gamma_{t_{true}^{(i)}}(-\Delta_{t_{true}^{(i)}}, 0)| + |\Delta_{t_{geq}^{(i)}} - \gamma_{t_{geq}^{(i)}}(-\Delta_{t_{geq}^{(i)}}, 0)| \\ & \qquad \qquad \qquad \qquad + n \cdot |\Delta_{t_{leq}^{(i)}} - \gamma_{t_{leq}^{(i)}}(-\Delta_{t_{leq}^{(i)}}, 0)|\big)\\
+        &\geq \sum_{i = 1}^n \left(|-1 - \gamma_{t_{true}^{(i)}}(1, 0)| + |-1 - \gamma_{t_{geq}^{(i)}}(1, 0)| + n \cdot |-1 - \gamma_{t_{leq}^{(i)}}(1, 0)|\right)\\
+        &= \sum_{i = 1}^n \left(|-1 - \gamma_{t_{true}^{(i)}}(1, 0)| + |-1 - 1| + n \cdot |-1 - 1|\right)\\
+        &\geq \sum_{i = 1}^n \left(2 n + 1\right)\\
+        &= n \cdot (2 n + 1)
+    \end{align*} 
+
+    whereas there exists another coupling strategy $C_\rho^* = (\gamma^*, \gamma^{'*})$ for $\rho$ that would assign 
+    \begin{align*}
+        \gamma_{t_{true}^{(i)}}^*(\texttt{in}\brangle{1}, \texttt{in}\brangle{2}) &= -\texttt{in}\brangle{1} + \texttt{in}\brangle{2}\\
+        \gamma_{t_{geq}^{(i)}}^*(\texttt{in}\brangle{1}, \texttt{in}\brangle{2}) &= 1\\
+        \gamma_{t_{leq}^{(i)}}^*(\texttt{in}\brangle{1}, \texttt{in}\brangle{2}) &= -\texttt{in}\brangle{1} + \texttt{in}\brangle{2}
+    \end{align*}
+    which satisfies the privacy constraints \[\gamma_{t_{true}^{(i)}}^* \leq \gamma_{t_{geq}^{(i)}}^* \geq \gamma_{t_{leq}^{(i)}}^*\] for all $i$, which has cost $2n$.
+    
+    For the looping branches $L_i$, the coupling strategy $C_{L_i}^* = (\gamma^*, \gamma^{'*})$ assigns
+
+    \begin{align*}
+        \gamma_{t_{true}^{(n + i)}}^*(\texttt{in}\brangle{1}, \texttt{in}\brangle{2}) &= 1\\
+        \gamma_{t_{loop}^{(i)}}^*(\texttt{in}\brangle{1}, \texttt{in}\brangle{2}) &= -\texttt{in}\brangle{1} + \texttt{in}\brangle{2}\\
+        \gamma_{t_{geq}^{(i)}}^*(\texttt{in}\brangle{1}, \texttt{in}\brangle{2}) &= 1
+    \end{align*}
+
+    which satisfies the privacy constraints \[\gamma_{t_{geq}^{(i)}}^* \geq \gamma_{t_{true}^{(n + i)}}^* \leq \gamma_{t_{loop}^{(i)}}^*\] for all $i$, and has cost $4$.
+    
+    Putting these strategies together, we have a coupling startegy $C^*$ for $B_n$ with cost $2n$, as opposed to at least $n (2n + 1)$ for any path-independent coupling strategy $C$.
+\end{proof}
+
+
 
 \begin{proof}[\proofname~of lemma \ref{finiteCostConstraintLemma}]
 
@@ -448,3 +689,199 @@
         \item $\rho$ is an \texttt{AG}-path (resp., \texttt{AL}-path) such that $q_0$ is in an \lcycle~(resp., \gcycle) and the last transition $q_{n-1}\to q_n$ has guard $\gguard[\texttt{x}]$ (resp., $\lguard[\texttt{x}]$) and outputs \texttt{insample}
     \end{itemize}
 \end{defn}
+
+
+
+\begin{proof}[Proof of \ref{prop:compute_opt_cost}]
+    Assume that $L$ is differentially private. Then there exists a valid coupling strategy for $L$ with finite cost, showing that the constraints above are feasible, and a finite solution to the optimization problem exists.  
+
+    We will specify a valid coupling strategy $C^* = (\gamma^*, {\gamma'}^*)$ for $L$ with the cost stated above, and then show it is optimal. Define $\Gamma: [-1, 1]^n \to [-1, 1]^n \times [-1, 1]^n$ as follows, where $\Gamma(\Delta)$ is a pair $(\gamma, \gamma')$: 
+    \begin{align*}
+        \Gamma(\Delta) = &\argmin_{\gamma, \gamma' \in [-1, 1]^n} \sum_{i = 1}^n \left(|\Delta_i - \gamma_i| d_i + |\Delta_i - \gamma_i'|d_i' \right)\\ 
+        \text{subject to }
+        &\ \gamma_{at(i)} \leq \gamma_i \text{ if } c_i = \gguard, \\
+        &\ \gamma_{at(i)} \geq \gamma_i \text{ if } c_i = \lguard, \\
+        &\ \gamma_i = 0 \text{ if } \sigma_i = \texttt{insample}, \\
+        &\ \gamma_i' = 0 \text{ if } \sigma_i = \texttt{insample}'\\
+        &\ \gamma_i = \gamma_i'= \Delta_i \text{ if } t_i \text{ is in a cycle}
+    \end{align*}
+    Then define \[(\gamma^*(\texttt{in}\brangle{1}, \texttt{in}\brangle{2}), {\gamma'}^*(\texttt{in}\brangle{1}, \texttt{in}\brangle{2})) = \Gamma(\texttt{in}\brangle{1} - \texttt{in}\brangle{2})\]
+
+    Notice the following: 
+
+    \begin{enumerate}
+        \item $C^*$ is a valid coupling strategy for $L$, since the privacy constraints on $\gamma^*$ and ${\gamma'}^*$ are satisfied by construction.
+        \item $C^*$ has the cost given by the solution to the optimization problem, since 
+        \begin{align*}
+            cost(C^*) &= \max_{\texttt{in}\brangle{1}\sim \texttt{in}\brangle{2}} \sum_{i = 1}^n  |\texttt{in}_i\brangle{1} - \texttt{in}_i\brangle{2} - \gamma_i^*(\texttt{in}\brangle{1}, \texttt{in}\brangle{2})| d_i \\ 
+            \phantom{cost(C^*)} &\phantom{=\max_{\texttt{in}\brangle{1}\sim \texttt{in}\brangle{2}}\qquad } + |\texttt{in}_i\brangle{1} - \texttt{in}_i\brangle{2} - {\gamma'}_i^*(\texttt{in}\brangle{1}, \texttt{in}\brangle{2})|d_i' \\
+            &= \max_{\texttt{in}\brangle{1}\sim \texttt{in}\brangle{2}} \sum_{i = 1}^n  |\texttt{in}_i\brangle{1} - \texttt{in}_i\brangle{2} - \Gamma_1(\texttt{in}\brangle{1} - \texttt{in}\brangle{2})_i| d_i \\ 
+            \phantom{cost(C^*)} &\phantom{=\max_{\texttt{in}\brangle{1}\sim \texttt{in}\brangle{2}}\qquad } + |\texttt{in}_i\brangle{1} - \texttt{in}_i\brangle{2} - \Gamma_2(\texttt{in}\brangle{1} - \texttt{in}\brangle{2})_i|d_i' \\
+            &= \max_{\Delta \in [-1, 1]^n} \sum_{i = 1}^n  |\Delta_i - \Gamma_1(\Delta)_i| d_i + |\Delta_i - \Gamma_2(\Delta)_i|d_i' \\
+            &= \max_{\Delta \in [-1, 1]^n} \min_{\gamma, \gamma' \in [-1, 1]^n} \sum_{i = 1}^n  |\Delta_i - \gamma_i| d_i + |\Delta_i - \gamma_i'|d_i'
+        \end{align*}
+        \item $C^*$ is optimal, since for any valid coupling strategy $C = (\delta, \delta')$ for $L$, we have
+        \begin{align*}
+            cost(C) &= \max_{\texttt{in}\brangle{1}\sim \texttt{in}\brangle{2}} \sum_{i = 1}^n  |\texttt{in}_i\brangle{1} - \texttt{in}_i\brangle{2} - \delta_i(\texttt{in}\brangle{1}, \texttt{in}\brangle{2})| d_i \\
+            \phantom{cost(C)} &\phantom{=\max_{\texttt{in}\brangle{1}\sim \texttt{in}\brangle{2}}\qquad } + |\texttt{in}_i\brangle{1} - \texttt{in}_i\brangle{2} - \delta_i'(\texttt{in}\brangle{1}, \texttt{in}\brangle{2})|d_i' \\
+            &\geq \max_{\Delta \in [-1, 1]^n} \sum_{i = 1}^n  |\Delta_i - \delta_i(0, \Delta_i)| d_i + |\Delta_i - \delta_i'(0, \Delta_i)|d_i' \\
+            &\geq \max_{\Delta \in [-1, 1]^n} \min_{\gamma, \gamma' \in [-1, 1]^n} \sum_{i = 1}^n \left(|\Delta_i - \gamma_i| d_i + |\Delta_i - \gamma_i'|d_i' \right)\\
+            &= cost(C^*)
+        \end{align*}
+    \end{enumerate}
+    which shows that the optimization problem computes the optimal cost of a coupling strategy for $L$ that satisfies the privacy constraints.
+\end{proof}
+
+
+\begin{proof}[Proof of \ref{prop:approx_exists}]
+    Let 
+    \[\gamma = \argmin_{\gamma \in [-1, 1]^n} \sum_{i \in I} \left(1 + |\gamma_i| \right) d_i\]
+    subject to the constraints above. Define $C_L = (\gamma^*, {\gamma'}^*)$ where
+    \begin{align*}
+        \gamma_i^*(\texttt{in}\brangle{1}, \texttt{in}\brangle{2}) &= \begin{cases}
+            \texttt{in}\brangle{1}_i - \texttt{in}\brangle{2}_i &\text{ if } t_i \text{ is in a cycle} \\
+            \gamma_i &\text{ otherwise}
+        \end{cases} \\[1em]
+        {\gamma'}_i^*(\texttt{in}\brangle{1}, \texttt{in}\brangle{2}) &= \begin{cases}
+            0 &\text{ if } t_i \text{ outputs \texttt{insample}} \\
+            \texttt{in}\brangle{1}_i - \texttt{in}\brangle{2}_i &\text{ otherwise}
+        \end{cases}
+    \end{align*}
+    Notice the following: 
+
+    \begin{itemize}
+        \item $C_L$ satisfies the privacy constraints, and so is valid.
+        
+        If $t_i$ is in a cycle with $c_i = \lguard$, then the constraints on $\gamma$ require that $\gamma_i = 1$, and so $1 = \gamma_i \leq \gamma_{at(i)} = 1$. As a result, we will satisfy the privacy constraint $\gamma_{at(i)}^* \geq \gamma_i^*$: 
+        \[\gamma_i^* = \texttt{in}\brangle{1}_i - \texttt{in}\brangle{2}_i \leq 1 = \gamma_{at(i)}^*\]
+        A similar argument holds for if $t_i$ is in a cycle with $c_i = \gguard$.
+
+        All other privacy constraints are satisfied by construction.
+
+        \item $C_L$ has the cost given by the solution to the optimization problem, since
+        
+        \begin{align*}
+            cost(C_L) &= \max_{\texttt{in}\brangle{1}\sim \texttt{in}\brangle{2}} \sum_{i = 1}^n  |\texttt{in}_i\brangle{1} - \texttt{in}_i\brangle{2} - \gamma_i^*(\texttt{in}\brangle{1}, \texttt{in}\brangle{2})| d_i \\ 
+            \phantom{cost(C_L)} &\phantom{=\max_{\texttt{in}\brangle{1}\sim \texttt{in}\brangle{2}}\qquad } + |\texttt{in}_i\brangle{1} - \texttt{in}_i\brangle{2} - {\gamma'}_i^*(\texttt{in}\brangle{1}, \texttt{in}\brangle{2})|d_i' \\
+            &= \max_{\texttt{in}\brangle{1}\sim \texttt{in}\brangle{2}} \left(\sum_{i \in I} |\texttt{in}_i\brangle{1} - \texttt{in}_i\brangle{2} - \gamma_i^*(\texttt{in}\brangle{1}, \texttt{in}\brangle{2})| d_i\right) \\
+            \phantom{cost(C_L)} &\phantom{=\max_{\texttt{in}\brangle{1}\sim \texttt{in}\brangle{2}}\qquad } + \left(\sum_{t_i \text{outputs \texttt{insample}}}|\texttt{in}_i\brangle{1} - \texttt{in}_i\brangle{2} - {\gamma'}_i^*(\texttt{in}\brangle{1}, \texttt{in}\brangle{2})|d_i'\right)\\
+            &= \max_{\texttt{in}\brangle{1}\sim \texttt{in}\brangle{2}} \left(\sum_{i \in I} |\texttt{in}_i\brangle{1} - \texttt{in}_i\brangle{2} - \gamma_i| d_i\right) \\
+            \phantom{cost(C_L)} &\phantom{=\max_{\texttt{in}\brangle{1}\sim \texttt{in}\brangle{2}}\qquad } + \left(\sum_{t_i \text{outputs \texttt{insample}}}|\texttt{in}_i\brangle{1} - \texttt{in}_i\brangle{2}|d_i'\right)\\
+            &= \sum_{i \in I} (1 + |\gamma_i|) d_i + \sum_{t_i \text{outputs \texttt{insample}}} d_i' \\
+            &= approx(L)
+        \end{align*}
+    \end{itemize}
+\end{proof}
+
+\begin{proof}[Proof of \ref{approximateSolutionPolyTimeProp}]
+    To compute the solution to the minimization problem, we can set up the following linear program: 
+    \begin{align*}
+        \min_{\gamma, A_i \in [-1, 1]^n} &\sum_{i = 1}^n \left(1 + A_i \right) d_i \\ 
+            \text{subject to } 
+            &\ \gamma_{at(i)} \leq \gamma_i \text{ if } c_i = \lguard, \\
+            &\ \gamma_{at(i)} \geq \gamma_i \text{ if } c_i = \gguard, \\
+            &\ \gamma_i = 0 \text{ if } \sigma_i = \texttt{insample}, \\
+            &\ \gamma_i = 1 \text{ if } t_i \text{ is in a cycle and has } c_i = \lguard,\\ 
+            &\ \gamma_i = -1 \text{ if } t_i \text{ is in a cycle and has } c_i = \gguard,\\
+            &\ \gamma_i \leq A_i, -\gamma_i \leq A_i \text{ for all } i \in \{1, \dots, n\} 
+    \end{align*}
+    This program can be solved using the ellipsoid method in polynomial time.
+\end{proof}
+
+
+\begin{proof}[Proof of \ref{prop:approx_opt_are_close}]
+    We have $opt(L) \leq approx(L)$ by Proposition \ref{prop:compute_opt_cost}. Let $I$ be the set of transitions in $L$ that do $\textit{not}$ appear in a cycle. Then we have
+    \begin{align*}
+        opt(L) &= \max_{\Delta \in [-1, 1]^n} \min_{\gamma, \gamma' \in [-1, 1]^n} \sum_{i = 1}^n \left(|\Delta_i - \gamma_i| d_i + |\Delta_i - \gamma_i'|d_i' \right)\\
+        &= \max_{\Delta \in [-1, 1]^n} \min_{\gamma, \gamma' \in [-1, 1]^n} \sum_{i \in I} \left(|\Delta_i - \gamma_i| d_i + |\Delta_i - \gamma_i'|d_i' \right)\\
+        &= \max_{\Delta \in [-1, 1]^n} \min_{\gamma, \gamma' \in [-1, 1]^n} \left(\sum_{i \in I} \left(|\Delta_i - \gamma_i| d_i \right) + \sum_{t_i \text{outputs \texttt{insample}}} |\Delta_i| d_i' \right)\\
+        &\geq \max_{\Delta \in [-1, 1]^n} \min_{\gamma, \gamma' \in [-1, 1]^n} \left(\sum_{i \in I} \left(|\gamma_i| - |\Delta_i| \right) d_i  + \sum_{t_i \text{outputs \texttt{insample}}} |\Delta_i| d_i' \right)\\
+        &= \max_{\Delta \in [-1, 1]^n} \left(- \sum_{i \in I} |\Delta_i| d_i + \sum_{t_i \text{outputs \texttt{insample}}} |\Delta_i| d_i' + \min_{\gamma, \gamma' \in [-1, 1]^n} \sum_{i \in I}|\gamma_i| d_i \right)\\
+        &\geq \min_{\gamma, \gamma' \in [-1, 1]^n} \sum_{i \in I}|\gamma_i| d_i \\
+        &= approx(L) - \sum_{t_i \text{outputs \texttt{insample}}} d_i' - \sum_{i \in I} d_i'
+    \end{align*}
+    showing the second inequality.
+\end{proof}
+
+
+\begin{proof}
+    $(\implies)$ Let $L$ be differentially private. Then $approx(L) < \infty$, and so there exists $\gamma \in [-1, 1]^n$ such that the approximate privacy constraints are satisfied by $\gamma$. Aiming for a contradiction, assume that there exists a path ${\bf 1} \to v_{i_1} \to \dots \to v_{i_k} \to {\bf -1}$ in the privacy constraint graph of $L$. This corresponds to the sequence of privacy constraint inequalities
+    \[1 \leq \gamma_{i_1} \leq \dots \leq \gamma_{i_k} \leq -1\]
+    which is a contradiction, showing that no such $\gamma$ could exist. Therefore, there is no path from $\bf 1$ to $\bf -1$ in the privacy constraint graph of $L$.
+
+    $(\impliedby)$ Let there exist no path from $\bf 1$ to $\bf -1$ in the privacy constraint graph of $L$. Define 
+    \begin{align*}
+        \gamma_i = \begin{cases}
+            1 &\text{ if there exists a path from } {\bf 1} \text{ to } v_i \text{ in } G_L \\
+            -1 &\text{ otherwise}
+        \end{cases}
+    \end{align*}
+    We claim that the approximate privacy constraints are satisfied by $\gamma$. \vishnu{Need to do a better job of stating what approximate privacy constraints are and why they only depend on $\gamma \in [-1, 1]^n$ and not some function of $\texttt{in}\brangle{1}$ and $\texttt{in}\brangle{2}$}.
+    
+    \begin{itemize}
+        \item Consider the approximate privacy constraint $\gamma_i \leq \gamma_j$. This corresponds to the edge $(v_i, v_j)$ in $G_L$. If $\gamma_i = 1$, there is a path from $\bf 1$ to $v_i$, and so there is a path from $\bf 1$ to $v_j$, and so $\gamma_j = 1$, satisfying the constraint. If $\gamma_i = -1$, then any assignment of $\gamma_j$ satisfies the constraint. 
+        \item Consider the constraint $\gamma_i = 1$. This corresponds to the edge $({\bf 1}, v_i)$ in $G_L$. Since there is a path from $\bf 1$ to $v_i$, we have $\gamma_i = 1$, satisfying the constraint.
+        \item Consider the constraint $\gamma_i = -1$. This corresponds to the edge $(v_i, {\bf -1})$ in $G_L$. Since there is no path from $\bf 1$ to $\bf -1$ in $G_L$, there must be no path from $\bf 1$ to $v_i$. Thus, $\gamma_i = -1$, satisfying the constraint.
+    \end{itemize}
+    
+    Thus, the approximate privacy constraints are satisfied by $\gamma$, which means that $approx(L) < \infty$ and $L$ is differentially private.
+\end{proof}
+
+\textbf{The following claims help prove theorem \ref{LinearTimeDecidingPrograms}}
+
+\begin{prop}
+    \label{prop:paths_in_privacy_graph}
+    Let $v_{i_0}, \dots, v_{i_k}$ be vertices in $G_P$ corresponding to transitions $t_{i_0}, \dots, t_{i_k}$ in $P$. If $v_{i_0} \to \dots \to v_{i_k}$ is a path in $G_P$, then there exists a path $\rho \in P$ such that 
+    \begin{align*}
+        t_{i_0} \cdots t_{i_k} \text{ is a subsequence of } \rho \text{ with } guard(t_{i_j}) = \gguard \text { for all } j \in \{1, \dots, k\}
+    \end{align*}
+    or
+    \begin{align*}
+        t_{i_k} \cdots t_{i_0} \text{ is a subsequence of } \rho \text{ with } guard(t_{i_j}) = \lguard \text { for all } j \in \{k - 1, \dots, 0\}
+    \end{align*}
+\end{prop}
+
+
+
+\begin{proof}[Proof of \ref{prop:paths_in_privacy_graph}]
+    We will use induction on the length of the path $v_{i_0} \to \dots \to v_{i_k}$ in $G_P$. 
+
+    \begin{itemize}
+        \item Base Case ($k = 1$)
+        
+        If $k = 1$, then the path $v_{i_0} \to v_{i_1}$ comprises of a single edge $(v_{i_0}, v_{i_1})$ in $G_P$. So, there is a looping branch $L$ for which $(v_{i_0}, v_{i_1}) \in G_L$, for which there is the privacy constraint $\gamma_{i_0} \leq \gamma_{i_1}$. 
+        
+        We either have that $i_0 = at(i_1)$ and $c_{i_1} = \gguard$, or $i_1 = at(i_0)$ and $c_{i_0} = \lguard$. In the first case, we have that $t_{i_0} t_{i_1}$ is a subsequence of some path $\rho$ in $L$ with $guard(t_{i_1}) = \gguard$. In the second case, we have that $t_{i_1} t_{i_0}$ is a subsequence of some path $\rho$ in $L$ with $guard(t_{i_0}) = \lguard$.
+
+        \item Inductive Step ($k > 1$)
+        
+        By the inductive hypothesis, we have one of the following cases: 
+
+        \begin{enumerate}
+            \item There exists a path $\rho_1 \in P$ such that $t_{i_0} \cdots t_{i_{k - 1}}$ is a subsequence of $\rho_1$ with $guard(t_{i_j}) = \gguard$ for all $j \in \{1, \dots, k - 1\}$.
+            
+            Since we have the edge $(v_{i_{k - 1}}, v_{i_k})$ in $G_P$, there exists a looping branch $L$ for which $(v_{i_{k - 1}}, v_{i_k}) \in G_L$, for which there is the privacy constraint $\gamma_{i_{k - 1}} \leq \gamma_{i_k}$.
+
+            We either have that $i_{k - 1} = at(i_k)$ and $c_{i_k} = \gguard$ ($t_{i_{k - 1}}$ precedes $t_{i_k}$ in $L$), or $i_k = at(i_{k - 1})$ and $c_{i_{k - 1}} = \lguard$ ($t_{i_k}$ precedes $t_{i_{k - 1}}$ in $L$). Notice, however, that we cannot have that $t_{i_k}$ precedes $t_{i_{k - 1}}$, since we have assumed $c_{i_{k - 1}} = \gguard$. 
+
+            So, there exists a path $\rho_2 \in L$ such that $t_{i_{k - 1}} t_{i_k}$ is a subsequence of $\rho_2$ with $guard(t_{i_k}) = \gguard$. 
+
+            Let $j_1$ be the index at which $t_{i_{k - 1}}$ appears in $\rho_1$, and $j_2$ be the index at which it appears in $\rho_2$. Then, the path $\rho_1[:j_1] \rho_2[j_2:]$ is a path in $P$ such that $t_{i_0} \cdots t_{i_k}$ is a subsequence of $\rho_1[:j_1] \rho_2[j_2:]$ with $guard(t_{i_j}) = \gguard$ for all $j \in \{1, \dots, k\}$.
+
+            \item There exists a path $\rho_1 \in P$ such that $t_{i_{k - 1}} \cdots t_{i_0}$ is a subsequence of $\rho_1$ with $guard(t_{i_j}) = \lguard$ for all $j \in \{k - 2, \dots, 0\}$.
+            
+            Similar to the argument above, we either have that $t_{i_{k - 1}}$ precedes $t_{i_k}$, or $t_{i_k}$ precedes $t_{i_{k - 1}}$ in some looping branch. We cannot have that $t_{i_{k - 1}}$ precedes $t_{i_k}$, and so $c_{i_{k - 1}}$ is forced to be $\lguard$. We can then construct a path $\rho \in P$ such that $t_{i_k} \cdots t_{i_0}$ is a subsequence of $\rho$ with $guard(t_{i_j}) = \lguard$ for all $j \in \{k - 1, \dots, 0\}$. 
+        \end{enumerate}
+    \end{itemize}
+
+    This completes the proof. 
+\end{proof}
+
+
+\begin{cor}
+    The path $v_{i_0} \to \dots \to v_{i_k}$ is in $G_P$ if and only if there is a looping branch $L$ in $P$ such that $v_{i_0} \to \dots \to v_{i_k}$ is a path in $G_L$.
+\end{cor}
+
+\begin{proof}[Proof of \ref{programPrivacyConstraintGraphPathReq}]
+    There is a path from $\bf 1$ to $\bf -1$ in the privacy constraint graph of $P$ if and only if there is a path from $\bf 1$ to $\bf -1$ in the privacy constraint graph of some looping branch $L$ in $P$ by Proposition \ref{prop:paths_in_privacy_graph}. This is true if and only if there exists some $L$ which is not differentially private, which is true if and only if $P$ is not differentially private.
+\end{proof}

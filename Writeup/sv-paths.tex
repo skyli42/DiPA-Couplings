@@ -4,23 +4,18 @@
 We now demonstrate how to concatenate transitions and their corresponding coupling strategies together into program \textit{paths}.
 
 \begin{defn}[Paths]
-    A path is a string composed of transitions. For a path $\rho = t_0\cdot t_1\cdot\ldots\cdot t_{n-1}$, if $t_0$ is of the form $t_0 = (\texttt{true}, \sigma, \texttt{true})$ for some $\sigma$, then we call $\rho$ a \textbf{complete} path.
+    A path is a sequence of transitions. For a path $\rho = t_0\cdot t_1\cdot\ldots\cdot t_{n-1}$, if $t_0$ is of the form $t_0 = (\texttt{true}, \sigma, \texttt{true})$ for some $\sigma$, then we call $\rho$ a \textbf{complete} path.
 \end{defn}
+\azadeh{change name of complete paths}
 
-The length of a path $\rho$ is simply the number of transitions that are concatenated together to form $\rho$. 
+We use standard properties of sequences for paths, such as the notion of the length of a path and the tail of a path, in the expected manner. For a path $\rho$, we use the notation $\rho_{i:j}$ to represent the subpath  $t_i t_{i+1} \ldots t_{j-1}$ of $\rho$.
 
-We define some useful notation for dealing with paths and sequences more generally. 
-
-Given a path (or sequence) $\rho = t_0\cdot t_1\cdot \ldots\cdot t_{n-1}$, the \textbf{tail} of $\rho$ is notated by $tail(\rho) = t_1\cdot \ldots\cdot t_{n-1}$. 
-We may additionally use the notation $\rho_{i:j}$ to represent the subpath  $t_i t_{i+1} \ldots t_{j-1}$ of $\rho$. Using this notation, $tail(\rho) = \rho_{1:} = \rho_{1:n}$.
-
-Whereas an individual transition reads in one real-valued input and outputted one output value, a path reads in a \textbf{sequence} of inputs and outputs a sequence of outputs, one for each transition in the path.
+We directly lift the concept of inputs and outputs from individual transitions to paths; thus, each path reads in a \textbf{sequence} of inputs and outputs a sequence of outputs, one for each transition in the path. 
 
 \subsubsection{Path Semantics}
 
-As with transitions, we can think of paths as very limited programs consisting of a series of transitions concatenated together with a persistent threshold variable $\texttt{x}$. Naturally, paths will now consider as input a \textbf{sequence} of real numbers, and similarly output a \textbf{sequence} of real numbers or symbols - each transition reads in an input and outputs some value.
-
-The semantics of a path can be defined as a function mapping a subdistribution of program states and a real-valued input sequence to a subdistribution of final program states. 
+\sky{``are'' or ``is'' defined as?}
+The semantics of a path are defined as a function mapping a subdistribution of program states and a real-valued input sequence to a subdistribution of final program states. 
 
 More specifically, the semantics of a path $\rho = t_0t_1\cdots t_{n-1}$ are a function $\Phi_\rho: dist_\downarrow(S)\times \RR^n \to dist_\downarrow(S)$. $\Phi_\rho$ can be defined by composing transition semantics in the expected manner:
 
@@ -30,21 +25,19 @@ More specifically, the semantics of a path $\rho = t_0t_1\cdots t_{n-1}$ are a f
 \end{cases}\]
 
 
-Like with transitions, we denote the probability that a path $\rho = t_0 t_1\ldots t_{n-1}$ outputs a specific value given an initial $\texttt{x}\in dist(\RR)$, input sequence $\texttt{in} \in \RR^n$, and possible output sequence $o \in (\Gamma\cup\Sigma)^n$ as $\PP[\texttt{x}, \rho, \texttt{in}, o]$. As before, $\PP[\texttt{x}, t, \texttt{in}, o]$ is the marginal of $\Phi_\rho((\texttt{x}, \lambda), \texttt{in})$ on $(\cdot, o)$.
+Like with transitions, we denote the probability that a path $\rho = t_0 t_1\ldots t_{n-1}$ outputs a specific value given an initial $\texttt{x}\in dist(\RR)$, input sequence $\texttt{in} \in \RR^n$, and possible measurable output sequence $o \subseteq (\Gamma\cup\RR)^n$ as $\PP[\texttt{x}, \rho, \texttt{in}, o]$. As before, $\PP[\texttt{x}, t, \texttt{in}, o]$ is the marginal of $\Phi_\rho((\texttt{x}, \lambda), \texttt{in})$ on $(\cdot, o)$.
 
 For a complete path $\rho$, note that the initial value of $\texttt{x}$ is irrelevant, so we will shorthand $\PP[\texttt{x}_0, \rho, \texttt{in}, \sigma]$ to $\PP[\rho, \texttt{in}, \sigma]$.
 
 
 \subsubsection{Privacy}
 
-By leveraging the construction of couplings for individual transitions, we can construct a set of approximate liftings for entire paths.
+By leveraging the construction of couplings for individual transitions, we can construct a set of approximate liftings for paths.
 
-Because paths read in a \textit{sequence} of real-valued inputs, we need to slightly modify our definition of adjacency.
+Because paths read in a \textit{sequence} of real-valued inputs, we need to slightly modify our definition of valid adjacent inputs.
 
-\begin{defn}[Adjacency for a sequence of inputs]
-    Two input sequences $\{\texttt{in}_i\brangle{1}\}_{i=1}^n, \{\texttt{in}_i\brangle{2}\}_{i=1}^n$ of length $n$ are $\Delta$-adjacent (notated $\texttt{in}\brangle{1} \sim_{\Delta}\texttt{in}\brangle{2}$) if, for all $i\in [1\ldots n]$, $|\texttt{in}_i\brangle{1}-\texttt{in}_i\brangle{2}|\leq \Delta$. 
-
-    As before, if $\Delta$ is not specified, we assume that $\Delta = 1$. 
+\begin{defn}[Validity for a sequence of inputs]
+    Two input sequences $\{\texttt{in}_i\brangle{1}\}_{i=1}^n\sim\{\texttt{in}_i\brangle{2}\}_{i=1}^n$ are \textbf{valid} and \textbf{adjacent} input sequences for a path $\rho = t_0\ldots t_{n-1}$ if, for all $1\leq i\leq n$, 
 \end{defn}
 
 Thus, we have the following definition of privacy for complete paths:
@@ -58,15 +51,15 @@ We argue that this definition is functionally equivalent, since if we are target
 
 \subsubsection{Sequential composition of couplings}
 
-Just as individual transitions can be concatenated to form program paths, we can compose together couplings associated with each transition to produce a coupling proof of privacy for an entire path. 
+We can compose together couplings associated with each transition to produce a coupling proof of privacy for an entire path. 
 
-If $o\brangle{1}, o\brangle{2}$ are random variables representing the output of $\rho$ given input sequences $\texttt{in}\brangle{1}$ and $\texttt{in}\brangle{2}$, respectively, 
-then in order to show that a program path $\rho$ is differentially private we want to create the coupling $o\brangle{1}\{(a, b): a=\sigma\implies b=\sigma\}^{\#d\varepsilon}o\brangle{2}$ for some $d>0$ for all adjacent inputs $\texttt{in}\brangle{1}\sim\texttt{in}\brangle{2}$ and all possible outputs $\sigma$.
+If $o\brangle{1}, o\brangle{2}$ are random variables representing the output of a program path $\rho$ given input sequences $\texttt{in}\brangle{1}$ and $\texttt{in}\brangle{2}$, respectively, 
+then if we can create the coupling $o\brangle{1}\{(a, b): a=\sigma\implies b=\sigma\}^{\#d\varepsilon}o\brangle{2}$ for some $d>0$ for all adjacent inputs $\texttt{in}\brangle{1}\sim\texttt{in}\brangle{2}$ and all possible outputs $\sigma$, we show that $\rho$ is differentially private.
 
-As it turns out, directly composing together the couplings from lemma \ref{indTransitionCoupling} are essentially sufficient; the constraints imposed upon shifts for a coupling for transition $t_i$ depend solely on the shift at the most recent \textbf{assignment transition} in $\rho$ (i.e. the most recent transition $t_j$ such that $\tau_j = \texttt{true}$). 
+As it turns out, directly composing together the couplings from lemma \ref{simplifiedIndTransitionCoupling} are essentially sufficient; the constraints imposed upon shifts for a coupling for transition $t_i$ depend solely on the shift at the most recent \textbf{assignment transition} in $\rho$ (i.e. the most recent transition $t_j$ such that $\tau_j = \texttt{true}$). 
 The coupling shifts for \textit{non-assignment transitions} can thus never impact each other. 
 
-We will let $A_\rho = \{t_i=(c_i, \sigma_i, \tau_i): \tau_i = \texttt{true}\}$ be the set of \textbf{assignment transitions} in a path $\rho$. Additionally, for every transition $t_i$ in $\rho$, let $t_{at(i)}$ be the most recent assignment transition in $\rho$; i.e., $at(i) = \max\{j<i: t_j\in A_\rho\}$. If such a $j$ does not exist, we set $at(i)=-1$. 
+We will let $A_\rho$ be the set of \textbf{assignment transitions} in a path $\rho$. Additionally, for every transition $t_i$ in $\rho$, let $t_{at(i)}$ be the most recent assignment transition in $\rho$ before $t_i$; i.e., $at(i) = \max\{j<i: t_j\in A_\rho\}$. If such a $j$ does not exist, we set $at(i)=-1$. 
 
 In particular, note that for transition $t_i$, $\gamma_x = \gamma_{at(i)}$, where $\gamma_{-1}$ is the shift applied to the initial $\texttt{x}$-values $\texttt{x}_0\brangle{1}$ and $\texttt{x}_0\brangle{2}$ (for complete paths, note that $\gamma_{-1}$ is irrelevant).
 
@@ -74,11 +67,8 @@ Thus, for an individual transition $t_i$ of $\rho$, we have a family of valid co
 
 We can merge these coupling strategies together to create a proof of privacy for the entire path: 
 
-\begin{lemma}\label{multTransitionsCouplingProof}
-    Let $\rho = t_0\ldots t_{n-1}$ be a complete path of length $n$. 
-    Let $\texttt{in}\brangle{1}\sim \texttt{in}\brangle{2}$ be arbitrary adjacent input sequences of length $n$. Additionally, fix some potential output $\sigma$ of $\rho$ of length $n$ and let $\sigma\brangle{1}$, $\sigma\brangle{2}$ be random variables representing possible outputs of $\rho$ given inputs $\texttt{in}\brangle{1}$ and $\texttt{in}\brangle{2}$, respectively. Additionally, for all $t_i$, let $P(t_i) = (d_i, d_i')$.
-
-    Then $\forall \varepsilon>0$ and for all $\{\gamma_i, \gamma_i'\}_{i=0}^{n-1}$ that, for all $i$, satisfy the constraints \[
+\begin{lemma}\label{simplifiedMultTransitionsCouplingProof}
+  For any complete path $\rho = t_0\ldots t_{n-1}$, any possible output event $\sigma$ of $\rho$, and any two valid adjacent input sequences $\texttt{in}\brangle{1}\sim \texttt{in}\brangle{2}$, if we are given $2n$ real-valued ``shifts'' $\{\gamma_i, \gamma_i'\}_{i=0}^{n-1}$ that, for all $i$, satisfy the constraints \[
         \begin{cases}
           \gamma_i\leq\gamma_{at(i)} & c_i = \lguard[\texttt{x}]\\
           \gamma_i\geq\gamma_{at(i)} & c_i = \gguard[\texttt{x}]\\
@@ -86,59 +76,25 @@ We can merge these coupling strategies together to create a proof of privacy for
           \gamma_i'=0 & \sigma_i = \texttt{insample}'
         \end{cases},
       \]
-      the lifting $\sigma\brangle{1}\{(a, b): a=\sigma\implies b=\sigma\}^{\#d\varepsilon}\sigma\brangle{2}$ is valid for $d = \sum_{i=0}^{n-1}(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i|)d_i+(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i'|)d_i'$, and therefore $t$ is $d\varepsilon$-differentially private. 
+      then we can construct an approximate lifting that proves that $\PP[\rho, \texttt{in}\brangle{1}, \sigma] \leq e^{d\varepsilon}\PP[\rho, \texttt{in}\brangle{2}, \sigma]$ for some bounded $d>0$. 
 \end{lemma}
-\begin{proof}
-    From the proof of lemma \ref{indTransitionCoupling}, we know that we can create the couplings $\texttt{insample}_i\brangle{1} +\gamma_i{(=)}^{\#(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i|)d_i\varepsilon}\texttt{insample}_i\brangle{2}$ and $\texttt{insample}_i'\brangle{1} +\gamma_i'{(=)}^{\#(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i'|)d_i'\varepsilon}\texttt{insample}_i'\brangle{2}$ for all $q_i$ in $\rho$. 
 
-    Additionally, for some fixed $q_i$ in $\rho$, if we have the coupling $\texttt{x}_i\brangle{1}+\gamma_x (=)^{\#(|\hat{\mu_i}\brangle{1}-\hat{\mu_i}\brangle{2}+\gamma_x|)\hat{d_i}\varepsilon}x_i\brangle{2}$, where $\texttt{x}_i\brangle{1}\sim \Lap(\hat{\mu_i}\brangle{1}, \frac{1}{\hat{d_i}\varepsilon})$ and $\texttt{x}_i\brangle{2}\sim \Lap(\hat{\mu_i}\brangle{2}, \frac{1}{\hat{d_i}\varepsilon})$, then subject to the constraints \[
-        \begin{cases}
-          \gamma_i\leq\gamma_x & c_i = \lguard[\texttt{x}]\\
-          \gamma_i\geq\gamma_x & c_i = \gguard[\texttt{x}]\\
-          \gamma_i=0 & \sigma_i = \texttt{insample}_i\\
-          \gamma_i'=0 & \sigma_i = \texttt{insample}_i'
-        \end{cases},
-      \]
-    the coupling $\sigma_i\brangle{1}\{(a, b): a=\sigma_i\implies b=\sigma_i\}^{\#d\varepsilon}\sigma_i\brangle{2}$ is valid for some $d$. 
+As with individual transitions, lemma \ref{simplifiedMultTransitionsCouplingProof} implicitly defines an entire family of possible coupling proofs that demonstrate the privacy of a path.
 
-    Indeed, note that for all $i$, $\texttt{x}_i = \texttt{insample}_{at(i)}$ by definition. Thus, we have that $\texttt{x}_i\brangle{1}+\gamma_x (=)^{\#(|-\texttt{in}_{at(i)}\brangle{1}+\texttt{in}_{at(i)}\brangle{2}+\gamma_{at(i)}|)d_{at(i)}\varepsilon}x_i\brangle{2}$, and we must satisfy the constraints \[
-        \begin{cases}
-          \gamma_i\leq\gamma_{at(i)} & c_i = \lguard[\texttt{x}]\\
-          \gamma_i\geq\gamma_{at(i)} & c_i = \gguard[\texttt{x}]\\
-          \gamma_i=0 & \sigma_i = \texttt{insample}_i\\
-          \gamma_i'=0 & \sigma_i = \texttt{insample}_i'
-        \end{cases}
-      \]
-      for all $i$.
-
-    Thus, we can put all of these couplings together to show that the coupling $\sigma_i\brangle{1}\{(a, b): a=\sigma_i\implies b=\sigma_i\}^{\#d\varepsilon}\sigma_i\brangle{2}$ is valid for some $d>0$.
-
-    In particular, note that we have created at most one pair of couplings (for $\texttt{insample}$ and $\texttt{insample}$) for each $q_i$. Thus, the total coupling cost associated with each $q_i$ is at most $(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i|)d_i+(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i'|)d_i'$, 
-    which gives us an overall coupling cost of $d = \sum_{i=0}^{n-1}(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i|)d_i+(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i'|)d_i'$.
-\end{proof}
-
-As with individual transitions, lemma \ref{multTransitionsCouplingProof} implicitly defines an entire family of possible coupling proofs that demonstrate the privacy of a path.
-
-\begin{defn}
-    For a complete path $\rho$ of length $n$, \textbf{coupling strategy} is a tuple of two functions $\bm{\gamma}(\texttt{in}\brangle{1}, \texttt{in}\brangle{2}):\RR^n\times \RR^n\to [-1, 1]^n$ and $\bm{\gamma}'(\texttt{in}\brangle{1}, \texttt{in}\brangle{2}):\RR^n\times \RR^n\to [-1, 1]^n$ that produce shifts for each transition of $\rho$ for every possible pair of adjacent input sequences $\texttt{in}\brangle{1}\sim\texttt{in}\brangle{2}$. 
+\begin{defn}[Coupling Strategies for Paths]
+    For a complete path $\rho$ of length $n$, a \textbf{valid coupling strategy} is a tuple of two functions $\bm{\gamma}(\texttt{in}\brangle{1}, \texttt{in}\brangle{2}):\RR^n\times \RR^n\to [-1, 1]^n$ and $\bm{\gamma}'(\texttt{in}\brangle{1}, \texttt{in}\brangle{2}):\RR^n\times \RR^n\to [-1, 1]^n$ 
+    that produce shifts for each transition of $\rho$ for every possible pair of adjacent input sequences $\texttt{in}\brangle{1}\sim\texttt{in}\brangle{2}$ such that $\bm{\gamma}, \bm{\gamma'}$ satisfy the constraints \[
+      \begin{cases}
+        \gamma_i\leq\gamma_{at(i)} & c_i = \lguard[\texttt{x}]\\
+        \gamma_i\geq\gamma_{at(i)} & c_i = \gguard[\texttt{x}]\\
+        \gamma_i=0 & \sigma_i = \texttt{insample}\\
+        \gamma_i'=0 & \sigma_i = \texttt{insample}'
+      \end{cases}.
+    \]
     If $\texttt{in}\brangle{1}$ and $\texttt{in}\brangle{2}$ are clear from context, we will often shorthand notating a coupling strategy as $\bm{\gamma}$ and $\bm{\gamma}'$. 
 \end{defn}
 
-
-\begin{defn}
-    For a complete path $\rho$ of length $n$, a coupling strategy $C_\rho = (\bm{\gamma}, \bm{\gamma}')$ is \textbf{valid} if $\forall \texttt{in}\brangle{1}\sim\texttt{in}\brangle{2}$, $\bm{\gamma}(\texttt{in}\brangle{1}, \texttt{in}\brangle{2})$ and $\bm{\gamma}'(\texttt{in}\brangle{1}, \texttt{in}\brangle{2})$ satisfy the constraints \[
-        \begin{cases}
-          \gamma_i\leq\gamma_{at(i)} & c_i = \lguard[\texttt{x}]\\
-          \gamma_i\geq\gamma_{at(i)} & c_i = \gguard[\texttt{x}]\\
-          \gamma_i=0 & \sigma_i = \texttt{insample}\\
-          \gamma_i'=0 & \sigma_i = \texttt{insample}'
-        \end{cases}.
-      \]
-\end{defn}
-
 Thus, if we have a \textbf{valid} coupling strategy $C$ for a path $\rho$, then immediately by lemma \ref{multTransitionsCouplingProof}, we have a proof that $\rho$ is $d\varepsilon$-differentially private. 
-
-\sky{how necessary are these following defs/props}
 
 \begin{defn}
     For a complete path $\rho$ of length $n$, the \textbf{cost} of a coupling strategy $C_\rho=(\bm{\gamma}, \bm{\gamma}')$ is \[cost(C_\rho) = \max_{\texttt{in}\brangle{1}\sim\texttt{in}\brangle{2}}\sum_{i=0}^{n-1}(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i|)d_i+(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i'|)d_i'.\]
@@ -150,6 +106,33 @@ Thus, if we have a \textbf{valid} coupling strategy $C$ for a path $\rho$, then 
 Naturally, the existence of a valid coupling strategy bounds the privacy cost of any path. 
 
 \begin{cor}
-    If $C_\rho=(\bm{\gamma}, \bm{\gamma}')$ is valid, then $\rho$ is $cost(C_\rho)\varepsilon$-differentially private.
+    If $C_\rho=(\bm{\gamma}, \bm{\gamma}')$ is a valid coupling strategy for a path $\rho$, then $\rho$ is $cost(C_\rho)\varepsilon$-differentially private.
 \end{cor}
+
+In particular, we observe that for any individual complete path $\rho$, there always exists \textit{some} valid coupling strategy for $\rho$; so every path $\rho$ is always differentially private. 
+
+Our program model fundamentally considers programs collections of individual paths; to this end, we extend the definition of privacy to sets of paths in the natural manner:
+
+\begin{defn}
+  Let $S$ be a set of complete paths and let $O$ be a set of all possible outputs of paths in $S$. 
+  Then $S$ is $d\varepsilon$-differentially private for some $d>0$ if, for all paths $\rho\in S$ and outputs $\sigma\in O$, $\forall \varepsilon>0$, for all valid adjacent input sequences $\texttt{in}\brangle{1}\sim \texttt{in}\brangle{2}$, $\PP[\rho, \texttt{in}\brangle{1}, \sigma]\leq e^{d\varepsilon}\PP[\rho, \texttt{in}\brangle{2}, \sigma]$.
+\end{defn}
+
+Indeed, for finite collections of paths, we show that we must analyze them individually; there is no way to reuse couplings for shared transitions on different paths if we are trying to find an optimal coupling strategy. In other words, one cannot choose a single coupling strategy for an arbitrary finite set of paths and must choose a new coupling strategy for each path.
+
+For example, even if two paths share a prefix, we cannot necessarily ``reuse'' the shifts from an optimal (with regards to cost) coupling strategy for the prefix in the context of the first path in the context of an optimal coupling strategy for the second path. 
+
+\begin{prop}\label{noSharingStrategiesProp}
+  There exist paths $\rho'=\pi\cdot \pi$, $\rho^*=\pi\cdot\pi^*$ that share a prefix path $\pi$ such that for all optimal coupling strategies $C'$ for $\rho'$ and $C^*$ for $\rho^*$, $C'$ and $C^*$ differ on the shift assigned to some transition in $\pi$. 
+\end{prop}
+
+A specific counterexample is provided in the appendix. 
+
+In particular, we show that the penalty to choosing only a single coupling strategy for a set of paths increases quadratically in the size of the paths.
+
+\begin{prop}
+  For all $n\in \NN$, there exist sets of paths $B_n$ such that the cost of a coupling strategy that uses the same set of shifts for all shared transitions between paths in $B_n$ has cost that is a quadratic factor larger than the cost of an optimal coupling strategy. 
+\end{prop}
+
+
 
