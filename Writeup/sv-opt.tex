@@ -1,14 +1,7 @@
 
-\subsection{Minimizing a privacy budget}
+Beyond solving the decision problem of privacy, we can also optimize the specific privacy cost obtained by a coupling proof of privacy for a program. 
 
-Beyond whether or not valid coupling strategies exist for a program, we also want to optimize their privacy costs. Since we break down each program into a finite number of looping branches, each with a separate coupling strategy, we optimize the cost of a coupling strategy for every looping branch independently.
-
-Indeed, we show that we must analyze 
-
-
-
-\sky{rewrite this to make sense being put after looping branches}
-; there is no way to reuse couplings for shared transitions on different paths if we are trying to find an optimal coupling strategy. In other words, one cannot choose a single coupling strategy for an arbitrary finite set of paths and must choose a new coupling strategy for each path.
+In general, there is no way to reuse couplings for shared transitions on different paths if we are trying to find an optimal coupling strategy. In other words, one cannot choose a single coupling strategy for an arbitrary set of paths; we must choose a new coupling strategy for each path.
 
 For example, even if two paths share a prefix, we cannot necessarily ``reuse'' the shifts from an optimal (with regards to cost) coupling strategy for the prefix in the context of the first path in the context of an optimal coupling strategy for the second path. 
 
@@ -24,10 +17,7 @@ In particular, we show that the penalty to choosing only a single coupling strat
   For all $n\in \NN$, there exist sets of paths $B_n$ such that the cost of a coupling strategy that uses the same set of shifts for all shared transitions between paths in $B_n$ has cost that is a quadratic factor larger than the cost of an optimal coupling strategy. 
 \end{prop}
 
-
-\sky{rewrite}
-
-\sky{Something about ... looping branches are unique in that a shared coupling strategy does help}
+Fortunately, while we cannot analyze \textit{arbitrary} sets of paths with the same coupling strategy, we can still analyze an entire \textit{looping branch} with a single coupling strategy.
 
 We show that it is in fact optimal to only consider a single coupling strategy for an entire looping branch; not only is finding individual coupling strategies for every single path in a looping branch intractable, but it also does not lead to a better overall privacy cost. 
 
@@ -35,6 +25,7 @@ We show that it is in fact optimal to only consider a single coupling strategy f
     If there exists a valid coupling strategy $C_\rho$ with cost $cost(C_\rho)$ for every path $\rho$ of looping branch $L$ and $\sup_{\rho\in L}cost(C_\rho)< \infty$, then there exists a valid class coupling strategy $C'$ for $L$ such that $cost(C') \leq \sup_{\rho\in L}cost(C_\rho)$. 
 \end{prop}
 
+Thus, as with the decision problem, we will optimize the cost of each looping branch of a program independently.
 
 We first define a linear program that computes the optimal cost of any coupling strategy for a looping branch. 
 
@@ -98,6 +89,8 @@ Further, we obtain an approximation factor bounded by a term linear in the numbe
 
 Observe that our decision algorithm for privacy (section \ref{decisionSection}) effectively encodes the approximate privacy constraints into the privacy constraint graph; it is also possible, if less intuitive, to directly encode the approximate privacy constraints as an instance of 2SAT. 
 
+
+\azadeh{check with sasho about this part}
 We conjecture that the optimal coupling cost, as represented by the linear program from \ref{prop:compute_opt_cost}, exactly matches the ``true'' privacy cost of a program, as represented by the KL-divergence between the distributions of a looping branch's outputs on adjacent input sequences. In this case, coupling proofs would provide an exact bound on the privacy cost of any program that can be represented by our model. 
 
 \begin{conj}
