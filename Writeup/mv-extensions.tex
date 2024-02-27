@@ -1,6 +1,9 @@
 
 \section{Program Model Extensions - Multivariable Programs}
 
+
+\sky{this intro section is kind of orphaned - move it to the intro / somewhere else maybe? and just focus this section on multivariable programs}
+
 The class of programs we have defined is rather limited, leading to the natural question of whether our results can be extended to more powerful program models. 
 
 Some `natural' extensions of DiPA end up reducing directly to DiPA. For example, we considered an extension of DiPA that included a single integral ``counter'' variable $n$; this program model also allowed for branching conditional on $n$ being greater than a threshold value. 
@@ -291,7 +294,7 @@ Incorporating this exception, we still have that an unsatisfiable coupling strat
 
     Thus, we can assume that constraint (11) is not violated. 
 
-    By lemma \ref{ProgramCounterexampleLemma}, there must then be either a leaking cycle, leaking pair, disclosing cycle, or privacy violating path with respect to a single variable. 
+    By lemma \ref{ProgramCounterexampleThm}, there must then be either a leaking cycle, leaking pair, disclosing cycle, or privacy violating path with respect to a single variable. 
 
     We will show that, if there only exist leaking pairs in $L$, then at least one leaking pair must be a non-cancelling leaking pair. 
 
@@ -328,6 +331,8 @@ We conclude that the privacy constraint system completely characterizes privacy 
 \end{thm}
 
 \subsection{Beyond Two Variables}
+
+\sky{heavily rewrite}
 
 It is straightforward to extend the definitions of 2v-transitions, paths, looping branches, etc. to more than two variables; it is additionally straightforward to extend results like lemma \ref{mvParallelCouplingsLemma} to apply more than two variables. However, it is not immediately clear how cross-couplings would be extended to additional variables;
 one obvious possibility is to allow for cross-couplings between \textit{all} possible pairs, but the completeness result likely would not generalize in the same fashion. 

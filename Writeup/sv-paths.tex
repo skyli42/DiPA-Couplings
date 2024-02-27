@@ -1,5 +1,5 @@
 
-\subsection{Program Paths}
+\subsection{Straightline Programs}
 
 We now demonstrate how to concatenate transitions and their corresponding coupling strategies together into program \textit{paths}.
 
@@ -67,6 +67,20 @@ Thus, for an individual transition $t_i$ of $\rho$, we have a family of valid co
 
 We can merge these coupling strategies together to create a proof of privacy for the entire path: 
 
+\begin{defn}[Coupling Strategies for Paths]
+  For a complete path $\rho$ of length $n$, a \textbf{valid coupling strategy} is a tuple of two functions $\bm{\gamma}(\texttt{in}\brangle{1}, \texttt{in}\brangle{2}):\RR^n\times \RR^n\to [-1, 1]^n$ and $\bm{\gamma}'(\texttt{in}\brangle{1}, \texttt{in}\brangle{2}):\RR^n\times \RR^n\to [-1, 1]^n$ 
+  that produce shifts for each transition of $\rho$ for every possible pair of adjacent input sequences $\texttt{in}\brangle{1}\sim\texttt{in}\brangle{2}$ such that $\bm{\gamma}, \bm{\gamma'}$ satisfy the constraints \[
+    \begin{cases}
+      \gamma_i\leq\gamma_{at(i)} & c_i = \lguard[\texttt{x}]\\
+      \gamma_i\geq\gamma_{at(i)} & c_i = \gguard[\texttt{x}]\\
+      \gamma_i=0 & \sigma_i = \texttt{insample}\\
+      \gamma_i'=0 & \sigma_i = \texttt{insample}'
+    \end{cases}.
+  \]
+  If $\texttt{in}\brangle{1}$ and $\texttt{in}\brangle{2}$ are clear from context, we will often shorthand notating a coupling strategy as $\bm{\gamma}$ and $\bm{\gamma}'$. 
+\end{defn}
+
+
 \begin{lemma}\label{simplifiedMultTransitionsCouplingProof}
   For any complete path $\rho = t_0\ldots t_{n-1}$, any possible output event $\sigma$ of $\rho$, and any two valid adjacent input sequences $\texttt{in}\brangle{1}\sim \texttt{in}\brangle{2}$, if we are given $2n$ real-valued ``shifts'' $\{\gamma_i, \gamma_i'\}_{i=0}^{n-1}$ that, for all $i$, satisfy the constraints \[
         \begin{cases}
@@ -79,22 +93,8 @@ We can merge these coupling strategies together to create a proof of privacy for
       then we can construct an approximate lifting that proves that $\PP[\rho, \texttt{in}\brangle{1}, \sigma] \leq e^{d\varepsilon}\PP[\rho, \texttt{in}\brangle{2}, \sigma]$ for some bounded $d>0$. 
 \end{lemma}
 
-As with individual transitions, lemma \ref{simplifiedMultTransitionsCouplingProof} implicitly defines an entire family of possible coupling proofs that demonstrate the privacy of a path.
 
-\begin{defn}[Coupling Strategies for Paths]
-    For a complete path $\rho$ of length $n$, a \textbf{valid coupling strategy} is a tuple of two functions $\bm{\gamma}(\texttt{in}\brangle{1}, \texttt{in}\brangle{2}):\RR^n\times \RR^n\to [-1, 1]^n$ and $\bm{\gamma}'(\texttt{in}\brangle{1}, \texttt{in}\brangle{2}):\RR^n\times \RR^n\to [-1, 1]^n$ 
-    that produce shifts for each transition of $\rho$ for every possible pair of adjacent input sequences $\texttt{in}\brangle{1}\sim\texttt{in}\brangle{2}$ such that $\bm{\gamma}, \bm{\gamma'}$ satisfy the constraints \[
-      \begin{cases}
-        \gamma_i\leq\gamma_{at(i)} & c_i = \lguard[\texttt{x}]\\
-        \gamma_i\geq\gamma_{at(i)} & c_i = \gguard[\texttt{x}]\\
-        \gamma_i=0 & \sigma_i = \texttt{insample}\\
-        \gamma_i'=0 & \sigma_i = \texttt{insample}'
-      \end{cases}.
-    \]
-    If $\texttt{in}\brangle{1}$ and $\texttt{in}\brangle{2}$ are clear from context, we will often shorthand notating a coupling strategy as $\bm{\gamma}$ and $\bm{\gamma}'$. 
-\end{defn}
-
-Thus, if we have a \textbf{valid} coupling strategy $C$ for a path $\rho$, then immediately by lemma \ref{multTransitionsCouplingProof}, we have a proof that $\rho$ is $d\varepsilon$-differentially private. 
+Thus, if we have a \textbf{valid} coupling strategy $C$ for a path $\rho$, then immediately by lemma \ref{multTransitionsCouplingProof}, we have a proof that $\rho$ is $d\varepsilon$-differentially private for some $d>0$; we call this $d$ the \textit{cost} of the coupling strategy for $\rho$. 
 
 \begin{defn}
     For a complete path $\rho$ of length $n$, the \textbf{cost} of a coupling strategy $C_\rho=(\bm{\gamma}, \bm{\gamma}')$ is \[cost(C_\rho) = \max_{\texttt{in}\brangle{1}\sim\texttt{in}\brangle{2}}\sum_{i=0}^{n-1}(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i|)d_i+(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i'|)d_i'.\]
@@ -103,36 +103,18 @@ Thus, if we have a \textbf{valid} coupling strategy $C$ for a path $\rho$, then 
     \[cost(\rho) = \min_{(\bm{\gamma}, \bm{\gamma}')\in G}cost((\bm{\gamma}, \bm{\gamma}')).\]
 \end{defn}
 
-Naturally, the existence of a valid coupling strategy bounds the privacy cost of any path. 
-
 \begin{cor}
     If $C_\rho=(\bm{\gamma}, \bm{\gamma}')$ is a valid coupling strategy for a path $\rho$, then $\rho$ is $cost(C_\rho)\varepsilon$-differentially private.
 \end{cor}
 
 In particular, we observe that for any individual complete path $\rho$, there always exists \textit{some} valid coupling strategy for $\rho$; so every path $\rho$ is always differentially private. 
 
-Our program model fundamentally considers programs collections of individual paths; to this end, we extend the definition of privacy to sets of paths in the natural manner:
+Our program model fundamentally considers programs to be collections of individual paths; to this end, we extend the definition of privacy to sets of paths in the expected manner:
 
 \begin{defn}
   Let $S$ be a set of complete paths and let $O$ be a set of all possible outputs of paths in $S$. 
   Then $S$ is $d\varepsilon$-differentially private for some $d>0$ if, for all paths $\rho\in S$ and outputs $\sigma\in O$, $\forall \varepsilon>0$, for all valid adjacent input sequences $\texttt{in}\brangle{1}\sim \texttt{in}\brangle{2}$, $\PP[\rho, \texttt{in}\brangle{1}, \sigma]\leq e^{d\varepsilon}\PP[\rho, \texttt{in}\brangle{2}, \sigma]$.
 \end{defn}
-
-Indeed, for finite collections of paths, we show that we must analyze them individually; there is no way to reuse couplings for shared transitions on different paths if we are trying to find an optimal coupling strategy. In other words, one cannot choose a single coupling strategy for an arbitrary finite set of paths and must choose a new coupling strategy for each path.
-
-For example, even if two paths share a prefix, we cannot necessarily ``reuse'' the shifts from an optimal (with regards to cost) coupling strategy for the prefix in the context of the first path in the context of an optimal coupling strategy for the second path. 
-
-\begin{prop}\label{noSharingStrategiesProp}
-  There exist paths $\rho'=\pi\cdot \pi$, $\rho^*=\pi\cdot\pi^*$ that share a prefix path $\pi$ such that for all optimal coupling strategies $C'$ for $\rho'$ and $C^*$ for $\rho^*$, $C'$ and $C^*$ differ on the shift assigned to some transition in $\pi$. 
-\end{prop}
-
-A specific counterexample is provided in the appendix. 
-
-In particular, we show that the penalty to choosing only a single coupling strategy for a set of paths increases quadratically in the size of the paths.
-
-\begin{prop}
-  For all $n\in \NN$, there exist sets of paths $B_n$ such that the cost of a coupling strategy that uses the same set of shifts for all shared transitions between paths in $B_n$ has cost that is a quadratic factor larger than the cost of an optimal coupling strategy. 
-\end{prop}
 
 
 

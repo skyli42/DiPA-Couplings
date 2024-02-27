@@ -63,10 +63,10 @@ Note that, in order to properly model public transitions (i.e. transitions whose
 
 We show that, for any transition, we can construct approximate liftings such that each transition is proven ``private''. 
 
-In particular, we construct liftings that are \textbf{parameterized} by three real values, $\gamma_x$, $\gamma_q$, and $\gamma_q'$. Specifically, we view choices of $\gamma_x, \gamma_q$, and $\gamma_q'$ as a \textbf{strategy} for proving that a transition is differentially private. 
+In particular, we construct liftings that are \textbf{parameterized} by three real values, $\gamma_x$, $\gamma_q$, and $\gamma_q'$. Specifically, we view choices of $\gamma_x, \gamma_q$, and $\gamma_q'$ as a \textbf{strategy} for proving that a transition is differentially private.
 
 \begin{defn}[Valid Coupling Strategies]
-    A \textbf{valid coupling strategy} for a transition $t = (c, \sigma, \tau)$ is a tuple $C_t = (\gamma_x, \gamma_t, \gamma_t')\in [-1, 1]^3$ such that the constraints \[
+    A \textbf{valid coupling strategy} for a transition $t = (c, \sigma, \tau)$ is a function $C_t:\RR^2\to[-1, 1]^3$ such that for any two valid adjacent inputs $\texttt{in}\brangle{1}\sim\texttt{in}\brangle{2}$, $C_t$ maps $(\texttt{in}\brangle{1},\texttt{in}\brangle{2})$ to a tuple $(\gamma_x, \gamma_t, \gamma_t')$ such that, for any valid adjacent pair of inputs, the constraints \[
         \begin{cases}
           \gamma_t\leq\gamma_x & c = \lguard[\texttt{x}]\\
           \gamma_t\geq\gamma_x & c = \gguard[\texttt{x}]\\
@@ -77,7 +77,7 @@ In particular, we construct liftings that are \textbf{parameterized} by three re
       are all satisfied. 
 \end{defn}
 
-For any \textbf{valid} coupling strategy (i.e. any collection of shifts that satisfies the given constraints), we can bound the difference of any transition outputting a specific value for any two valid adjacent inputs. 
+For any \textbf{valid} coupling strategy, we can bound the difference of any transition outputting a specific value for any two valid adjacent inputs. 
 
 To construct approximate liftings of a transition $t = (c, \sigma, \tau)$, we will analyze the behaviour of two different \textbf{runs} of $t$, one with input $\texttt{in}\brangle{1}$ and one with input $\texttt{in}\brangle{2}$. 
 
@@ -103,6 +103,6 @@ This gives us our major coupling lemma, which allows us to define a coupling pro
   then we can construct an approximate lifting that proves $\PP[X\brangle{1}, t, \texttt{in}\brangle{1}, \sigma]\leq e^{d\varepsilon}\PP[X\brangle{2}, t, \texttt{in}\brangle{2}, \sigma]$ for some bounded $d>0$ and initial threshold Laplace-distributed variables $X\brangle{1}$, $X\brangle{2}$.
 \end{lemma}
 
-A precise version of this lemma can be found in the appendix. 
+A precise version of this lemma can be found in the appendix as lemma \ref{indTransitionCoupling}. 
 
 
