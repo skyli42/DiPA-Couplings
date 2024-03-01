@@ -17,7 +17,7 @@ Furthermore, we introduce a special type of transition called a \textbf{public} 
 
 \subsubsection{Transition Semantics}
 
-We can think of each transition as defining an atomic program step: a transition reads a real valued input $\texttt{in}$, compares it to a threshold $\texttt{x}$, and, depending on the result of the comparison, outputs a value $\sigma$ and possibly updates the value of $\texttt{x}$.
+We can think of each transition as defining an atomic program step: a transition reads a real valued input $\texttt{in}$, compares a noisy version of it (\texttt{insample}) to a threshold $\texttt{x}$, and, depending on the result of the comparison, outputs a value $\sigma$ and possibly updates the value of $\texttt{x}$.
 
 The semantics of a transition are given by a function that maps an initial program state and a real-valued input to a subsequent program state. 
 

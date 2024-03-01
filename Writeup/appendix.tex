@@ -885,3 +885,31 @@ Indeed, there exist a family of counterexamples such that the relative ``cost'' 
 \begin{proof}[Proof of \ref{programPrivacyConstraintGraphPathReq}]
     There is a path from $\bf 1$ to $\bf -1$ in the privacy constraint graph of $P$ if and only if there is a path from $\bf 1$ to $\bf -1$ in the privacy constraint graph of some looping branch $L$ in $P$ by Proposition \ref{prop:paths_in_privacy_graph}. This is true if and only if there exists some $L$ which is not differentially private, which is true if and only if $P$ is not differentially private.
 \end{proof}
+
+\subsection{Multivariable}
+
+
+\begin{lemma}\label{mvParallelCouplingsLemma}
+    Let $\vec{X}\brangle{1} = (X_1\brangle{1}, \ldots X_k\brangle{1})$ where $X_i\brangle{1}\sim \Lap(\mu_{x_i}\brangle{1}, \frac{1}{d_{x_i}\varepsilon})$ are independent random variables and $\vec{X}\brangle{2} = (X_1\brangle{2}, \ldots X_k\brangle{2})$ where $X_i\brangle{2}\sim \Lap(\mu_{x_i}\brangle{2}, \frac{1}{d_{x_i}\varepsilon})$ are independent random variables be representations of two possible initial values of $\vec{X}$, respectively.
+
+    Let $t = (c, \sigma, \tau)$ be a $k$v-transition such that $P(t) = (d_t, d_t')$.
+
+    Let $\texttt{in}\brangle{1}\sim\texttt{in}\brangle{2}$ be an arbitrary adjacent input pair and let $o\brangle{1}$, $o\brangle{2}$ be random variables representing possible outputs of $t$ given inputs $\texttt{in}\brangle{1}$ and $\texttt{in}\brangle{2}$, respectively. 
+
+    Then $\forall \varepsilon>0$ and for all $\gamma_{x_1}, \ldots, \gamma_{x_k}, \gamma_t^{(x_1)}, \ldots, \gamma_t^{(x_k)}, \gamma_t'$ that satisfy the constraints \[
+        \begin{cases}
+            \gamma_t^{(x_i)}\leq\gamma_{x_i} & c = \lguard[\texttt{x}_i]\\
+            \gamma_t^{(x_i)}\geq\gamma_{x_i} & c = \gguard[\texttt{x}_i]\\
+            \gamma_t^{(x_i)}=0 & \sigma = \texttt{insample}^{(\texttt{x}_i)}\\
+            \gamma_t'=0 & \sigma = \texttt{insample}'
+      \end{cases}
+      \] for all $1\leq i\leq k$, the lifting $o\brangle{1}\{(a, b): a=\sigma\implies b=\sigma\}^{\#d\varepsilon}o\brangle{2}$ is valid for 
+      $d = \sum_{i=1}^k\left(|\mu_{x_i}\brangle{1}-\mu_{x_i}\brangle{2}+\gamma_{x_i}|d_{x_i}+|\texttt{in}\brangle{1}-\texttt{in}\brangle{2}+\gamma_t^{(x_i)}|d_t\right)+|\texttt{in}\brangle{1}-\texttt{in}\brangle{2}+\gamma_t'|d_t'$.
+\end{lemma}
+\begin{proof}
+    From lemma \ref{indTransitionCoupling}, we know that if these constraints are satisfied, we can create liftings such that for all $i$, $c^{(\texttt{x}_i)}$ is satisfied in run $\brangle{1}\implies c^{(\texttt{x}_i)}$ is satisfied in run $\brangle{2}$.
+    
+    Because $c$ is made of conjunctions and disjunctions of all $c^{(\texttt{x}_i)}$, by [basic logical rules]\sky{is more specificity needed?}, this means that if $c$ is satisfied in run $\brangle{1}$, then $c$ must also be satisfied in $\brangle{2}$. 
+
+    Finally, as before, if $\sigma \in \{\texttt{insample}^{(x_1)}\ldots \texttt{insample}^{(x_k)},\texttt{insample}'\}$, then for all $\sigma$, $o\brangle{1}=\sigma \implies o\brangle{2} = \sigma$. Further, note that we only need to couple $\texttt{insample}'\brangle{1}$ and $\texttt{insample}'\brangle{2}$ once for all variables. By simply adding up the costs from lemma \ref{indTransitionCoupling}, we complete the proof.
+\end{proof}

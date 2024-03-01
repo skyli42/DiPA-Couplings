@@ -9,7 +9,7 @@ The class of programs we have defined is rather limited, leading to the natural 
 Some `natural' extensions of DiPA end up reducing directly to DiPA. For example, we considered an extension of DiPA that included a single integral ``counter'' variable $n$; this program model also allowed for branching conditional on $n$ being greater than a threshold value. 
 We discovered that every DiPA equipped with a counter can be rewritten as a standard DiPA by using a power set-style automata construction. \sky{is more elaboration here necessary?}
 
-However, there are other extensions that warrant further study. In particular, we analyze one extension of DiPA that allows for two real-valued program variables $\texttt{x}, \texttt{y}$.
+However, there are other extensions that warrant further study. In particular, we extend our program model to allow for an arbitrary finite number of threshold variables.
 
 \subsection{Multivariable Transitions}
 
@@ -28,22 +28,21 @@ We begin by defining a multiple-variable transition, as in the single variable c
     Let $\mathcal{C}^{(k)}$ be the set of all possible guards with $k$ variables $\texttt{x}_1, \ldots \texttt{x}_k$.
 \end{defn}
 
-\sky{the associativity details of the guard have to be defined - we can assume left-associative or allow for any possible groupings; I \textit{think} most of the results don't care about the details here}
+\sky{the associativity details of the guard have to be defined - we can assume left-associative or allow for any possible groupings; I think the results don't care about the actual grouping as long as its fixed}
 
 \begin{defn}[$k$-variable transitions]
     A $k$-variable transition ($k$v-transition) is a tuple $(c, \sigma, \tau)$ where \begin{itemize}
         \item $c\in\mathcal{C}^{(k)}$ is a transition guard.
         \item $\sigma\in\Gamma\cup\{\texttt{insample}^{(\texttt{x}_1)}, \ldots, \texttt{insample}^{(\texttt{x}_k)}, \texttt{insample}'\}$ is the output of the transition
-        \item $\tau \in \{0\} \cup [k]$ indicates whether to assign $\texttt{insample}^{(\texttt{x}_\tau)}$ into no variable (when $\tau = 0$) or $\texttt{x}_\tau$. In particular, note that only a single variable can be assigned into at a time and that every variable can only take its ``corresponding'' $\texttt{insample}$ value. 
+        \item $\tau \in \{0\} \cup [k]$ indicates whether to assign $\texttt{insample}^{(\texttt{x}_\tau)}$ into no variable (when $\tau = 0$) or $\texttt{x}_\tau$. In particular, note that only a single variable can be assigned into at a time and that every variable $\texttt{x}_i$ can only take its ``corresponding'' input value $\texttt{insample}^{(\texttt{x}_i)}$. 
     \end{itemize}
-    \sky{I can never remember if $[n]$ notation includes 0 but I'm assuming it does here}
 \end{defn}
 
 As with single variable transitions, we associate every transition $t$ with two real-valued noise parameters $P(t) = (d, d')$
 
 \subsection{$k$-Variable Program Semantics}
 
-$k$-variable transitions semantically operate extremely similarly to single variable transitions: given some threshold values $\texttt{x}_i$ and a transition $t = (c, \sigma, \tau)$, let $P(t) = (d, d')$. Then $t$ will first read in a real number input $\texttt{in}$, 
+$k$-variable transitions semantically operate analogously to single variable transitions. Given some threshold values $\texttt{x}_i$ and a transition $t = (c, \sigma, \tau)$, let $P(t) = (d, d')$. Then $t$ will first read in a real number input $\texttt{in}$, 
 sample $k$ \textbf{independent} random variables $z^{(\texttt{x}_1)}\sim\Lap(0, \frac{1}{d\varepsilon}),\ldots, z^{(\texttt{x}_k)}\sim\Lap(0, \frac{1}{d\varepsilon})$ for comparing a noised version of the input to each threshold variable as well as one random variable $z' \sim\Lap(0, \frac{1}{d\varepsilon})$ to potentially be used for outputting a re-noised version of the input. 
 
 Using these noise variables, the transition then assigns $k$ variables $\texttt{insample}^{(\texttt{x}_i)} = \texttt{in} + z^{(x)}$ and an additional variable $\texttt{insample}' = \texttt{in} + z'$. 
@@ -53,15 +52,15 @@ More formally, a program state is a tuple consisting of values for every thresho
 
 Then the semantics of a $k$v-transition $t$ can be defined as a function $\Phi_t: dist_\downarrow(S)\times \RR\to dist_\downarrow(S)$ that maps an initial program state and an input to a distribution of subsequent program states.
 
-The precise semantics are defined exactly analogously to the single variable case. 
+The precise semantics are defined analogously to the single variable case. 
 
 We again denote the probability that a transition $t=(c, \sigma, \tau)$ outputs a specific measurable output event $o$ as $\PP[\vec{\texttt{x}}, t, \texttt{in}, o]$, where $\vec{\texttt{x}}\in \RR^k$ is a vector of initial values of all threshold values $\texttt{x}_i$, $\texttt{in}\in \RR$ is a real-valued input, and $o\subseteq \Gamma\cup\RR$ is a possible measurable output event of $t$.
 
-Specifically, if $\vec{\texttt{x}}$ is a distribution over $\RR^k$ and $o$ is a measurable output event of $t$, then $\PP[\vec{\texttt{x}}, t, \texttt{in}, o]$ is the marginal of $\Phi_t((\vec{\texttt{x}}, \lambda), \texttt{in})$ on $(\cdot, o)$
+Specifically, if $\vec{\texttt{x}}$ is a distribution over $\RR^k$ and $o$ is a measurable output event of $t$, then $\PP[\vec{\texttt{x}}, t, \texttt{in}, o]$ is the marginal of $\Phi_t((\vec{\texttt{x}}, \lambda), \texttt{in})$ on $(\cdot, o)$.
 
 \subsection{Multivariable Couplings}
 
-In this section, we introduce two methods for constructing two variable couplings for $k$v-transitions; one method combines couplings in parallel and the other combines couplings for different variables together. 
+In this section, we introduce two methods for constructing two variable couplings for $k$v-transitions; one method combines couplings in parallel across each variable and the other couples different variables together. 
 
 We begin by showing that if we can create couplings for each variable in isolation, then we can immediately create a coupling for a combined $k$v-transition. 
 
@@ -80,6 +79,8 @@ First, we define what it means to isolate a variable in a transition:
 
 By lemma \ref{simplifiedIndTransitionCoupling}, we know that, given a $k$v-transition $t$, we can create couplings for each $\texttt{x}_i$-isolated version of $t$. We demonstrate that this is sufficient to create couplings for $t$ as a whole. 
 
+As in the single variable case, we create couplings from \textbf{coupling strategies}, i.e. a collection of shifts $\gamma_{x_1}, \ldots, \gamma_{x_k}, \gamma_t^{(x_1)}, \ldots, \gamma_t^{(x_k)}, \gamma_t'$. Such a collection is valid if it satisfies the constraints below. 
+
 \begin{lemma}\label{simplifiedMvParallelCouplingsLemma}
     For all $\varepsilon>0$, for any $k$v-transition $t$, measurable output event $\sigma$ of $t$, and adjacent inputs $\texttt{in}\brangle{1}\sim\texttt{in}\brangle{2}$, if we are given $2k+1$ real number ``shifts'' $\gamma_{x_1}, \ldots, \gamma_{x_k}, \gamma_t^{(x_1)}, \ldots, \gamma_t^{(x_k)}, \gamma_t'$ such that for all $1\leq i\leq k$, \[
         \begin{cases}
@@ -92,44 +93,18 @@ By lemma \ref{simplifiedIndTransitionCoupling}, we know that, given a $k$v-trans
       then we can construct an approximate lifting that proves $\PP[\vec{X}\brangle{1}, t, \texttt{in}\brangle{1}, \sigma]\leq e^{d\varepsilon}\PP[\vec{X}\brangle{2}, t, \texttt{in}\brangle{2}, \sigma]$ for some bounded $d>0$ and initial threshold Laplace-distributed variables $\vec{X}\brangle{1}$, $\vec{X}\brangle{2}$. 
 \end{lemma}
 
-
-\sky{the more technical version}
-\begin{lemma}\label{mvParallelCouplingsLemma}
-    Let $\vec{X}\brangle{1} = (X_1\brangle{1}, \ldots X_k\brangle{1})$ where $X_i\brangle{1}\sim \Lap(\mu_{x_i}\brangle{1}, \frac{1}{d_{x_i}\varepsilon})$ are independent random variables and $\vec{X}\brangle{2} = (X_1\brangle{2}, \ldots X_k\brangle{2})$ where $X_i\brangle{2}\sim \Lap(\mu_{x_i}\brangle{2}, \frac{1}{d_{x_i}\varepsilon})$ are independent random variables be representations of two possible initial values of $\vec{X}$, respectively.
-
-    Let $t = (c, \sigma, \tau)$ be a $k$v-transition such that $P(t) = (d_t, d_t')$.
-
-    Let $\texttt{in}\brangle{1}\sim\texttt{in}\brangle{2}$ be an arbitrary adjacent input pair and let $o\brangle{1}$, $o\brangle{2}$ be random variables representing possible outputs of $t$ given inputs $\texttt{in}\brangle{1}$ and $\texttt{in}\brangle{2}$, respectively. 
-
-    Then $\forall \varepsilon>0$ and for all $\gamma_{x_1}, \ldots, \gamma_{x_k}, \gamma_t^{(x_1)}, \ldots, \gamma_t^{(x_k)}, \gamma_t'$ that satisfy the constraints \[
-        \begin{cases}
-            \gamma_t^{(x_i)}\leq\gamma_{x_i} & c = \lguard[\texttt{x}_i]\\
-            \gamma_t^{(x_i)}\geq\gamma_{x_i} & c = \gguard[\texttt{x}_i]\\
-            \gamma_t^{(x_i)}=0 & \sigma = \texttt{insample}^{(\texttt{x}_i)}\\
-            \gamma_t'=0 & \sigma = \texttt{insample}'
-      \end{cases}
-      \] for all $1\leq i\leq k$, the lifting $o\brangle{1}\{(a, b): a=\sigma\implies b=\sigma\}^{\#d\varepsilon}o\brangle{2}$ is valid for 
-      $d = \sum_{i=1}^k\left(|\mu_{x_i}\brangle{1}-\mu_{x_i}\brangle{2}+\gamma_{x_i}|d_{x_i}+|\texttt{in}\brangle{1}-\texttt{in}\brangle{2}+\gamma_t^{(x_i)}|d_t\right)+|\texttt{in}\brangle{1}-\texttt{in}\brangle{2}+\gamma_t'|d_t'$.
-\end{lemma}
-\begin{proof}
-    From lemma \ref{indTransitionCoupling}, we know that if these constraints are satisfied, we can create liftings such that for all $i$, $c^{(\texttt{x}_i)}$ is satisfied in run $\brangle{1}\implies c^{(\texttt{x}_i)}$ is satisfied in run $\brangle{2}$.
-    
-    Because $c$ is made of conjunctions and disjunctions of all $c^{(\texttt{x}_i)}$, by [basic logical rules]\sky{is more specificity needed?}, this means that if $c$ is satisfied in run $\brangle{1}$, then $c$ must also be satisfied in $\brangle{2}$. 
-
-    Finally, as before, if $\sigma \in \{\texttt{insample}^{(x_1)}\ldots \texttt{insample}^{(x_k)},\texttt{insample}'\}$, then for all $\sigma$, $o\brangle{1}=\sigma \implies o\brangle{2} = \sigma$. Further, note that we only need to couple $\texttt{insample}'\brangle{1}$ and $\texttt{insample}'\brangle{2}$ once for all variables. By simply adding up the costs from lemma \ref{indTransitionCoupling}, we complete the proof.
-\end{proof}
+A more precise version can be found as lemma \ref{mvParallelCouplingsLemma} in the appendix.
 
 This provides an extremely straightforward method of combining coupling strategies for different variables together; indeed, this specific result is immediately extensible to an arbitrary number of variables. 
-
-As in the single variable case, we call a collection of shifts $\gamma_{x_1}, \ldots, \gamma_{x_k}, \gamma_t^{(x_1)}, \ldots, \gamma_t^{(x_k)}, \gamma_t'$ a \textbf{coupling strategy}, which is valid if it satisfies the above constraints. 
 
 \sky{this might be redundant}
 \begin{cor}
     For a $k$v-transition $t$, if, for all $1\leq i\leq k$, there exists a coupling strategy $C_i$ such that $C_i$ is a valid coupling strategy for the isolated transition $t^{(x_i)}$, then there exists a valid coupling strategy $C$ for $t$ such that $cost(C)\leq \sum_{i=1}^k cost(C_i)$.
 \end{cor}
 
-
 \subsubsection{Cross-Couplings}
+
+We introduce cross-couplings, which couple together \textit{different} program variables to produce valid approximate liftings. 
 
 \begin{lemma}\label{mvCrossCoupling}
     Let $\vec{X}\brangle{1} = (X_1\brangle{1}, \ldots X_k\brangle{1})$ where $X_i\brangle{1}\sim \Lap(\mu_i\brangle{1}, \frac{1}{d_x\varepsilon})$ are independent random variables and $\vec{X}\brangle{2} = (X_1\brangle{2}, \ldots X_k\brangle{2})$ where $X_i\brangle{2}\sim \Lap(\mu_{x_i}\brangle{2}, \frac{1}{d_{x_i}\varepsilon})$ are independent random variables be such that, for all $i$, $\mu_i\brangle{1}\sim \mu_i\brangle{2}$.
@@ -145,10 +120,11 @@ We note that cross couplings require every single component of the initial varia
 
 Cross couplings allow us to construct liftings for certain transitions ``for free'' in a manner compatible with existing liftings, dependent on the initial threshold distributions. In particular, this construction applies to transitions whose guards correspond to checking if an input is within either the empty set or the entire real line, which are either always true or always false. 
 
+\sky{make this a definition?}
 We say that a collection of means $\{\mu_i\brangle{1}, \mu_i\brangle{2}\}_{i=1}^k$ and shifts $\gamma_{x_1},\ldots,\gamma_{x_k}$ \textbf{allow for a cross coupling} for a transition $t$ if either of the conditions in the above lemma are satisfied for $\mu$ and $\gamma$. 
 
 \begin{defn}[$k$-variable paths]
-    A $k$-variable path ($k$v-path) is a finite string of $k$v-transitions. Analogously to single variable paths, we call a $k$v-path $\rho = t_0t_1\ldots t_{n-1}$, \textbf{complete} if, for $0\leq i < k$, $t_i = (\texttt{true}, \sigma_i, i+1)$ for some $\sigma_i$.
+    A $k$-variable path ($k$v-path) is a finite string of $k$v-transitions. Analogously to single variable paths, we call a $k$v-path $\rho = t_0t_1\ldots t_{n-1}$, \textbf{complete} if, for all $0\leq i < k$, $t_i = (\texttt{true}, \sigma_i, i+1)$ for some $\sigma_i$.
 \end{defn}
 
 The semantics of a $k$v-path are again defined exactly by composing the semantics of each individual transition in the path; we will again denote the probability of a path $\rho$ outputting a specific input $\sigma$ given initial threshold distributions $\vec{\texttt{x}}$ and input sequence $\texttt{in}$ as $\PP[\vec{\texttt{x}}, \rho, \texttt{in}, \sigma]$, which we shorthand to $\PP[\rho, \texttt{in}, \sigma]$ when $\rho$ is complete.
@@ -189,31 +165,42 @@ This leads to a natural definition of coupling strategies for $k$v-paths:
     We call a coupling strategy \textbf{valid} if, for \textbf{all} input sequences $\texttt{in}\brangle{1}\sim\texttt{in}\brangle{2}$, it satisfies the constraints in lemma \ref{mvPathCouplingLemma}.
 \end{defn}
 
-As before, we denote the cost of a coupling strategy $C=\{\gamma_i^{(\texttt{x}_1)},\ldots, \gamma_i^{(\texttt{x}_k)}, \gamma_i'\}_{i=0}^{n-1}$ for a $k$v-path $\rho$ as $cost(C) = \max_{\texttt{in}\brangle{1}\sim\texttt{in}\brangle{2}}\sum_{i=0}^{n-1}\left(|\texttt{in}\brangle{2}-\texttt{in}\brangle{1}-\gamma_i'|d_i'+\sum_{j=1}^k|\texttt{in}\brangle{2}-\texttt{in}\brangle{1}-\gamma_i^{(\texttt{x}_j)}|d_i\right)$.
+We denote the cost of a coupling strategy $C=\{\gamma_i^{(\texttt{x}_1)},\ldots, \gamma_i^{(\texttt{x}_k)}, \gamma_i'\}_{i=0}^{n-1}$ for a $k$v-path $\rho$ as $cost(C) = \max_{\texttt{in}\brangle{1}\sim\texttt{in}\brangle{2}}\sum_{i=0}^{n-1}\left(|\texttt{in}\brangle{2}-\texttt{in}\brangle{1}-\gamma_i'|d_i'+\sum_{j=1}^k|\texttt{in}\brangle{2}-\texttt{in}\brangle{1}-\gamma_i^{(\texttt{x}_j)}|d_i\right)$.
 
 \subsection{Syntactic structure}
 
-Before we extend $k$v-paths to looping branches, we must again define an underlying structured graph from which collections of paths can be drawn.
+As in the single variable case, we model programs that can be represented by a finite control flow graph $G = (V, E)$, where $V$ is a finite set of program locations, and each edge $e\in E$ is labeled with a function $T(e)$ such that $T(e)$ is a $k$v-transition. 
 
-We again will represent a structured program as a directed graph $G = (V, E)$, where $V$ represents a set of program locations; as before, every edge $e\in E$ is additionally labeled with a $k$v-transition $t = (c, \sigma, \tau)$ and there must be some unique initial location $\ell_0\in V$. 
+For clarity, we call control flow graphs for $k$-variable programs $k$v-CFGs. 
 
-Analogously to the single variable case, we require that $G = (V, E)$ satisfies the following conditions: 
-\begin{itemize}
-    \item \textbf{Determinism:} For all locations $\ell\in V$, if there exist distinct edges $(\ell, \ell')$ labeled by $t'=(c', \sigma', \tau')$ and $(\ell, \ell')$ labeled by $t'=(c', \sigma', \tau')$ labeled by $t^* = (c^*, \sigma^*, \tau^*)$, then $c'$ and $c^*$ must be logically disjoint; i.e. the boolean expression $c' \land c^*$ must be a contradiction. 
-    In particular, note that this means that if there exists an edge $(\ell, \ell')\in E$ labeled by a transition of the form $(\texttt{true}, \sigma, \tau)$, then there does not exist another edge in $E$ with source at $\ell$.
-    \item \textbf{Shared Noise:} For all locations $\ell\in V$ and any two edges $(\ell, \ell')$ labeled by $t'=(c', \sigma', \tau')$ and $(\ell, \ell^*)$ labeled by $t^* = (c^*, \sigma^*, \tau^*)$, $P(t') = P(t^*)$. 
-    \item \textbf{Cross Coupling Compatibility:} There exists some constant $d_{at}>0$ such that for every edge $e\in E$ labeled by the transition $t = (c, \sigma, \tau)$, if $\tau \neq 0$ (i.e. $t$ is an assignment transition), $P(t) = (d_{at}, d'_t)$ for some $d'_t >0$.
-\end{itemize}
-
-We will again use $\Psi(r)$ to denote the forgetful homomorphism from a run $r$ in $G$ that drops all states from $r$ to produce a $k$v-path. 
-
-\subsection{Loops and Programs}
-
-\begin{defn}[$k$-variable Looping Branches]
-    A $k$v-looping branch $L$ is a set of complete $k$v-paths generated by a structured program graph $G_L$ such that $L$ is a language described by a single union-free regular expression over a finite alphabet of transitions. 
+\begin{defn}
+    A $k$v-CFG $G = (V, E)$ is \textbf{proper} if it satisfies the following conditions: 
+    \begin{itemize}
+        \item \textbf{Initialization:} Every program variable is initialized at the beginning of a program. In other words, $V$ contains unique initial locations $\ell_{init}^{(x_1)}, \ldots \ell_{init}^{(x_k)}\in V$ such that for all $1\leq i \leq k$, exactly one edge with source at $\ell_{init}^{(x_i)}$ $e_{init}^{(x_i)} = (\ell_{init}^{(x_i)}, \ell_{i+1})\in E$ such that $T(e_{init}^{(x_i)})$ is of the form $(\texttt{true}, \sigma_i, i)$ for some $\sigma_i$ 
+        and, for all $1\leq i <k$, $\ell_{i+1} = \ell_{init}^{(x_{i+1})}$
+        \item \textbf{Determinism:} For all locations $\ell\in V$, if there exist distinct edges $(\ell, \ell')$ labeled by $t'=(c', \sigma', \tau')$ and $(\ell, \ell')$ labeled by $t'=(c', \sigma', \tau')$ labeled by $t^* = (c^*, \sigma^*, \tau^*)$, then $c'$ and $c^*$ must be logically disjoint; i.e. the boolean expression $c' \land c^*$ must be a contradiction. 
+        In particular, note that this means that if there exists an edge $(\ell, \ell')\in E$ labeled by a transition of the form $(\texttt{true}, \sigma, \tau)$, then there does not exist another edge in $E$ with source at $\ell$.
+        \item \textbf{Shared Noise:} For all locations $\ell\in V$ and any two edges $(\ell, \ell')$ labeled by $t'=(c', \sigma', \tau')$ and $(\ell, \ell^*)$ labeled by $t^* = (c^*, \sigma^*, \tau^*)$, $P(t') = P(t^*)$. 
+        % \item \textbf{Public Input:} For all locations $\ell\in V$, if there exists some edge $e = (\ell, \ell') \in E$ such that $e$ is labeled by a public transition, then every other edge from $\ell$ must also be labeled by a public transition. 
+        \item \textbf{Cross Coupling Compatibility:} There exists some constant $d_{at}>0$ such that for every edge $e\in E$ labeled by the transition $t = (c, \sigma, \tau)$, if $\tau \neq 0$ (i.e. $t$ is an assignment transition), $P(t) = (d_{at}, d'_t)$ for some $d'_t >0$.
+    \end{itemize}
 \end{defn}
 
-We can similarly define coupling strategies for $k$v-looping branches:
+We will again use $\Psi(r)$ to denote the forgetful homomorphism from an execution $r$ of $G$ that drops all states from $r$ to produce a $k$v-path and say that $\{\Psi(r): r\text{ is a execution of }G\}$ is the set of $k$v-paths \textbf{generated} by a proper $k$v-CFG $G$. 
+
+Naturally, $k$v-programs can be defined using a $k$v-CFG in analogy to the single variable case. 
+
+\begin{defn}
+    A $k$v-program $P$ is a language over a finite alphabet of $k$v-transitions generated by a proper $k$v-CFG $G$. 
+\end{defn}
+
+We again analyze the possibly infinite number of paths in a $k$v-program by decomposing a program into a finite set of \textbf{looping branches}. 
+
+\begin{defn}[$k$-variable Looping Branches]
+    A $k$v-looping branch $L$ is a union-free regular language generated by a proper $k$v-CFG $G$. 
+\end{defn}
+
+We again associate a single coupling strategy with every $k$v-looping branches:
 
 \begin{defn}[Coupling strategy for a $k$v-looping branch]
     Let $L$ be a $k$v-looping branch generated by the graph $G_L = (V_L, E_L)$, where $m = |E_L|$. Then a coupling strategy $C = \{\gamma_i^{(\texttt{x}_1)},\ldots, \gamma_i^{(\texttt{x}_k)}, \gamma_i'\}_{i=0}^{m-1}$ for $L$ is a function $C:E_L\times\RR \times\RR\to [-1, 1]^{m(k+1)}$ that computes $k+1$ shifts for each transition-labeled edge in $L$ as a function of two adjacent inputs.
@@ -248,30 +235,29 @@ We translate the constraints for finite cost from single variable looping branch
     This immediately implies that $cost(C)$ is finite as well, since there are a finite number of program variables. 
 \end{proof}
 
-Finally, we extend single variable programs and results to $k$ variables.
+Finally, we extend our single variable programs and results to $k$ variables.
 
 \begin{defn}
     A $k$-variable program $P$ is a finite union of $k$v-looping branches such that $P$ is generated by a structured program graph $G_P$.
 \end{defn}
 
 \begin{lemma}
-    If, for every looping branch $L$ in $P$, there exists a valid coupling strategy $C_L$, then $P$ is $cost(P) = (\max_{L\subseteq P} cost(C_L))\varepsilon$-differentially private. Further, if for every $L\subseteq P$ there exists a coupling strategy for $L$ that satisfies the privacy constraint system, then $cost(P) <\infty$.
+    If, for every looping branch $L$ in $P$, there exists a valid coupling strategy $C_L$, then $P$ is $cost(P) = (\max_{L\subseteq P} cost(C_L))\varepsilon$-differentially private. In particular, if for every $L\subseteq P$ there exists a coupling strategy for $L$ that satisfies the privacy constraint system, then $P$ is $d\varepsilon$-differentially private for some finite $d>0$.
 \end{lemma}
 
 \subsection{Counterexamples when $k=2$}
 
-We can show that in the special case when we have two variables, labeled $\texttt{x}$ and $\texttt{y}$, the privacy constraint system for a 2v-program is complete for output-distinct programs. 
+We show that in the special case when we have two variables (which we now label $\texttt{x}$ and $\texttt{y}$) the privacy constraint system for a 2v-program is complete for output-distinct programs. 
 
 Like with the single variable case, if the privacy constraint system is unsatisfiable for a program $P$ generated by $G$, we demonstrate that there must exist specific graph structures that correspond to a violation of privacy.
 
 In general, these graph structures directly correspond to the single variable case; indeed, with one exception, we can identify these structures by looking at the generating graph of a program \textit{isolated} to a single variable. 
 
-We will use $G^{(\texttt{x}_i)}$ to denote the $k$v-transition labeled graph $G = (V, E)$ where each edge label $t$ is replaced by the $\texttt{x}_i$-isolation of $t$. 
+We will use $G^{(\texttt{x}_i)}$ to denote the $k$v-CFG $G = (V, E)$ where each edge label $T(e)$ is replaced by the $\texttt{x}_i$-isolation of $T(e)$. 
 
 Identifying leaking cycles, disclosing cycles, and privacy violating paths in any variable $\texttt{x}_i$ for the $\texttt{x}$-isolated graph $G$ is sufficient to produce a violation of privacy in the two variable case; we must account for a special kind of leaking pair that turns out to be provably private using cross-couplings. 
 
-\sky{include a definition of leaking pair in the single variable section as an example so that this makes sense}
-\sky{also triple check this definition since it's a bit finicky}
+\sky{triple check this definition since it's a bit finicky}
 \begin{defn}
     Let $G = (V, E)$ be a 2v-transition labeled graph with variables $\texttt{x}$, $\texttt{y}$ and let $(C, C')$ be a leaking pair in either $G^{(\texttt{x})}$ or $G^{(\texttt{y})}$ such that there is a path from $C$ to $C'$ with no assignment transitions into the other variable. For every edge $e\in E$, let $t_e = (c_e, \sigma_e, \tau_e)$ be the 2v-transition that labels $e$. 
     If one of the following is true for $C, C'$: \begin{itemize}
@@ -284,7 +270,7 @@ then we $(C, C')$ is a cancelling leaking pair.
 Intuitively, the reason that cancelling leaking pairs are private is that for any threshold variable distributions with means at $\mu_x,\mu_y$, at least one of $\mu_x\geq\mu_y$ or $\mu_x\leq \mu_y$ must always be true no matter what input sequence we are given. 
 Thus, for example, either all of the transitions with guard $\mvlguard[\texttt{x}]\land\mvgguard[\texttt{y}]$ or all of the transitions with guard $\mvgguard[\texttt{x}]\land\mvlguard[\texttt{y}]$ allow for a ``free'' cross coupling, while the other set of transitions can be coupled for finite cost in a standard manner.
 
-Incorporating this exception, we still have that an unsatisfiable coupling strategy implies the presence of these ``bad'' graph structures. 
+Incorporating this exception, we show that an unsatisfiable coupling strategy still implies the presence of these ``bad'' graph structures. 
 
 \begin{lemma}
     If no coupling strategy for a 2v-looping branch $L$ satisfies the privacy constraint system, then there exists a leaking cycle, non-cancelling leaking pair, disclosing cycle, or privacy violating path in either $\texttt{x}$ or $\texttt{y}$ in $L$.
@@ -332,7 +318,7 @@ We conclude that the privacy constraint system completely characterizes privacy 
 
 \subsection{Beyond Two Variables}
 
-\sky{heavily rewrite}
+\sky{this will be heavily rewritten ignore for now}
 
 It is straightforward to extend the definitions of 2v-transitions, paths, looping branches, etc. to more than two variables; it is additionally straightforward to extend results like lemma \ref{mvParallelCouplingsLemma} to apply more than two variables. However, it is not immediately clear how cross-couplings would be extended to additional variables;
 one obvious possibility is to allow for cross-couplings between \textit{all} possible pairs, but the completeness result likely would not generalize in the same fashion. 
