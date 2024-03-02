@@ -87,8 +87,7 @@ Further, we obtain an approximation factor bounded by a term linear in the numbe
     where $I$ is the set of transitions in $L$ that do $\textit{not}$ appear in a cycle.
 \end{prop}
 
-Observe that our decision algorithm for privacy (section \ref{decisionSection}) effectively encodes the approximate privacy constraints into the privacy constraint graph; it is also possible, if less intuitive, to directly encode the approximate privacy constraints as an instance of 2SAT. 
-
+We remark that our decision algorithm for privacy (section \ref{decisionSection}) is an even more simplified encoding of approximate privacy constraints into a privacy constraint graph; we also note that it is possible, if less intuitive, to directly encode the approximate privacy constraints as an instance of 2SAT. 
 
 \azadeh{check with sasho about this part}
 We conjecture that the optimal coupling cost, as represented by the linear program from \ref{prop:compute_opt_cost}, exactly matches the ``true'' privacy cost of a program, as represented by the KL-divergence between the distributions of a looping branch's outputs on adjacent input sequences. In this case, coupling proofs would provide an exact bound on the privacy cost of any program that can be represented by our model. 
