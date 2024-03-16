@@ -81,12 +81,11 @@
 
 \section{Deciding Privacy Using Couplings}
 
-We now begin the process of building up a program model through the lens of regular languages. 
-We will model programs as simply regular languages comprised of possible program paths (or executions) where each path corresponds to a word in the language. This approach simultaneously allows us to build approximate liftings for each path that prove the overall privacy of a program.
+We now begin the process of building up a program model through the lens of regular languages. Each program is parametrized by a privacy parameter $\varepsilon>0$. 
+We model programs as simply regular languages comprised of possible program paths (or executions) where each path corresponds to a word in the language. This approach simultaneously allows us to build approximate liftings for each path that prove the overall privacy of a program.
 
 We begin with single transitions between two program locations, which correspond directly to characters in our alphabet. 
 
-\sky{todo: add a note about treating $\varepsilon$ as a parameter to the program}
 
 \input{sv-transitions.tex}
 

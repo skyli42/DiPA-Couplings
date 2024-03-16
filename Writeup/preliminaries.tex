@@ -99,9 +99,8 @@ However, we will generally relax the lifted relation from equality to implicatio
 Almost every standard result about differential privacy can be restated in terms of couplings; for this paper, we will primarily rely on the fact that couplings can be composed and that we can couple together Laplace random variables. 
 
 \begin{thm}[Composition of Liftings\cite{BartheEtAl2016}]\label{liftingcomposition}
-    Let $A_1, B_2, A_2, B_2$ be distributions over $S_1, T_1, S_2, T_2$, respectively and let $R_1\subseteq S_1\times T_1$, $R_2\subseteq S_2\times T_2$ be relations. If $A_1 R_1^{\#\varepsilon_1}B_1$ and $A_1 R_1 B_1\implies A_2R_2^{\#\varepsilon_2}B_2$, then $A_2 R_2^{\#\varepsilon_1+\varepsilon_2}B_2$.
+    Let $A_1, B_2, A_2, B_2$ be distributions over $S_1, T_1, S_2, T_2$, respectively and let $R_1\subseteq S_1\times T_1$, $R_2\subseteq S_2\times T_2$ be relations. If $A_1 R_1^{\#\varepsilon_1}B_1$ is a valid lifting and we can construct $A_2R_2^{\#\varepsilon_2}B_2$ under the assumption that the predicate $A_1 R_1 B_1$ is true, then $A_2 R_2^{\#\varepsilon_1+\varepsilon_2}B_2$.
 \end{thm}
-\sky{change the notation for the implication part - unclear right now}
 
 \sky{Would an example here be useful?}
 
@@ -114,16 +113,16 @@ Theorems \ref{implicationcouplingthm} and \ref{liftingcomposition} suggest the f
 
 \subsection{Proving SVT with couplings}
 
-For illustrative purposes, we provide a manual proof of privacy for a notoriously tricky algorithm, the Sparse Vector Technique (SVT). \sky{do we need some explanation that this proof is technically original bc of the rewordings? also can remove this section for space}
+For illustrative purposes, we provide a lifting-based proof of privacy for a notoriously tricky algorithm, the Sparse Vector Technique (SVT), which is particularly notable for requiring an analysis that goes beyond standard composition.
 
-A classic algorithm that requires analysis beyond standard composition is Sparse Vector Technique (SVT). Given a possibly infinite stream of inputs and a threshold value, SVT will output if the queries are above or below the threshold. 
+At a high level, SVT takes in a possibly infinite stream of input queries and a threshold value and outputs whether or not the input queries are above or below the threshold.
 
-Unusually for differentially private algorithms, SVT can output a potentially unbounded number of ``below threshold'' queries before the first $c$ ``above threshold''s (or vice-versa), where $c$ is some constant set by the user; when $c=1$, SVT is also referred to as ``Above (or Below) Threshold''. Potential applications include, for example, checking that a series of inputs is within an expected range or, appropriately, privately determining the non-zero elements of a sparse vector. 
+Unusually for differentially private algorithms, SVT can output a potentially unbounded number of ``below threshold'' queries before the first $c$ ``above threshold''s (or vice-versa), where $c$ is some constant set by the user; when $c=1$, SVT is also referred to as ``Above (or Below) Threshold''. Potential applications include, for example, checking that a series of inputs is within an expected range or, appropriately, privately determining which elements of a sparse vector are non-zero. 
 
 Because SVT allows for a potentially unbounded number of ``below threshold'' query outputs, its analysis requires a non-standard approach; a naive composition approach that assigns a fixed cost to outputting the result of each query will immediately result in unbounded privacy cost as well. 
 Indeed, the analysis of SVT is notoriously difficult, with multiple published attempts at privacy proofs that were later shown to be incorrect\footnote{A textbook analysis of SVT, along with a discussion of bugged versions and incorrect privacy proofs, can be found at \cite{10.14778/3055330.3055331}}. 
 
-However, re-analyzing SVT using approximate liftings can be relatively simple. 
+However, re-analyzing SVT using approximate liftings can be relatively simple. Our proof is derived from an informal proof of \cite{BartheEtAl2016}.
 
 \begin{algorithm}
     \hspace*{\algorithmicindent}\textbf{Input}: $\mathcal{X}\in X^n$, $T\in \RR$, $Q=q_1, \ldots \in {(X^n\to \RR)}^*$ with sensitivity $\Delta$, $c\in \NN$.
@@ -152,31 +151,6 @@ However, re-analyzing SVT using approximate liftings can be relatively simple.
 \end{thm}
 
 \begin{proof}
-    Consider two runs of SVT with adjacent inputs $\mathcal{X}\sim\mathcal{X}'$, respectively. We are aiming to show that $SVT(\mathcal{X}, T, Q, c)\{(a, b): a=\sigma \implies b=\sigma\}^{\#\varepsilon}SVT(\mathcal{X}', T, Q, c)$ is a valid lifting. 
-
-    Fix some output $\sigma \in \{\bot, \top\}^n$. Let $A = \{i:\sigma_i = \top\}$ be the indices of queries that are measured to be above the threshold. Note that $|A| = c$. 
-    
-    For every program variable $x$, let $x\brangle{1}$ and $x\brangle{2}$ represent the value of $x$ in $SVT(\mathcal{X}, T, Q, c)$ and $SVT(\mathcal{X}', T, Q, c)$, respectively, so, for example, $q_i(\mathcal{X})\brangle{1} = q_i(\mathcal{X})$ and $q_i(\mathcal{X})\brangle{2} = q_i(\mathcal{X}')$. 
-
-    Let $\tilde{T}=T + \rho$. Then $\tilde{T} \sim \Lap(T, \frac{\Delta}{\varepsilon_1})$, so $\tilde{T}\brangle{1} +\Delta (=)^{\#\varepsilon_1}\tilde{T}\brangle{2}$. 
-
-    Let $S_i = q_i(\mathcal{X}) + z_i$, so $S_i \sim\Lap(q_i(\mathcal{X}), \frac{2c\Delta}{\varepsilon_2})$.
-
-    For all $i$ such that $0\leq i < n$, $i\notin A$, we construct the lifting $z_i\brangle{1} (=)^{\#0}z_i\brangle{2}$. 
-
-    Then note that $\tilde{T}\brangle{1}+\Delta = \tilde{T}\brangle{2}\land z_i\brangle{1} = z_i \brangle{2} \implies (S_i\brangle{1} < \tilde{T}\brangle{1} \implies S_i\brangle{2} < \tilde{T}\brangle{2} )$.
-
-    For all $i\in A$, create the lifting $z_i\brangle{1}(=)^{\#\frac{\varepsilon_2}{c}}z_i\brangle{2} - q_i(\mathcal{X})+q_i(\mathcal{X}')-\Delta$, or equivalently, \\$S_i\brangle{1} +\Delta (=)^{\#\frac{\varepsilon_2}{c}} S_i\brangle{2}$. Note that this costs $\frac{\varepsilon_2}{c}$ since $|q_i(\mathcal{X})-q_i(\mathcal{X}')|\leq \Delta$.
-
-    Then \[\tilde{T}\brangle{1} +\Delta = \tilde{T}\brangle{2} \land S_i\brangle{1} + \Delta = S_i\brangle{2} \implies (S_i\brangle{1} \geq \tilde{T}\brangle{1} \implies S_i\brangle{2} \geq \tilde{T}\brangle{2})\]
-
-    Thus, for all $i$, $SVT(\mathcal{X}, T, Q, c)_i = \sigma_i \implies SVT(\mathcal{X}', T, Q, c)_i = \sigma_i$, so $SVT(\mathcal{X}, T, Q, c)\{(a, b): a=\sigma \implies b=\sigma\}^{\#\varepsilon_1+\varepsilon_2}SVT(\mathcal{X}', T, Q, c)$.
-
-    By Theorem \ref{implicationcouplingthm}, SVT is $\varepsilon$-differentially private. 
-\end{proof}
-
-
-\begin{proof}[\proofname~(``less mathy'')]
     Consider two runs of SVT with adjacent inputs $\mathcal{X}\sim\mathcal{X}'$, respectively. We are aiming to show that $SVT(\mathcal{X}, T, Q, c)\{(a, b): a=\sigma \implies b=\sigma\}^{\#\varepsilon}SVT(\mathcal{X}', T, Q, c)$ is a valid lifting. 
 
     Fix some output $\sigma \in \{\bot, \top\}^n$. Let $A = \{i:\sigma_i = \top\}$ be the indices of queries that are measured to be above the threshold. Note that $|A| = c$. 

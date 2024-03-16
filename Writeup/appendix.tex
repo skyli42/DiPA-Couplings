@@ -69,7 +69,7 @@ we have shown that the lifting $o\brangle{1}\{(a, b): a=\sigma\implies b=\sigma\
 
 
 \begin{lemma}[Detailed version of \ref{simplifiedMultTransitionsCouplingProof}]\label{multTransitionsCouplingProof}
-    Let $\rho = t_0\ldots t_{n-1}$ be a complete path of length $n$. 
+    Let $\rho = t_0\ldots t_{n-1}$ be a initialized path of length $n$. 
     Let $\texttt{in}\brangle{1}\sim \texttt{in}\brangle{2}$ be arbitrary adjacent input sequences of length $n$. Additionally, fix some potential output $\sigma$ of $\rho$ of length $n$ and let $\sigma\brangle{1}$, $\sigma\brangle{2}$ be random variables representing possible outputs of $\rho$ given inputs $\texttt{in}\brangle{1}$ and $\texttt{in}\brangle{2}$, respectively. Additionally, for all $t_i$, let $P(t_i) = (d_i, d_i')$.
 
     Then $\forall \varepsilon>0$ and for all $\{\gamma_i, \gamma_i'\}_{i=0}^{n-1}$ that, for all $i$, satisfy the constraints \[
@@ -204,11 +204,11 @@ Indeed, there exist a family of counterexamples such that the relative ``cost'' 
         \item None of the transitions output \texttt{insample}.
     \end{itemize}
 
-    For each $i$, construct also the looping branch $L_i = L\left(t_{true}^{(n + i)} \left(t_{loop}^{(i)}\right)^* t_{geq}^{(i)}\right)$ such that each transition $t_{geq}^{(i)}$ is preceded by an arbitrary number of transitions with guard $\lguard$.
+    For each $i$, construct also the trajectory $L_i = L\left(t_{true}^{(n + i)} \left(t_{loop}^{(i)}\right)^* t_{geq}^{(i)}\right)$ such that each transition $t_{geq}^{(i)}$ is preceded by an arbitrary number of transitions with guard $\lguard$.
     
     Let $C$ be a path-independent coupling strategy for $B_n$ -- this menas that $C$ must assign the same shift to each transition in $B_n$. 
 
-    From the privacy constraints on the looping branches $L_i$, we see that $\gamma_{t_{true}^{n + i}}(1, 0) = 1$ from the same method as in \ref{costDependspathProp}, which then implies from the constraint $\gamma_{t_{true}^{n + i}} \leq \gamma_{t_{geq}^{(i)}}$ that $\gamma_{t_{geq}^{(i)}}(1, 0) = 1$. 
+    From the privacy constraints on the trajectories $L_i$, we see that $\gamma_{t_{true}^{n + i}}(1, 0) = 1$ from the same method as in \ref{costDependspathProp}, which then implies from the constraint $\gamma_{t_{true}^{n + i}} \leq \gamma_{t_{geq}^{(i)}}$ that $\gamma_{t_{geq}^{(i)}}(1, 0) = 1$. 
 
     Since the preceding assignment transition for $t_{leq}^{(i)}$ is given by $t_{geq}^{(i)}$, for which we have the privacy constraint $\gamma_{t_{geq}^{(i)}} \leq \gamma_{t_{leq}^{(i)}}$, we see that $\gamma_{t_{leq}^{(i)}}(1, 0) = 1$ as well. 
 
@@ -230,7 +230,7 @@ Indeed, there exist a family of counterexamples such that the relative ``cost'' 
     \end{align*}
     which satisfies the privacy constraints \[\gamma_{t_{true}^{(i)}}^* \leq \gamma_{t_{geq}^{(i)}}^* \geq \gamma_{t_{leq}^{(i)}}^*\] for all $i$, which has cost $2n$.
     
-    For the looping branches $L_i$, the coupling strategy $C_{L_i}^* = (\gamma^*, \gamma^{'*})$ assigns
+    For the trajectories $L_i$, the coupling strategy $C_{L_i}^* = (\gamma^*, \gamma^{'*})$ assigns
 
     \begin{align*}
         \gamma_{t_{true}^{(n + i)}}^*(\texttt{in}\brangle{1}, \texttt{in}\brangle{2}) &= 1\\
@@ -251,7 +251,7 @@ Indeed, there exist a family of counterexamples such that the relative ``cost'' 
 
     Let $T$ be the set of transitions $t_i$ in $L$ such that $t_i$ is \textbf{not} found under a star in $R_L$. 
 
-    Fix a complete path $\rho\in L$ and let $C_\rho$ be the coupling strategy for $\rho$ induced by $C$. 
+    Fix a initialized path $\rho\in L$ and let $C_\rho$ be the coupling strategy for $\rho$ induced by $C$. 
 
     Let $D_\rho$ be the set of transitions $t_i\in \rho$ such that $t_i$ is under a star in $R_L$, i.e., $t_i\notin T$.  
 
@@ -272,9 +272,9 @@ Indeed, there exist a family of counterexamples such that the relative ``cost'' 
     Let $t_i$ be a transition in $L$ under a star in $R_L$ such that $\gamma_i\neq -\texttt{in}\brangle{1}_i+\texttt{in}\brangle{2}_i$ or $\gamma_i'\neq  -\texttt{in}\brangle{1}_i+\texttt{in}\brangle{2}_i$.     Thus, $\exists \texttt{in}\brangle{1}\sim \texttt{in}\brangle{2}$ such that $(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i|)d_i+(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i'|)d_i'>0$.
     Fix such a $\texttt{in}\brangle{1}\sim \texttt{in}\brangle{2}$. 
 
-    Then there exists some complete path $\rho$ in $L$ of the form $a(bt_ic)^*d$ for some $a, b, c, d\in \Sigma_T^*$.
+    Then there exists some initialized path $\rho$ in $L$ of the form $a(bt_ic)^*d$ for some $a, b, c, d\in \Sigma_T^*$.
     
-    Let $\rho_k=a(bt_ic)^kd$ be the corresponding complete path in $L$ with $(bt_ic)$ iterated $k$ times. This is equivalent to iterating the cycle containing $t_i$ $k$ times. Then for all $k\in \NN$, \begin{align*}
+    Let $\rho_k=a(bt_ic)^kd$ be the corresponding initialized path in $L$ with $(bt_ic)$ iterated $k$ times. This is equivalent to iterating the cycle containing $t_i$ $k$ times. Then for all $k\in \NN$, \begin{align*}
         cost(\rho_k) \geq k((|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i|)d_i+(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i'|)d_i'),
     \end{align*}
     so for all $M\in \RR$, $\exists \rho_k$ such that $cost(\rho_k) > M$.
@@ -282,7 +282,7 @@ Indeed, there exist a family of counterexamples such that the relative ``cost'' 
 
 
 \begin{lemma}\label{cycleGammaConstraints}
-    If a coupling strategy $C=(\mathbf{\gamma}, \mathbf{\gamma}')$ for a looping branch $L$ is valid and has finite cost, then the following must hold for all $i$:
+    If a coupling strategy $C=(\mathbf{\gamma}, \mathbf{\gamma}')$ for a trajectory $L$ is valid and has finite cost, then the following must hold for all $i$:
     \begin{enumerate}
         \item If $t_i$ is in a cycle and $c_i = \lguard[\texttt{x}]$, then $\gamma_i = -\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}$ and $\gamma_{at(i)} = 1$.
         \item If $t_i$ is in a cycle and $c_i = \gguard[\texttt{x}]$, then $\gamma_i = -\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}$ and $\gamma_{at(i)} = -1$.
@@ -380,7 +380,11 @@ Indeed, there exist a family of counterexamples such that the relative ``cost'' 
     {\color{red} If i have time, come back to this argument - expressed poorly right now}
 \end{proof}
 
-\begin{proof}[Proof of lemma \ref{ProgramCounterexampleThm}]
+\begin{lemma}\label{unsatisfiableImpliesNotWellformedLemma}
+    If a trajectory $L$ generated by $G_L$ satisfies output distinction and there does not exist a coupling strategy $C$ that satisfies the privacy constraint system for $L$, then $G_L$ must contain either a leaking cycle, a leaking pair, a disclosing cycle, or a privacy violating path. 
+\end{lemma}
+
+\begin{proof}[Proof of lemma \ref{unsatisfiableImpliesNotWellformedLemma}]
     Let $[\rho]$ be a path class in $P$ that does not have a coupling strategy that satisfies the privacy constraint system.
 
     Consider a ``maximially'' satisfied coupling strategy $C=(\mathbf{\gamma}, \mathbf{\gamma}')$ for $[\rho]$; i.e. there is no other coupling strategy $C'$ for $[\rho]$ such that $C'$ satisfies more constraints than $C$. By lemma [tbd], we are allowed to only consider coupling strategies $C=(\gamma, \gamma')$ such that, for all $i\in AT(A)$, $\gamma_i \in \{-1, 0, 1\}$. 
@@ -575,7 +579,7 @@ Indeed, there exist a family of counterexamples such that the relative ``cost'' 
 
     If constraint (5) is newly violated, then $t_{at(i)}$ is in a cycle. In particular, the cycle must be a leaking cycle; if $t_i$ and $t_{at(i)}$ are both contained in a cycle, then it must be leaking because $c_i = \lguard[\texttt{x}]$. Otherwise, there still must be some transition in the cycle containing $t_{at(i)}$ that has a non-$\texttt{true}$ guard since otherwise a path from $t_{at(i)}$ to $t_i$ could not exist. 
 
-    By similar reasoning, we can assume that for every assignment transition $t_{at(j)}$before $t_{at(i)}$ on a complete path to $t_i$, $t_{at(j)}$ is not in a cycle. 
+    By similar reasoning, we can assume that for every assignment transition $t_{at(j)}$before $t_{at(i)}$ on a initialized path to $t_i$, $t_{at(j)}$ is not in a cycle. 
 
     If constraint (1) is newly violated for $\gamma_{at(i)}$, then $c_{at(i)} = \lguard[\texttt{x}]$. Let $t_{at(j)}$ be the earliest assignment transition before $t_{at(i)}$ such that $\gamma_{at(l)} = -1$ and for all assignment transitions $t_{at(k)}$ between $t_{at(j)}$ and $t_{at(i)}$, $c_{at(k)} = \lguard[\texttt{x}]$ and $\gamma_{at(k)} = -1$. 
     
@@ -652,7 +656,7 @@ Indeed, there exist a family of counterexamples such that the relative ``cost'' 
 
     \textbf{Case 5.3: Satisfying (5) for $t_i$ would violate (3)}
 
-    If (3) would be violated, then $t_i$ must output $\texttt{insample}$. Then the cycle containing $t_i$ must be a disclosing cycle. 
+    If (3) would be violated, then $t_i$ must output $\texttt{insample}$ and be a non-public transition. Then the cycle containing $t_i$ must be a disclosing cycle. 
     
     \textbf{Case 6: (6) is unsatisfied for $t_i$:} Because $C$ is maximal, we know that if $\gamma_i' = -\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}$ then another constraint must be violated for $\gamma_i'$. In particular, constraint (4) must be violated, since no other constraint involves $\gamma_i'$. 
     Then $t_i$ is a transition in a cycle that outputs $\texttt{insample}'$, so $A$ has a disclosing cycle.
@@ -849,7 +853,7 @@ Indeed, there exist a family of counterexamples such that the relative ``cost'' 
     \begin{itemize}
         \item Base Case ($k = 1$)
         
-        If $k = 1$, then the path $v_{i_0} \to v_{i_1}$ comprises of a single edge $(v_{i_0}, v_{i_1})$ in $G_P$. So, there is a looping branch $L$ for which $(v_{i_0}, v_{i_1}) \in G_L$, for which there is the privacy constraint $\gamma_{i_0} \leq \gamma_{i_1}$. 
+        If $k = 1$, then the path $v_{i_0} \to v_{i_1}$ comprises of a single edge $(v_{i_0}, v_{i_1})$ in $G_P$. So, there is a trajectory $L$ for which $(v_{i_0}, v_{i_1}) \in G_L$, for which there is the privacy constraint $\gamma_{i_0} \leq \gamma_{i_1}$. 
         
         We either have that $i_0 = at(i_1)$ and $c_{i_1} = \gguard$, or $i_1 = at(i_0)$ and $c_{i_0} = \lguard$. In the first case, we have that $t_{i_0} t_{i_1}$ is a subsequence of some path $\rho$ in $L$ with $guard(t_{i_1}) = \gguard$. In the second case, we have that $t_{i_1} t_{i_0}$ is a subsequence of some path $\rho$ in $L$ with $guard(t_{i_0}) = \lguard$.
 
@@ -860,7 +864,7 @@ Indeed, there exist a family of counterexamples such that the relative ``cost'' 
         \begin{enumerate}
             \item There exists a path $\rho_1 \in P$ such that $t_{i_0} \cdots t_{i_{k - 1}}$ is a subsequence of $\rho_1$ with $guard(t_{i_j}) = \gguard$ for all $j \in \{1, \dots, k - 1\}$.
             
-            Since we have the edge $(v_{i_{k - 1}}, v_{i_k})$ in $G_P$, there exists a looping branch $L$ for which $(v_{i_{k - 1}}, v_{i_k}) \in G_L$, for which there is the privacy constraint $\gamma_{i_{k - 1}} \leq \gamma_{i_k}$.
+            Since we have the edge $(v_{i_{k - 1}}, v_{i_k})$ in $G_P$, there exists a trajectory $L$ for which $(v_{i_{k - 1}}, v_{i_k}) \in G_L$, for which there is the privacy constraint $\gamma_{i_{k - 1}} \leq \gamma_{i_k}$.
 
             We either have that $i_{k - 1} = at(i_k)$ and $c_{i_k} = \gguard$ ($t_{i_{k - 1}}$ precedes $t_{i_k}$ in $L$), or $i_k = at(i_{k - 1})$ and $c_{i_{k - 1}} = \lguard$ ($t_{i_k}$ precedes $t_{i_{k - 1}}$ in $L$). Notice, however, that we cannot have that $t_{i_k}$ precedes $t_{i_{k - 1}}$, since we have assumed $c_{i_{k - 1}} = \gguard$. 
 
@@ -870,7 +874,7 @@ Indeed, there exist a family of counterexamples such that the relative ``cost'' 
 
             \item There exists a path $\rho_1 \in P$ such that $t_{i_{k - 1}} \cdots t_{i_0}$ is a subsequence of $\rho_1$ with $guard(t_{i_j}) = \lguard$ for all $j \in \{k - 2, \dots, 0\}$.
             
-            Similar to the argument above, we either have that $t_{i_{k - 1}}$ precedes $t_{i_k}$, or $t_{i_k}$ precedes $t_{i_{k - 1}}$ in some looping branch. We cannot have that $t_{i_{k - 1}}$ precedes $t_{i_k}$, and so $c_{i_{k - 1}}$ is forced to be $\lguard$. We can then construct a path $\rho \in P$ such that $t_{i_k} \cdots t_{i_0}$ is a subsequence of $\rho$ with $guard(t_{i_j}) = \lguard$ for all $j \in \{k - 1, \dots, 0\}$. 
+            Similar to the argument above, we either have that $t_{i_{k - 1}}$ precedes $t_{i_k}$, or $t_{i_k}$ precedes $t_{i_{k - 1}}$ in some trajectory. We cannot have that $t_{i_{k - 1}}$ precedes $t_{i_k}$, and so $c_{i_{k - 1}}$ is forced to be $\lguard$. We can then construct a path $\rho \in P$ such that $t_{i_k} \cdots t_{i_0}$ is a subsequence of $\rho$ with $guard(t_{i_j}) = \lguard$ for all $j \in \{k - 1, \dots, 0\}$. 
         \end{enumerate}
     \end{itemize}
 
@@ -879,11 +883,11 @@ Indeed, there exist a family of counterexamples such that the relative ``cost'' 
 
 
 \begin{cor}
-    The path $v_{i_0} \to \dots \to v_{i_k}$ is in $G_P$ if and only if there is a looping branch $L$ in $P$ such that $v_{i_0} \to \dots \to v_{i_k}$ is a path in $G_L$.
+    The path $v_{i_0} \to \dots \to v_{i_k}$ is in $G_P$ if and only if there is a trajectory $L$ in $P$ such that $v_{i_0} \to \dots \to v_{i_k}$ is a path in $G_L$.
 \end{cor}
 
 \begin{proof}[Proof of \ref{programPrivacyConstraintGraphPathReq}]
-    There is a path from $\bf 1$ to $\bf -1$ in the privacy constraint graph of $P$ if and only if there is a path from $\bf 1$ to $\bf -1$ in the privacy constraint graph of some looping branch $L$ in $P$ by Proposition \ref{prop:paths_in_privacy_graph}. This is true if and only if there exists some $L$ which is not differentially private, which is true if and only if $P$ is not differentially private.
+    There is a path from $\bf 1$ to $\bf -1$ in the privacy constraint graph of $P$ if and only if there is a path from $\bf 1$ to $\bf -1$ in the privacy constraint graph of some trajectory $L$ in $P$ by Proposition \ref{prop:paths_in_privacy_graph}. This is true if and only if there exists some $L$ which is not differentially private, which is true if and only if $P$ is not differentially private.
 \end{proof}
 
 \subsection{Multivariable}
@@ -909,7 +913,35 @@ Indeed, there exist a family of counterexamples such that the relative ``cost'' 
 \begin{proof}
     From lemma \ref{indTransitionCoupling}, we know that if these constraints are satisfied, we can create liftings such that for all $i$, $c^{(\texttt{x}_i)}$ is satisfied in run $\brangle{1}\implies c^{(\texttt{x}_i)}$ is satisfied in run $\brangle{2}$.
     
-    Because $c$ is made of conjunctions and disjunctions of all $c^{(\texttt{x}_i)}$, by [basic logical rules]\sky{is more specificity needed?}, this means that if $c$ is satisfied in run $\brangle{1}$, then $c$ must also be satisfied in $\brangle{2}$. 
+    Because $c$ is made of conjunctions and disjunctions of all $c^{(\texttt{x}_i)}$, this means that if $c$ is satisfied in run $\brangle{1}$, then $c$ must also be satisfied in $\brangle{2}$. 
 
     Finally, as before, if $\sigma \in \{\texttt{insample}^{(x_1)}\ldots \texttt{insample}^{(x_k)},\texttt{insample}'\}$, then for all $\sigma$, $o\brangle{1}=\sigma \implies o\brangle{2} = \sigma$. Further, note that we only need to couple $\texttt{insample}'\brangle{1}$ and $\texttt{insample}'\brangle{2}$ once for all variables. By simply adding up the costs from lemma \ref{indTransitionCoupling}, we complete the proof.
+\end{proof}
+
+
+\begin{proof}[Proof of lemma \ref{mvCrossCoupling}]
+    Let $P(t) = (d_t, d_t')$. For convenience, we rewrite, for all $i$, $X_i = \mu_i + \zeta_i$, where $\zeta_i\sim \Lap(0, \frac{1}{d_x\varepsilon})$. For all $i$, we also write $\texttt{insample}^{(x_i)} = \texttt{in} + z_i$, where $z \sim \Lap(0, \frac{1}{d_t\varepsilon})$ and $\texttt{insample}' = \texttt{in} + z'$, where $z' \sim \Lap(0, \frac{1}{d_t'\varepsilon})$.
+
+    Based on lemma \ref{mvParallelCouplingsLemma}, we will assume that we have constructed the following liftings for all $i$ and are aiming to ``extend'' them: \begin{itemize}
+        \item $X_i\brangle{1} +\gamma_{x_i}(=)^{\#(|\mu_i\brangle{1}-\mu_i\brangle{2}+\gamma_{x_i}|d_x\varepsilon)}X_i\brangle{2}$
+        \item $\texttt{insample}^{(\texttt{x}_i)} + \gamma_t^{(x_i)}(=)^{\#(|\texttt{in}\brangle{1}-\texttt{in}\brangle{2}+\gamma_t^{(x_i)}|d_t\varepsilon)}\texttt{insample}^{(\texttt{x}_i)}\brangle{2}$
+        \item $\texttt{insample}' + \gamma_t'(=)^{\#(|\texttt{in}\brangle{1}-\texttt{in}\brangle{2}+\gamma_t'|d_t'\varepsilon)}\texttt{insample}'\brangle{2}$
+    \end{itemize}
+
+    \textbf{Case 1: } For all $i\neq j$, construct the lifting $z_i\brangle{1}(=)^{\#0}z_j\brangle{1}$, which is equivalent to the lifting $\texttt{insample}^{(x_i)}\brangle{1}(=)^{\#}\texttt{insample}^{(x_j)}\brangle{1}$. In particular, this guarantees that all $\texttt{insample}^{(x_i)}\brangle{1}$ are equal to each other. 
+    Additionally, for all $i\neq j$, construct the lifting $\zeta_i\brangle{1}(=)^{\#0}\zeta_j\brangle{1}$, which is equivalent to the lifting $X_i\brangle{1} - X_j\brangle{1} (=)^{\#0}\mu_i\brangle{1}-\mu_j\brangle{1}$.
+
+    First, suppose that $X_i\brangle{1} = \mu_i\brangle{1}$ for all $i$. Then if case one is true, the proposition that ``$c$ is satisfied in run $\brangle{1}$'' must always be false; thus, the implication ``$c$ is satisfied in run $\brangle{1}\implies c$ is satisfied in run $\brangle{2}$'' must always be true.
+
+    Now observe that for any transition guard $c$, if the boolean expression produced from $c$ by setting all $\texttt{insample}^{(\texttt{x}_i)}$ equal to each other and setting $\texttt{x}_i = \mu_i\brangle{1}$ for all $i$ is a contradiction, then for any constant $a$, the boolean expression produced from $c$ by setting all $\texttt{insample}^{(\texttt{x}_i)}$ equal to each other and setting $\texttt{x}_i = \mu_i\brangle{1}+a$ for all $i$ must also be a contradiction. 
+
+    Thus, the liftings we have constructed are sufficient to prove the proposition ``$c$ is satisfied in run $\brangle{1}\implies c$ is satisfied in run $\brangle{2}$'', and so, if the two output conditions are also satisfied, $\PP[\vec{X}\brangle{1}, t, \texttt{in}\brangle{1}, \sigma]\leq e^{d\varepsilon}\PP[\vec{X}\brangle{2}, t, \texttt{in}\brangle{2}, \sigma]$ for 
+    $d = |\mu_i\brangle{1}-\mu_i\brangle{2}+\gamma_{x_i}|d_x\varepsilon + |\texttt{in}\brangle{1}-\texttt{in}\brangle{2}+\gamma_t^{(x_i)}|d_t\varepsilon+|\texttt{in}\brangle{1}-\texttt{in}\brangle{2}+\gamma_t'|d_t'\varepsilon$, i.e. for no ``additional'' cost.     
+    
+    \textbf{Case 2: } For all $i\neq j$, construct the lifting $z_i\brangle{2}(=)^{\#0}z_j\brangle{2}$, which is equivalent to the lifting $\texttt{insample}^{(x_i)}\brangle{2}(=)^{\#}\texttt{insample}^{(x_j)}\brangle{2}$. In particular, this guarantees that all $\texttt{insample}^{(x_i)}\brangle{2}$ are equal to each other. 
+    Additionally, for all $i\neq j$, construct the lifting $\zeta_i\brangle{2}(=)^{\#0}\zeta_j\brangle{2}$, which is equivalent to the lifting $X_i\brangle{2} - X_j\brangle{2} (=)^{\#0}\mu_i\brangle{2}-\mu_j\brangle{2}$.
+
+    As before, if case two is satisfied, then these liftings suffice to show that the proposition  ``$c$ is satisfied in run $\brangle{2}$'' must always be true; thus, the implication ``$c$ is satisfied in run $\brangle{1}\implies c$ is satisfied in run $\brangle{2}$'' must also always be true, and so $\PP[\vec{X}\brangle{1}, t, \texttt{in}\brangle{1}, \sigma]\leq e^{d\varepsilon}\PP[\vec{X}\brangle{2}, t, \texttt{in}\brangle{2}, \sigma]$ for 
+    $d = |\mu_i\brangle{1}-\mu_i\brangle{2}+\gamma_{x_i}|d_x\varepsilon + |\texttt{in}\brangle{1}-\texttt{in}\brangle{2}+\gamma_t^{(x_i)}|d_t\varepsilon+|\texttt{in}\brangle{1}-\texttt{in}\brangle{2}+\gamma_t'|d_t'\varepsilon$.
+
 \end{proof}

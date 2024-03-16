@@ -5,7 +5,7 @@ Transitions act as guarded statements whose guard is dependent on a persistent r
 
 \begin{defn}[Transitions]\label{svTransDef}
     A transition is a tuple $t = (c, \sigma, \tau)$, where \begin{itemize}
-        \item $c\in \{\texttt{true}, \lguard[\texttt{x}], \gguard[\texttt{x}]\}$ is a \textbf{guard} for the transition.
+        \item $c\in \{\texttt{true}, \lguard[\texttt{x}], \gguard[\texttt{x}]\}$ is a \textbf{guard} for the transition. We use $c(in, x)$ to denote the boolean function corresponding to substituting $\texttt{insample} = in$ and $\texttt{x} =x $ into $c$.
         \item $\sigma \in \Gamma\cup\{\texttt{insample}, \texttt{insample}'\}$ is the \textbf{output} of $t$, for some finite alphabet of symbols $\Gamma$.
         \item $\tau\in\{\texttt{true}, \texttt{false}\}$ is an \textbf{assignment control}: a boolean value indicating whether or not the stored value of $\texttt{x}$ will be updated when $t$ is taken.
     \end{itemize}
@@ -19,35 +19,48 @@ Furthermore, we introduce a special type of transition called a \textbf{public} 
 
 We can think of each transition as defining an atomic program step: a transition reads a real valued input $\texttt{in}$, compares a noisy version of it (\texttt{insample}) to a threshold $\texttt{x}$, and, depending on the result of the comparison, outputs a value $\sigma$ and possibly updates the value of $\texttt{x}$.
 
-The semantics of a transition are given by a function that maps an initial program state and a real-valued input to a subsequent program state. 
+The semantics of a transition are defined by a function that maps an initial program state and a real-valued input to a subsequent program state. 
 
 A program state is a tuple consisting of a distribution of possible values for the program value $\texttt{x}$, and a distribution of possible values for the current output $\sigma$. 
 
-Let $S = dist(\RR\times (\Gamma \cup \RR)^*)$ be the set of all possible distributions over program states. 
+Let $S = \RR\times (\Gamma \cup \RR)^*$ be the set of all program states. 
 As expected, every possible input is simply an element of $\RR$.
 
 Then the semantics of a transition $t$ can be defined as a function $\Phi_t:dist_\downarrow(S)\times \RR \to dist_\downarrow (S)$ that maps a subdistribution of initial program states and an input to a subdistribution of subsequent program states. 
 
-More precisely, given $t = (c, \sigma, \tau)$ where $t$ has noise parameters $P(t) = (d_t, d_t')$, let $\texttt{insample}$ be the Laplace distribution $\Lap(\texttt{in}, \frac{1}{d_t\varepsilon})$, and $\texttt{insample}'$ be the independent Laplace distribution $\Lap(\texttt{in}, \frac{1}{d_t'\varepsilon})$. Let $\theta$ be a subdistribution of program states. 
+More precisely, given $t = (c, \sigma, \tau)$ where $t$ has noise parameters $P(t) = (d_t, d_t')$, let $\texttt{insample}\sim \Lap(\texttt{in}, \frac{1}{d_t\varepsilon})$ and $\texttt{insample}'\sim \Lap(\texttt{in}, \frac{1}{d_t'\varepsilon})$ be independent Laplace random variables. 
 
-Then $\Phi_t(\theta, \texttt{in})$ is a subdistribution $O$ such that for all states $(\texttt{x}, \sigma_0)$, \begin{align*}
-   \PP_O[(\texttt{x}, \sigma_0\cdot \sigma)]&= \begin{cases}
-    \PP_\theta[(\texttt{x}, \sigma_0)]\PP[c \text{ is satisfied for }\texttt{insample}\text{ and }\texttt{x}]& \tau = \texttt{false}\\
-    0 & \tau = \texttt{true}
-  \end{cases} \\
-  \PP_O[(\texttt{insample}, \sigma_0\cdot \sigma)]&= \begin{cases}
-    \PP_\theta[(\texttt{x}, \sigma_0)]\PP[c \text{ is satisfied for }\texttt{insample}\text{ and }\texttt{x}]& \tau = \texttt{true}\\
-    0 & \tau = \texttt{false}
-  \end{cases} 
-\end{align*}
+Given an initial program state $(x, \sigma_0)\in S$, we define the distribution of states that $t$ maps $(x, \sigma_0)$ to as follows: if $\sigma \in \Gamma$,
+\[\PP_{(x, \sigma_0)}[(x', \sigma_0\cdot \sigma)] = \begin{cases}
+  \mathbb{I}[x = x']\PP[c(\texttt{insample}, x)] & \tau = \texttt{false}\\
+  \PP[\texttt{insample} = x' \land c(\texttt{insample}, x)] & \tau = \texttt{true}
+\end{cases}\]
 
-Every other possible state is assigned probability 0 by $O$; with probability $1-\sum_{s\in S} \PP_O[s]$, we consider the transition to have halted.
+Otherwise, if $\sigma=\texttt{insample}$, for all $y\in \RR$,
+\[\PP_{(x, \sigma_0)}[(x', \sigma_0\cdot y)] = \begin{cases}
+  \mathbb{I}[x = x']\PP[\texttt{insample} = y\land c(\texttt{insample}, x)] & \tau = \texttt{false}\\
+  \mathbb{I}[x'=y]\PP[\texttt{insample} = x' \land c(\texttt{insample}, x)] & \tau = \texttt{true}
+\end{cases}\]
 
-We primarily are concerned with the probability that a transition outputs a value (i.e. its guard is satisfied) and, in particular, outputs a certain value $o$, where $o\subseteq (\Gamma\cup\RR)^*$ is a measurable event.
+Finally, if $\sigma=\texttt{insample}'$, for all $y\in \RR$
+\[\PP_{(x, \sigma_0)}[(x', \sigma_0\cdot y)] = \begin{cases}
+  \mathbb{I}[x = x']\PP[c(\texttt{insample}, x)]\PP[\texttt{insample}' = y] & \tau = \texttt{false}\\
+  \PP[\texttt{insample} = x' \land c(\texttt{insample}, x)]\PP[\texttt{insample}' = y] & \tau = \texttt{true}
+\end{cases}\]
+
+Then for any initial subdistribution of states $\theta$, $\Phi_t(\theta, \texttt{in})$ can be defined by weighting the sum of all subdistributions $\PP_s$ for $s\in S$, where the weight of each $\PP_s$ is given by the probability of $s$ given by $\theta$. 
+
+More formally, for any initial output sequence $\sigma_0\in (\Gamma\cup\RR)^*$, let $S^{(\sigma_0)}$ be the set of program states $(x, \sigma)$ such that $\sigma = \sigma_0$. Then for any subdistribution of program states $\theta$, $\Phi_t(\theta, \texttt{in})$ is a subdistribution $O$ such that, for all $x'\in \RR$ and $\sigma \in \Gamma\cup\RR$,
+\[
+  \PP_O[(x', \sigma_0\cdot \sigma)] = \int_{S^{(\sigma_0)}}\PP_\theta[s]\PP_s[(x', \sigma_0\cdot \sigma)]ds
+\]
+
+Every other possible state is assigned probability 0 by $O$; with probability $1-\int_S \PP_O[s]ds$, we consider the transition to have halted.
+
+We primarily are concerned with the probability that a transition outputs a value (i.e. its guard is satisfied) and, in particular, outputs a certain value $o$, where $o\subseteq \Gamma\cup\RR$ is a measurable event.
 
 We denote this probability as $\PP[\texttt{x}, t, \texttt{in}, o]$, where $\texttt{x} \in dist(\RR)$ is the initial distribution of $\texttt{x}$, $t$ is a transition, $\texttt{in}\in \RR$ is a real-valued input, and $o\in \Gamma\cup \mathcal{P}(\RR)$ is a possible output of $t$. 
-Specifically, let $O = \Phi_t((\texttt{x}, \lambda), \texttt{in})$, where $\texttt{x}$ is a distribution over real numbers and $\lambda$ represents the distribution that assigns probability 1 to the empty string, be a subdistribution.
- We abuse notation by using $(\texttt{x}, \lambda)$ to represent, depending on context, a tuple of distributions, the joint distribution of $\texttt{x}$ and $\lambda$, or the subdistribution that assigns probability 1 to the state $(\texttt{x}, \lambda)$. Then $\PP[\texttt{x}, t, \texttt{in}, o]$ is the marginal of $\Phi_t((\texttt{x}, \lambda), \texttt{in})$ on $(\cdot, o)$. \sky{come back to this phrasing}
+Specifically, let $O = \Phi_t((\texttt{x}, \lambda), \texttt{in})$, where $\texttt{x}\in \RR$ and $\lambda$ represents the empty string. Then $\PP[\texttt{x}, t, \texttt{in}, o]$ is the marginal of $\Phi_t((\texttt{x}, \lambda), \texttt{in})$ on $(\cdot, o)$.
 
 \subsubsection{Couplings}
 
@@ -105,5 +118,6 @@ This gives us our major coupling lemma, which allows us to define a coupling pro
 
 A precise version of this lemma can be found in the appendix as lemma \ref{indTransitionCoupling}. 
 
-\sky{rewrite this to define cost of a coupling strategy}
+Specifically, lemma \ref{indTransitionCoupling} gives us the bound $d \leq (|\mu\brangle{1}-\mu\brangle{2}+\gamma_x|)d_x+(|-\texttt{in}\brangle{1}+\texttt{in}\brangle{2}-\gamma_t|)d_t+(|-\texttt{in}\brangle{1}+\texttt{in}\brangle{2}-\gamma_t'|)d_t'$, where $\mu\brangle{1}$ and $\mu\brangle{2}$, respectively, are the means of $X\brangle{1}$ and $X\brangle{2}$.
 
+We call $d$ the \textbf{cost} $cost(C)$ of any coupling strategy $C = (\gamma_x, \gamma_t, \gamma_t')$.
