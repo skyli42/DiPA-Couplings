@@ -1,7 +1,8 @@
 
-\section{Appendix}
 
-\subsection{Proofs for section 4}
+\section{Appendix A: Single Variable Programs}
+
+\subsection{Couplings for Transitions and Straight Line Programs}
 
 \begin{lemma}[Detailed version of lemma \ref{simplifiedIndTransitionCoupling}]\label{indTransitionCoupling}
     Let $X\brangle{1}\sim \Lap(\mu\brangle{1}, \frac{1}{d_x\varepsilon}), X\brangle{2}\sim\Lap(\mu\brangle{2}, \frac{1}{d_x\varepsilon})$ be random variables representing possible initial values of $\texttt{x}$ and let $t = (c, \sigma, \tau)$ be a transition from some valid transition alphabet $\Sigma_T$.
@@ -68,8 +69,8 @@ we have shown that the lifting $o\brangle{1}\{(a, b): a=\sigma\implies b=\sigma\
 \end{proof}
 
 
-\begin{lemma}[Detailed version of \ref{simplifiedMultTransitionsCouplingProof}]\label{multTransitionsCouplingProof}
-    Let $\rho = t_0\ldots t_{n-1}$ be a initialized path of length $n$. 
+\begin{lemma}[Detailed version of lemma \ref{simplifiedMultTransitionsCouplingProof}]\label{multTransitionsCouplingProof}
+    Let $\rho = t_0\ldots t_{n-1}$ be a initialized SLP of length $n$. 
     Let $\texttt{in}\brangle{1}\sim \texttt{in}\brangle{2}$ be arbitrary adjacent input sequences of length $n$. Additionally, fix some potential output $\sigma$ of $\rho$ of length $n$ and let $\sigma\brangle{1}$, $\sigma\brangle{2}$ be random variables representing possible outputs of $\rho$ given inputs $\texttt{in}\brangle{1}$ and $\texttt{in}\brangle{2}$, respectively. Additionally, for all $t_i$, let $P(t_i) = (d_i, d_i')$.
 
     Then $\forall \varepsilon>0$ and for all $\{\gamma_i, \gamma_i'\}_{i=0}^{n-1}$ that, for all $i$, satisfy the constraints \[
@@ -95,7 +96,7 @@ we have shown that the lifting $o\brangle{1}\{(a, b): a=\sigma\implies b=\sigma\
       \]
     the coupling $\sigma_i\brangle{1}\{(a, b): a=\sigma_i\implies b=\sigma_i\}^{\#d\varepsilon}\sigma_i\brangle{2}$ is valid for some $d$. 
 
-    Indeed, note that for all $i$, $\texttt{x}_i = \texttt{insample}_{at(i)}$ by definition. Thus, we have that $\texttt{x}_i\brangle{1}+\gamma_x (=)^{\#(|-\texttt{in}_{at(i)}\brangle{1}+\texttt{in}_{at(i)}\brangle{2}+\gamma_{at(i)}|)d_{at(i)}\varepsilon}x_i\brangle{2}$, and we must satisfy the constraints \[
+    Indeed, note that for all $i$, $\texttt{x}_i = \texttt{insample}_{at(i)}$ by the semantics of an SLP. Thus, we have that $\texttt{x}_i\brangle{1}+\gamma_x (=)^{\#(|-\texttt{in}_{at(i)}\brangle{1}+\texttt{in}_{at(i)}\brangle{2}+\gamma_{at(i)}|)d_{at(i)}\varepsilon}x_i\brangle{2}$, and we must satisfy the constraints \[
         \begin{cases}
           \gamma_i\leq\gamma_{at(i)} & c_i = \lguard[\texttt{x}]\\
           \gamma_i\geq\gamma_{at(i)} & c_i = \gguard[\texttt{x}]\\
@@ -111,289 +112,54 @@ we have shown that the lifting $o\brangle{1}\{(a, b): a=\sigma\implies b=\sigma\
     which gives us an overall coupling cost of $d = \sum_{i=0}^{n-1}(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i|)d_i+(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i'|)d_i'$.
 \end{proof}
 
+\subsection{DiPA and Programs}
 
+We copy the definitions of leaking cycles, leaking pairs, disclosing cycles, and privacy violating paths from \cite{chadhaLinearTimeDecidability2021} for clarity. 
 
-\sky{These have to be rewritten without locations + moved to appendix}
-\begin{prop}\label{costDependspathProp}
-    Optimal cost is dependent on path. There exists a valid transition alphabet $\Sigma_T$, a location space $Q$, and a branching program $B$ for which the optimal cost of a coupling strategy $C$ for $B$ is dependent on the path $\rho$. 
+\begin{defn}[Leaking Cycles~\cite{chadhaLinearTimeDecidability2021}]
+    A path $\rho = q_0\to\ldots \to q_n$ in a DiPA $A$ is a leaking path if there exist indices $i, j$ where $0\leq i < j < n$ such that the $i$'th transition $q_i\to q_{i+1}$ in $\rho$ is an assignment transition and the guard of the transition $q_j \to q_{j+1}$ is not $\texttt{true}$. If $\rho$ is also a cycle, then we call it a leaking cycle.
+\end{defn}
+
+\begin{defn}[\cite{chadhaLinearTimeDecidability2021}]
+    A cycle $\rho$ in a DiPA $A$ is an \lcycle~if for some transition $q_i\to q_{i+1}$ in $\rho$, $\guard(q_i\to q_{i+1}) = \lguard[\texttt{x}]$. Similarly, $\rho$ is a \gcycle~if for some transition $q_i\to q_{i+1}$ in $\rho$, $\guard(q_i\to q_{i+1}) = \gguard[\texttt{x}]$.
     
-    In other words, the optimal strategy $C$ must assign different coupling strategies to occurances of the same transition in different paths. 
-\end{prop}
+    Additionally, a path $\rho$ of a DiPA $A$ is an \texttt{AL}-path (respectively, \texttt{AG}-path) if all assignment transitions in $\rho$ have guard $\lguard[\texttt{x}]$ (respectively, $\gguard[\texttt{x}]$)
+\end{defn}
 
-\begin{proof}
-    Let $Q = \{q_0, q_1, q_2, q_3\}$ consist only of input locations, each of which have both noise parameters equal to $1$. Let $\Sigma_T = \{t_{init}, t_{geq1}, t_{leq1}, t_{leq2}, t_{geq2}\}$ where 
-    \begin{align*}
-        t_{init} &= (q_0, q_1, \texttt{true}, \bot, 1)\\
-        t_{geq1} &= (q_1, q_2, \gguard[\texttt{x}], \top, 0)\\
-        t_{leq1} &= (q_1, q_3, \lguard[\texttt{x}], \bot, 0)\\
-        t_{geq2} &= (q_2, q_2, \gguard[\texttt{x}], \top, 0)\\
-        t_{leq2} &= (q_3, q_3, \lguard[\texttt{x}], \bot, 0)
-    \end{align*}
-    and let $B = \{t_{init}t_{geq1}t_{geq2}^n, t_{init}t_{leq1}t_{leq2}^n\}$ be the branching program consisting of two paths, each of which have $n$ repetitions of the cycle transitions $t_{geq2}$ and $t_{leq2}$, respectively.
-
-    Let $\rho_1 = t_{init}t_{geq1}t_{geq2}^n$ and $\rho_2 = t_{init}t_{leq1}t_{leq2}^n$ be the two paths in $B$. Notice the following: 
-    
-    \begin{itemize}
-        \item The cost of any coupling strategy for $B$ must be at least $2$.
-        
-        Let $C_{\rho_1}$ be a coupling strategy for $\rho_1$. We can bound its cost as follows: 
-        \begin{align*}
-            cost(C_{\rho_1}) &= \max_{\texttt{in}\brangle{1}\sim\texttt{in}\brangle{2}}\sum_{i=0}^{n+2}(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i(\texttt{in}_i\brangle{1}, \texttt{in}_i\brangle{2}))\\&\qquad+(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i'(\texttt{in}_i\brangle{1}, \texttt{in}_i\brangle{2})|)\\
-            &\geq \max_{\texttt{in}\brangle{1}\sim\texttt{in}\brangle{2}} \sum_{i=0}^{n+2}(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i(\texttt{in}_i\brangle{1}, \texttt{in}_i\brangle{2})|)\\
-            &= \max_{\Delta \in [-1, 1]^{n+2}} \sum_{i=0}^{n+2}(|\Delta_i-\gamma_i(0, \Delta_i)|)\\
-            &\geq |1 - \gamma_0(0, 1)| + \sum_{i=1}^{n+2}|-1-\gamma_i(0, -1)|\\
-            &= 1 - \gamma_0(0, 1) + \sum_{i=1}^{n+2} (1+\gamma_i(0, -1))\\
-            &= 1 - \gamma_0(0, 1) + (n + 2) + \sum_{i=1}^{n+2}\gamma_i(0, -1)\\
-            &\geq 1 - \gamma_0(0, 1) + (n + 2) + \sum_{i=1}^{n+2}\gamma_0(0, 1) \qquad \text{(privacy constraint)}\\
-            &= (n + 3) + (n + 1) \gamma_0(0, 1)\\
-            &\geq 2
-        \end{align*}
-
-    and by a similar argument, $cost(C_{\rho_2})\geq 2$ for any coupling strategy $C_{\rho_2}$.
-
-    \item There exists a coupling strategy $C^*$ for $B$ such that $cost(C^*) = 2$.
-    
-    We will first describe $C_{\rho_1}^* = (\gamma, \gamma')$. Since no transition outputs \texttt{insample}, we can set $\gamma_i'(\texttt{in}\brangle{1}, \texttt{in}\brangle{2}) = \texttt{in}\brangle{2} - \texttt{in}\brangle{1}$ for all $i$ with no privacy cost. Define 
-    \begin{align*}
-        \gamma_0(\texttt{in}\brangle{1}, \texttt{in}\brangle{2}) &= -1 \\
-        \gamma_i(\texttt{in}\brangle{1}, \texttt{in}\brangle{2}) &= \texttt{in}_i\brangle{2} - \texttt{in}_i\brangle{1} \qquad \text{for all $i>0$}
-    \end{align*}
-    We see that $C^*_{\rho_1}$ is valid, since $\gamma_i\geq \gamma_{0}$ for all $i>0$. Further, we see that 
-    \begin{align*}
-        cost(C^*_{\rho_1}) &= \max_{\texttt{in}\brangle{1}\sim\texttt{in}\brangle{2}}\sum_{i=0}^{n+2}(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i(\texttt{in}_i\brangle{1}, \texttt{in}_i\brangle{2}))\\&\qquad+(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i'(\texttt{in}_i\brangle{1}, \texttt{in}_i\brangle{2})|)\\
-        &= \max_{\texttt{in}\brangle{1}\sim\texttt{in}\brangle{2}} |-\texttt{in}_0\brangle{1}+\texttt{in}_0\brangle{2}-\gamma_0(\texttt{in}_0\brangle{1}, \texttt{in}_0\brangle{2})| \\
-        &= \max_{\texttt{in}\brangle{1}\sim\texttt{in}\brangle{2}} |-\texttt{in}_0\brangle{1}+\texttt{in}_0\brangle{2}+1|\\
-        &\leq 2 
-    \end{align*}
-    showing that $cost(C^*_{\rho_1}) = 2$. Similarly, there is a coupling strategy $C^*_{\rho_2}$ for which $cost(C^*_{\rho_2}) = 2$. This shows that there is a coupling strategy $C^*$, consisting of $C^*_{\rho_1}$ and $C^*_{\rho_2}$, for which $cost(C^*) = 2$.
-    
-    \item Any coupling strategy $C$ that assigns the same coupling strategy to $t_{init}$ in both $\rho_1$ and $\rho_2$ must have cost $>2$.
-    
-    Let $C$ be as described, and assume that $C$ has optimal cost, ie. $cost(C) = 2$. If $\gamma_0(0, 1) \neq -1$ in $C_{\rho_1}$, then $cost(C_{\rho_1}) > 2$ in the same method as the above, a contradiction.  
-
-    Thus, $\gamma_0(0, 1) = -1$ in $C_{\rho_1}$, which by hypothesis, means that $\gamma_0(0, 1) = -1$ in $C_{\rho_2}$. We have the privacy constraint $\gamma_i \leq \gamma_0$ on $\rho_2$, which also means that $\gamma_i = -1$ identically for all $i > 0$. However, this means that 
-    \begin{align*}
-        cost(C_{\rho_2}) &= \max_{\texttt{in}\brangle{1}\sim\texttt{in}\brangle{2}}\sum_{i=0}^{n+2}(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i(\texttt{in}_i\brangle{1}, \texttt{in}_i\brangle{2}))\\&\qquad+(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i'(\texttt{in}_i\brangle{1}, \texttt{in}_i\brangle{2})|)\\
-        &\geq \max_{\texttt{in}\brangle{1}\sim\texttt{in}\brangle{2}} \sum_{i=0}^{n+2}(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i(\texttt{in}_i\brangle{1}, \texttt{in}_i\brangle{2})|)\\
-        &\geq \max_{\Delta \in [-1, 1]^{n+2}} |\Delta_0 - \gamma_i(0, \Delta_0)| + \sum_{i=1}^{n+2}(|\Delta_i-\gamma_i(0, \Delta_i)|)\\
-        &\geq |1 - \gamma_i(0, 1)| + \sum_{i=1}^{n+2}(|1+1|)\\
-        &= 2 \cdot (n + 2)
-    \end{align*}
-    showing that $C$ is not optimal, a contradiction. Therefore $cost(C) > 2$.
-
-    \end{itemize}
-    
-    The above observations show that the optimal coupling strategy for $B$ must necessarily assign different coupling strategies to $t_{init}$ in $\rho_1$ and $\rho_2$.
-\end{proof}
-
-Indeed, there exist a family of counterexamples such that the relative ``cost'' of choosing a unified coupling strategy for a branching program increases quadratically in the size of the branching program.
-
-
-\begin{prop}
-    There exist a family of branching programs $\{B_n\}_{n\in \NN}$ for which the cost of any path-independent coupling strategy $C$ for $B_n$ is in $\Omega(n^2)$, but for which there exists a path-dependent coupling strategy $C'$ for $B_n$ with cost in $O(n)$.
-\end{prop}
-
-\begin{proof}
-    Construct $B_n$ as follows. Consider a path $\rho = t_{true}^{(1)} t_{geq}^{(1)} \left(t_{leq}^{(1)}\right)^n \dots t_{true}^{(n)} t_{geq}^{(n)} \left(t_{leq}^{(n)}\right)^n$ where:
-
-    \begin{itemize}
-        \item $t_{true}^{(i)}$ are assignment transitions with guard \texttt{true}.
-        \item $t_{geq}^{(i)}$ are assignment transitions with guard $\gguard$.
-        \item $t_{leq}^{(i)}$ are non-assignment transitions with guard $\lguard$.
-        \item The noise parameters for all transitions are $1$.
-        \item None of the transitions output \texttt{insample}.
-    \end{itemize}
-
-    For each $i$, construct also the trajectory $L_i = L\left(t_{true}^{(n + i)} \left(t_{loop}^{(i)}\right)^* t_{geq}^{(i)}\right)$ such that each transition $t_{geq}^{(i)}$ is preceded by an arbitrary number of transitions with guard $\lguard$.
-    
-    Let $C$ be a path-independent coupling strategy for $B_n$ -- this menas that $C$ must assign the same shift to each transition in $B_n$. 
-
-    From the privacy constraints on the trajectories $L_i$, we see that $\gamma_{t_{true}^{n + i}}(1, 0) = 1$ from the same method as in \ref{costDependspathProp}, which then implies from the constraint $\gamma_{t_{true}^{n + i}} \leq \gamma_{t_{geq}^{(i)}}$ that $\gamma_{t_{geq}^{(i)}}(1, 0) = 1$. 
-
-    Since the preceding assignment transition for $t_{leq}^{(i)}$ is given by $t_{geq}^{(i)}$, for which we have the privacy constraint $\gamma_{t_{geq}^{(i)}} \leq \gamma_{t_{leq}^{(i)}}$, we see that $\gamma_{t_{leq}^{(i)}}(1, 0) = 1$ as well. 
-
-    Computing the cost of the coupling strategy assigned to $\rho$, which has $n \cdot (n + 2)$ transitions, we get 
-
-    \begin{align*}
-        cost(C_\rho) &\geq \max_{\Delta = \texttt{in}\brangle{2} - \texttt{in}\brangle{1}} \sum_{i=1}^{n} \big(|\Delta_{t_{true}^{(i)}} - \gamma_{t_{true}^{(i)}}(-\Delta_{t_{true}^{(i)}}, 0)| + |\Delta_{t_{geq}^{(i)}} - \gamma_{t_{geq}^{(i)}}(-\Delta_{t_{geq}^{(i)}}, 0)| \\ & \qquad \qquad \qquad \qquad + n \cdot |\Delta_{t_{leq}^{(i)}} - \gamma_{t_{leq}^{(i)}}(-\Delta_{t_{leq}^{(i)}}, 0)|\big)\\
-        &\geq \sum_{i = 1}^n \left(|-1 - \gamma_{t_{true}^{(i)}}(1, 0)| + |-1 - \gamma_{t_{geq}^{(i)}}(1, 0)| + n \cdot |-1 - \gamma_{t_{leq}^{(i)}}(1, 0)|\right)\\
-        &= \sum_{i = 1}^n \left(|-1 - \gamma_{t_{true}^{(i)}}(1, 0)| + |-1 - 1| + n \cdot |-1 - 1|\right)\\
-        &\geq \sum_{i = 1}^n \left(2 n + 1\right)\\
-        &= n \cdot (2 n + 1)
-    \end{align*} 
-
-    whereas there exists another coupling strategy $C_\rho^* = (\gamma^*, \gamma^{'*})$ for $\rho$ that would assign 
-    \begin{align*}
-        \gamma_{t_{true}^{(i)}}^*(\texttt{in}\brangle{1}, \texttt{in}\brangle{2}) &= -\texttt{in}\brangle{1} + \texttt{in}\brangle{2}\\
-        \gamma_{t_{geq}^{(i)}}^*(\texttt{in}\brangle{1}, \texttt{in}\brangle{2}) &= 1\\
-        \gamma_{t_{leq}^{(i)}}^*(\texttt{in}\brangle{1}, \texttt{in}\brangle{2}) &= -\texttt{in}\brangle{1} + \texttt{in}\brangle{2}
-    \end{align*}
-    which satisfies the privacy constraints \[\gamma_{t_{true}^{(i)}}^* \leq \gamma_{t_{geq}^{(i)}}^* \geq \gamma_{t_{leq}^{(i)}}^*\] for all $i$, which has cost $2n$.
-    
-    For the trajectories $L_i$, the coupling strategy $C_{L_i}^* = (\gamma^*, \gamma^{'*})$ assigns
-
-    \begin{align*}
-        \gamma_{t_{true}^{(n + i)}}^*(\texttt{in}\brangle{1}, \texttt{in}\brangle{2}) &= 1\\
-        \gamma_{t_{loop}^{(i)}}^*(\texttt{in}\brangle{1}, \texttt{in}\brangle{2}) &= -\texttt{in}\brangle{1} + \texttt{in}\brangle{2}\\
-        \gamma_{t_{geq}^{(i)}}^*(\texttt{in}\brangle{1}, \texttt{in}\brangle{2}) &= 1
-    \end{align*}
-
-    which satisfies the privacy constraints \[\gamma_{t_{geq}^{(i)}}^* \geq \gamma_{t_{true}^{(n + i)}}^* \leq \gamma_{t_{loop}^{(i)}}^*\] for all $i$, and has cost $4$.
-    
-    Putting these strategies together, we have a coupling startegy $C^*$ for $B_n$ with cost $2n$, as opposed to at least $n (2n + 1)$ for any path-independent coupling strategy $C$.
-\end{proof}
-
-
-
-\begin{proof}[\proofname~of lemma \ref{finiteCostConstraintLemma}]
-
-    ($\impliedby$)
-
-    Let $T$ be the set of transitions $t_i$ in $L$ such that $t_i$ is \textbf{not} found under a star in $R_L$. 
-
-    Fix a initialized path $\rho\in L$ and let $C_\rho$ be the coupling strategy for $\rho$ induced by $C$. 
-
-    Let $D_\rho$ be the set of transitions $t_i\in \rho$ such that $t_i$ is under a star in $R_L$, i.e., $t_i\notin T$.  
-
-    If the given constraint holds, then we know that $\max_{\texttt{in}\brangle{1}\sim\texttt{in}\brangle{2}}\sum_{i: t_i\in D_\rho}(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i|)d_i+(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i'|)d_i' = 0$
-
-    So \begin{align*}
-        cost(C_\rho) = \max_{\texttt{in}\brangle{1}\sim\texttt{in}\brangle{2}}&\sum_{i: t_i\in D_\rho}(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i|)d_i+(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i'|)d_i'\\
-        &+\sum_{i: t_i\notin D_\rho}(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i|)d_i+(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i'|)d_i'\\
-        = \max_{\texttt{in}\brangle{1}\sim\texttt{in}\brangle{2}}&\sum_{i: t_i\in T}(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i|)d_i+(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i'|)d_i'\\
-        \leq \sum_{i:t_i\in T}(2d_i& + 2d_i')\\
-        \leq |T|\max_{i:t_i\in T}&(2d_i + 2d_i')
-    \end{align*}
-
-    Thus, $cost(C)\leq |T|\max_{i:t_i\in T}(2d_i + 2d_i') <\infty$.
-
-    ($\implies$)
-
-    Let $t_i$ be a transition in $L$ under a star in $R_L$ such that $\gamma_i\neq -\texttt{in}\brangle{1}_i+\texttt{in}\brangle{2}_i$ or $\gamma_i'\neq  -\texttt{in}\brangle{1}_i+\texttt{in}\brangle{2}_i$.     Thus, $\exists \texttt{in}\brangle{1}\sim \texttt{in}\brangle{2}$ such that $(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i|)d_i+(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i'|)d_i'>0$.
-    Fix such a $\texttt{in}\brangle{1}\sim \texttt{in}\brangle{2}$. 
-
-    Then there exists some initialized path $\rho$ in $L$ of the form $a(bt_ic)^*d$ for some $a, b, c, d\in \Sigma_T^*$.
-    
-    Let $\rho_k=a(bt_ic)^kd$ be the corresponding initialized path in $L$ with $(bt_ic)$ iterated $k$ times. This is equivalent to iterating the cycle containing $t_i$ $k$ times. Then for all $k\in \NN$, \begin{align*}
-        cost(\rho_k) \geq k((|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i|)d_i+(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i'|)d_i'),
-    \end{align*}
-    so for all $M\in \RR$, $\exists \rho_k$ such that $cost(\rho_k) > M$.
-\end{proof}
-
-
-\begin{lemma}\label{cycleGammaConstraints}
-    If a coupling strategy $C=(\mathbf{\gamma}, \mathbf{\gamma}')$ for a trajectory $L$ is valid and has finite cost, then the following must hold for all $i$:
+\begin{defn}[Leaking Pairs \cite{chadhaLinearTimeDecidability2021}]
+    A pair of cycles $(C, C')$ is called a leaking pair if one of the following two conditions is satisfied.
     \begin{enumerate}
-        \item If $t_i$ is in a cycle and $c_i = \lguard[\texttt{x}]$, then $\gamma_i = -\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}$ and $\gamma_{at(i)} = 1$.
-        \item If $t_i$ is in a cycle and $c_i = \gguard[\texttt{x}]$, then $\gamma_i = -\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}$ and $\gamma_{at(i)} = -1$.
+        \item $C$ is an \lcycle, $C'$ is a \gcycle~and there is an \texttt{AG}-path from a location in $C$ to a location in $C'$.
+        \item $C$ is a \gcycle, $C'$ is an \lcycle~and there is an \texttt{AL}-path from a location in $C$ to a location in $C'$.
     \end{enumerate}
-\end{lemma}
-\begin{proof}
-    We will show (1). (2) follows symmetrically.
+\end{defn}
 
-    Consider some $t_i$ in a cycle where $c_i = \lguard[\texttt{x}]$. Because $C$ is has finite cost, we know from lemma \ref{finiteCostConstraintLemma} that $\gamma_i = -\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}$ for all  $\texttt{in}_i\brangle{1}\sim\texttt{in}_i\brangle{2}$. In particular, when $-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}=1$, then $\gamma_i=1$. 
-    
-    Further, because $\gamma_{at(i)}$ must be greater than $\gamma_i$ for all $\texttt{in}_i\brangle{1}\sim\texttt{in}_i\brangle{2}$ for $C$ to be valid, we must have that $\gamma_{at(i)}=1$.
-\end{proof}
-\begin{lemma}
-    If a valid finite cost coupling strategy $C = (\gamma, \gamma')$ exists for a lasso $L_\rho$, then there exists a valid finite cost coupling strategy $C^*= (\gamma^*, \gamma^{*\prime})$ such that for all $i\in AT(L_\rho)$, $\gamma_i^*\in \{-1, 0, 1\}$. 
-\end{lemma}
-\begin{proof}
-    Since $L_\rho$ is differentially private, the cost $opt(L_\rho)$ of its optimal coupling strategy is finite. By Proposition \ref{prop:approx_opt_are_close}, we see also that $approx(L)$ is finite. Thus, there exists $\beta \in [-1, 1]^{n}$ which satisfies the approximate privacy constraints on $L_\rho$.
+\begin{defn}[Disclosing Cycles \cite{chadhaLinearTimeDecidability2021}]
+    A cycle $C = q_0\to \ldots \to q_n \to q_0$ of a DiPA $A$ is a disclosing cycle if there is an $i$, $0 \leq i < |C|$ such that $q_i\in Q_{in}$ and the transition $q_i\to q_{i+1}$ that outputs either \texttt{insample} or \texttt{insample}'.
+\end{defn}
 
-    Define 
-    \[\gamma_i = \lfloor \beta_i \rfloor \]
+\begin{defn}[Privacy Violating Paths \cite{chadhaLinearTimeDecidability2021}]
+    We say that a path $\rho = q_0\to\ldots \to q_n $ of a DiPA $A$ is a privacy violating path if one of the following conditions hold:
+    \begin{itemize}
+        \item  $tail(\rho)$ is an \texttt{AG}-path (resp., \texttt{AL}-path) such that $last(\rho)$ is in a \gcycle~(resp., \lcycle) and the 0th transition $q_0\to q_1$ is an assignment transition that outputs \texttt{insample}.
+        \item $\rho$ is an \texttt{AG}-path (resp., \texttt{AL}-path) such that $q_n$ is in a \gcycle~(resp., \lcycle) and the first transition $q_0\to q_1$ has guard $\lguard[\texttt{x}]$ (resp., $\gguard[\texttt{x}]$) and outputs \texttt{insample}
+        \item $\rho$ is an \texttt{AG}-path (resp., \texttt{AL}-path) such that $q_0$ is in an \lcycle~(resp., \gcycle) and the last transition $q_{n-1}\to q_n$ has guard $\gguard[\texttt{x}]$ (resp., $\lguard[\texttt{x}]$) and outputs \texttt{insample}
+    \end{itemize}
+\end{defn}
 
-    and notice that $\gamma_i, \gamma^{\prime}$ also satisfy the approximate privacy constraints on $L_\rho$:
-    \begin{align*}
-        \beta_{at(i)} \leq \beta_i &\implies \lfloor \beta_{at(i)} \rfloor \leq \lfloor \beta_i \rfloor \implies \gamma_{at(i)} \leq \gamma_i\\
-        \beta_{at(i)} \geq \beta_i &\implies \lfloor \beta_{at(i)} \rfloor \geq \lfloor \beta_i \rfloor \implies \gamma_{at(i)} \geq \gamma_i\\
-        \beta_{i} = 0 &\implies \lfloor \beta_{i} \rfloor = 0 \implies \gamma_{i} = 0\\
-        \beta_{i} = 1 &\implies \lfloor \beta_{i} \rfloor = 1 \implies \gamma_{i} = 1\\
-        \beta_{i} = -1 &\implies \lfloor \beta_{i} \rfloor = -1 \implies \gamma_{i} = -1
-    \end{align*}
-    Since $L_\rho$ is private, none of the transitons $t_i$ for $i \in AT(L_\rho)$ are in cycles. \vishnu{Can I say this?}
-    
-    By Proposition \ref{prop:approx_exists}, we see that there is a valid coupling strategy $C^* = (\gamma^*, \gamma^{*\prime})$ for $\gamma^*_i = \gamma_i \in \{-1, 0, 1\}$ for all $i \in AT(L_\rho)$.
-\end{proof}
-
-
-\begin{proof}[Proof of proposition \ref{ClassCouplingStrategiesAreEnoughProp}]
-    
-    {\color{red} Make sure to put this proof after the DiPA counterexample proof}
-
-    Because $\sup_{\rho\in [\rho]}cost(C_\rho)< \infty$, we can assume that there are no leaking cycles, disclosing cycles, leaking pairs, or privacy violating paths in $[\rho]$.
-
-
-    For a given path $\rho$ and a coupling strategy $C_\rho$, recall that we effectively assign each transition $t_i$ in $\rho$ the cost $\max_{\Delta \in \{-1, 0, 1\}}|\Delta - \gamma_i(\Delta)| + |\Delta' - \gamma'_i(\Delta)|$. For convenience, we will shorthand this quantity as $\delta(\rho, t_i) + \delta'(\rho, t_i)$.
-
-
-    For all $n\in \NN$, let $\rho_n$ be the path in $[\rho]$ with every cycle in $\rho_n$ repeated $n$ times. 
-
-   Let $cycle([\rho])$ be the set of all transitions in $[\rho]$ that are contained within a cycle in $[\rho]$. Observe that for all $t\in cycle([\rho])$, \[
-        \lim_{n\to\infty}\inf_{t_i\in\rho_n: t_i=t} \delta(\rho_n, t_i) = 0
-    \]
-    Informally, for every cycle transition $t$ in $[\rho]$, if the cycle it is contained in is iterated enough times, there must be some iteration $t_i$ of $t$ that is assigned costs approaching 0. 
-
-    This can be shown by considering a transition $t$ in a cycle in $[\rho]$ whose minimum coupling cost is non-zero (i.e. $\inf_{\rho\in[\rho]; t_i=t} \delta(t_i) > 0$). Then for any finite $d>0$, there exists an path $\rho_n$ where $n>\lceil\frac{d}{\inf\delta(t_i)}\rceil+1$. Then $cost(C_{\rho^*})>d$, which implies that $\sup_{\rho\in [\rho]}cost(C_\rho) = \infty$, so the observation must hold. 
-
-    Let $t_i$ be a transition in a cycle in $[\rho]$ and let $\mathcal{C}_i$ be the cycle containing $t_i$. 
-
-    Then in particular, if $\mathcal{C}_i$ contains a transition with guard $\lguard[\texttt{x}]$, then for all $\psi>0$, there exists $n\in \NN$ such that for $\rho_n\in [\rho]$, $\gamma_{at(i)}> 1-\psi$ and if $\mathcal{C}_i$ contains a transition with guard $\lguard[\texttt{x}]$, then for all $\psi>0$, $\gamma_{at(i)}> -1+\psi$. 
-    Informally, assignment transitions before an \lcycle\ have shifts that approach 1 and assignment transitions before a \gcycle\ have shifts that approach -1 in $\rho_n$ as $n\to\infty$. 
-
-    Because we know that all coupling strategies $C_{\rho}$ are valid, this may also imply that other assignment transitions also have shifts that approach 1 or -1. 
-
-    Further, if the shifts for an assignment transition $t_i$ approach 1, then the shifts for a transition $t_j$ such that $at(j) = i$ and $c_j = \gguard[\texttt{x}]$ must also approach 1; symmetrically, if the shifts for an assignment transition $t_i$ approach -1, then the shifts for a transition $t_j$ such that $at(j) = i$ and $c_j = \lguard[\texttt{x}]$ must also approach -1. 
-
-    Let $T_1$ and $T_{-1}$ be the sets of assignment transitions in $[\rho]$ that approach 1 and -1, respectively. 
-
-    Note that every other transition in $[\rho]$ is a non-cycle transition. Consider such a transition $t$ in $[\rho]$. Then for every path $\rho\in [\rho]$ and its corresponding coupling strategy $C_\rho$, there is exactly one shift assignment for $t$ because $t$ is not in a cycle. 
-
-    Let the class coupling strategy $C' = (\gamma, \gamma')$ be partially defined as follows: \begin{align*}
-        \gamma(t_i)(\texttt{in}\brangle{1}, \texttt{in}\brangle{2}) &= \begin{cases}
-            1 & t_i \in T_1\\
-            -1 & t_i \in T_{-1}\\
-            \texttt{in}\brangle{1}-\texttt{in}\brangle{2} & c_i = \lguard[\texttt{x}]\land t_{at(i)}\in T_1\\
-            \texttt{in}\brangle{1}-\texttt{in}\brangle{2} & c_i = \gguard[\texttt{x}]\land t_{at(i)}\in T_{-1}\\
-            1 & c_i = \gguard[\texttt{x}]\land t_{at(i)}\in T_1\\
-            -1 & c_i = \lguard[\texttt{x}]\land t_{at(i)}\in T_{-1}
-        \end{cases}\\
-        \gamma'(t_i)(\texttt{in}\brangle{1}, \texttt{in}\brangle{2}) &=\begin{cases}
-            0 & t_i\text{ outputs }\texttt{insample}'\\
-            \texttt{in}\brangle{1}-\texttt{in}\brangle{2} & \text{otherwise}
-        \end{cases}
-    \end{align*}
-
-    Let $T_{un}$ be the set of transitions in $[\rho]$ that are not assigned by $\gamma$ so far. Note that all transitions in $T_{un}$ are not in cycles. 
-
-    Let $C^* = (\gamma^*, \gamma^{*\prime})$ be the minimal-cost valid class coupling strategy such that for all $t\notin T_{un}$, $\gamma^*(t) = \gamma(t)$. 
-
-    In other words, $cost(C^*) = \inf_{\text{all such possible valid class coupling strategies } C} cost(C)$. Note that $C^*$ is valid. 
-
-    We additionally claim that $cost(C^*)\leq \sup_{\rho\in [\rho]}cost(C_\rho)$. The cost of $C^*$ can be separated into costs attributed to $\gamma^{*\prime}$, costs attributed to all transitions not in $T_{un}$ by $\gamma^*$, and costs attributed to all transitions in $T_{un}$ by $\gamma^*$. 
-    
-    First, note that the coupling cost attributed to $\gamma^{*\prime}$ in $C^*$ must be at most the maximimum coupling cost attributed to $\gamma'$ over all path-specific coupling strategies. From before, we additionally know that the cost attributed to all transitions $t\notin T_{un}$ by $\gamma^*$ is at most the supremum of the costs attributed to $t$ over all paths in $[\rho]$, since we take the limit of all such shifts for $\rho_n$ as $n\to\infty$.
-
-    Finally, since all path-specific coupling strategies are valid, taking the remaining transition shifts to minimize the overall cost while retaining a valid coupling strategy sufficies. 
-
-    {\color{red} If i have time, come back to this argument - expressed poorly right now}
-\end{proof}
 
 \begin{lemma}\label{unsatisfiableImpliesNotWellformedLemma}
-    If a trajectory $L$ generated by $G_L$ satisfies output distinction and there does not exist a coupling strategy $C$ that satisfies the privacy constraint system for $L$, then $G_L$ must contain either a leaking cycle, a leaking pair, a disclosing cycle, or a privacy violating path. 
+    If a periodic program $L$ generated by $G_L$ satisfies output distinction and there does not exist a coupling strategy $C$ that satisfies the privacy constraint system for $L$, then $G_L$ must contain either a leaking cycle, a leaking pair, a disclosing cycle, or a privacy violating path. 
 \end{lemma}
 
 \begin{proof}[Proof of lemma \ref{unsatisfiableImpliesNotWellformedLemma}]
-    Let $[\rho]$ be a path class in $P$ that does not have a coupling strategy that satisfies the privacy constraint system.
+    Let $L$ be a periodic program in $P$ that does not have a coupling strategy that satisfies the privacy constraint system.
 
-    Consider a ``maximially'' satisfied coupling strategy $C=(\mathbf{\gamma}, \mathbf{\gamma}')$ for $[\rho]$; i.e. there is no other coupling strategy $C'$ for $[\rho]$ such that $C'$ satisfies more constraints than $C$. By lemma [tbd], we are allowed to only consider coupling strategies $C=(\gamma, \gamma')$ such that, for all $i\in AT(A)$, $\gamma_i \in \{-1, 0, 1\}$. 
+    Consider a ``maximally'' satisfied coupling strategy $C=(\mathbf{\gamma}, \mathbf{\gamma}')$ for $L$; i.e. there is no other coupling strategy $C'$ for $L$ such that $C'$ satisfies more constraints than $C$. By lemma \ref{integersAreEnoughForATLemma}, we are allowed to only consider coupling strategies $C=(\gamma, \gamma')$ such that, for all $i\in AT(A)$, $\gamma_i \in \{-1, 0, 1\}$. 
 
-    Fix some path class $\rho$ in $A$ such that at least one constraint is not satisfied by $C$ as applied to $\rho$.
+    Fix some SLP $\rho$ in $A$ such that at least one constraint is not satisfied by $C$ as applied to $\rho$.
 
     By assumption, at least one constraint is unsatisfied by $C$. We will show that in every case, $A$ must contain at least one of a leaking cycle, leaking pair, disclosing cycle, or privacy violating path. By theorem \ref{DiPACounterexamplesThm}, this is sufficient to show that $A$ is not $d\varepsilon$-differentially private for any $d>0$.
-
-    {\color{red} If I have time (low priority): rewrite this using a few helper lemmas to compress (e.g. $\gamma_{at(i)} =1\implies \lcycle$)}
 
     \textbf{Case 1: (1) is unsatisfied for $\gamma_i$}
     
@@ -453,7 +219,7 @@ Indeed, there exist a family of counterexamples such that the relative ``cost'' 
 
     If $i<j$, then the path from $t_i$ to $t_j$ is an $\texttt{AL}$-path, so it is also a privacy violating path.
 
-    Otherwise illustratef $j<i$, then the path from $t_j$ to $t_i$ is an $\texttt{AG}$ path, so it is also a privacy violating path.
+    Otherwise if $j<i$, then the path from $t_j$ to $t_i$ is an $\texttt{AG}$ path, so it is also a privacy violating path.
 
     \textbf{Case 1.2.2.3: Setting $\gamma_i =0$ violates constraint (1) for some $\gamma_j$ such that $at(j) = i$}
 
@@ -663,37 +429,301 @@ Indeed, there exist a family of counterexamples such that the relative ``cost'' 
 \end{proof}
 
 
-\begin{defn}[Leaking Cycles~\cite{chadhaLinearTimeDecidability2021}]
-    A path $\rho = q_0\to\ldots \to q_n$ in a DiPA $A$ is a leaking path if there exist indices $i, j$ where $0\leq i < j < n$ such that the $i$'th transition $q_i\to q_{i+1}$ in $\rho$ is an assignment transition and the guard of the transition $q_j \to q_{j+1}$ is not $\texttt{true}$. If $\rho$ is also a cycle, then we call it a leaking cycle.
-\end{defn}
+\subsection{Minimizing Coupling Cost}
 
-\begin{defn}[\cite{chadhaLinearTimeDecidability2021}]
-    A cycle $\rho$ in a DiPA $A$ is an \lcycle~if for some transition $q_i\to q_{i+1}$ in $\rho$, $\guard(q_i\to q_{i+1}) = \lguard[\texttt{x}]$. Similarly, $\rho$ is a \gcycle~if for some transition $q_i\to q_{i+1}$ in $\rho$, $\guard(q_i\to q_{i+1}) = \gguard[\texttt{x}]$.
+\begin{prop}\label{costDependspathProp}
+    There exist SLPs $\rho'=\pi\cdot \pi$, $\rho^*=\pi\cdot\pi^*$ that share a prefix SLP $\pi$ such that for all optimal coupling strategies $C'$ for $\rho'$ and $C^*$ for $\rho^*$, $C'$ and $C^*$ differ on the shift assigned to some transition in $\pi$. 
+
+    In other words, the optimal strategy $C$ must assign different coupling strategies to occurances of the same transition in different SLPs. 
+\end{prop}
+
+\begin{proof}
+    First, we define the following transitions that we use to construct our counterexample:
+    \begin{align*}
+        t_{init} &= (\texttt{true}, \bot, \texttt{true})\\
+        t_{geq1} &= (\gguard[\texttt{x}], \top, \texttt{false})\\
+        t_{leq1} &= (\lguard[\texttt{x}], \bot, \texttt{false})\\
+        t_{geq2} &= (\gguard[\texttt{x}], \top, \texttt{false})\\
+        t_{leq2} &= (\lguard[\texttt{x}], \bot, \texttt{false})
+    \end{align*}
+
+    For all transitions $t$, let $P(t) = (1, 1)$.
+
+    Let $\rho_1 = t_{init}t_{geq1}t_{geq2}^n$ and $\rho_2 = t_{init}t_{leq1}t_{leq2}^n$, where $n\in \NN$. Observe that $\rho_1$ and $\rho_2$ share the prefix $t_{init}$. 
     
-    Additionally, a path $\rho$ of a DiPA $A$ is an \texttt{AL}-path (respectively, \texttt{AG}-path) if all assignment transitions in $\rho$ have guard $\lguard[\texttt{x}]$ (respectively, $\gguard[\texttt{x}]$)
-\end{defn}
-
-\begin{defn}[Leaking Pairs \cite{chadhaLinearTimeDecidability2021}]
-    A pair of cycles $(C, C')$ is called a leaking pair if one of the following two conditions is satisfied.
-    \begin{enumerate}
-        \item $C$ is an \lcycle, $C'$ is a \gcycle~and there is an \texttt{AG}-path from a location in $C$ to a location in $C'$.
-        \item $C$ is a \gcycle, $C'$ is an \lcycle~and there is an \texttt{AL}-path from a location in $C$ to a location in $C'$.
-    \end{enumerate}
-\end{defn}
-
-\begin{defn}[Disclosing Cycles \cite{chadhaLinearTimeDecidability2021}]
-    A cycle $C = q_0\to \ldots \to q_n \to q_0$ of a DiPA $A$ is a disclosing cycle if there is an $i$, $0 \leq i < |C|$ such that $q_i\in Q_{in}$ and the transition $q_i\to q_{i+1}$ that outputs either \texttt{insample} or \texttt{insample}'.
-\end{defn}
-
-\begin{defn}[Privacy Violating Paths \cite{chadhaLinearTimeDecidability2021}]
-    We say that a path $\rho = q_0\to\ldots \to q_n $ of a DiPA $A$ is a privacy violating path if one of the following conditions hold:
+    We make the following observations: 
     \begin{itemize}
-        \item  $tail(\rho)$ is an \texttt{AG}-path (resp., \texttt{AL}-path) such that $last(\rho)$ is in a \gcycle~(resp., \lcycle) and the 0th transition $q_0\to q_1$ is an assignment transition that outputs \texttt{insample}.
-        \item $\rho$ is an \texttt{AG}-path (resp., \texttt{AL}-path) such that $q_n$ is in a \gcycle~(resp., \lcycle) and the first transition $q_0\to q_1$ has guard $\lguard[\texttt{x}]$ (resp., $\gguard[\texttt{x}]$) and outputs \texttt{insample}
-        \item $\rho$ is an \texttt{AG}-path (resp., \texttt{AL}-path) such that $q_0$ is in an \lcycle~(resp., \gcycle) and the last transition $q_{n-1}\to q_n$ has guard $\gguard[\texttt{x}]$ (resp., $\lguard[\texttt{x}]$) and outputs \texttt{insample}
-    \end{itemize}
-\end{defn}
+        \item The cost of any coupling strategy for $\rho_1$ or $\rho_2$ must be at least 2:
+        
+        Let $C_{\rho_1} = (\gamma, \gamma')$ be a coupling strategy for $\rho_1$. We can bound its cost as follows: 
+        \begin{align*}
+            cost(C_{\rho_1}) &= \max_{\texttt{in}\brangle{1}\sim\texttt{in}\brangle{2}}\sum_{i=0}^{n+2}(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i(\texttt{in}_i\brangle{1}, \texttt{in}_i\brangle{2}))\\&\qquad+(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i'(\texttt{in}_i\brangle{1}, \texttt{in}_i\brangle{2})|)\\
+            &\geq \max_{\texttt{in}\brangle{1}\sim\texttt{in}\brangle{2}} \sum_{i=0}^{n+2}(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i(\texttt{in}_i\brangle{1}, \texttt{in}_i\brangle{2})|)\\
+            &= \max_{\Delta \in [-1, 1]^{n+2}} \sum_{i=0}^{n+2}(|\Delta_i-\gamma_i(0, \Delta_i)|)\\
+            &\geq |1 - \gamma_0(0, 1)| + \sum_{i=1}^{n+2}|-1-\gamma_i(0, -1)|\\
+            &= 1 - \gamma_0(0, 1) + \sum_{i=1}^{n+2} (1+\gamma_i(0, -1))\\
+            &= 1 - \gamma_0(0, 1) + (n + 2) + \sum_{i=1}^{n+2}\gamma_i(0, -1)\\
+            &\geq 1 - \gamma_0(0, 1) + (n + 2) + \sum_{i=1}^{n+2}\gamma_0(0, 1) \qquad \text{(privacy constraint)}\\
+            &= (n + 3) + (n + 1) \gamma_0(0, 1)\\
+            &\geq 2
+        \end{align*}
 
+    and by a similar argument, $cost(C_{\rho_2})\geq 2$ for any coupling strategy $C_{\rho_2}$ for $\rho_2$. 
+
+    \item There exist coupling strategies $C_{\rho_1}^*$ and $C_{\rho_2}^*$ for $\rho_1$ and $\rho_2$, respectively, such that $cost(C_{\rho_1}^*) = cost(C_{\rho_2}^*) = 2$. 
+    
+    We will first describe $C_{\rho_1}^* = (\gamma, \gamma')$. Since no transition outputs \texttt{insample}, we can set $\gamma_i'(\texttt{in}\brangle{1}, \texttt{in}\brangle{2}) = \texttt{in}\brangle{2} - \texttt{in}\brangle{1}$ for all $i$ with no privacy cost. Define 
+    \begin{align*}
+        \gamma_0(\texttt{in}\brangle{1}, \texttt{in}\brangle{2}) &= -1 \\
+        \gamma_i(\texttt{in}\brangle{1}, \texttt{in}\brangle{2}) &= \texttt{in}_i\brangle{2} - \texttt{in}_i\brangle{1} \qquad \text{for all $i>0$}
+    \end{align*}
+    We see that $C^*_{\rho_1}$ is valid, since $\gamma_i\geq \gamma_{0}$ for all $i>0$. Further, we see that 
+    \begin{align*}
+        cost(C^*_{\rho_1}) &= \max_{\texttt{in}\brangle{1}\sim\texttt{in}\brangle{2}}\sum_{i=0}^{n+2}(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i(\texttt{in}_i\brangle{1}, \texttt{in}_i\brangle{2}))\\&\qquad+(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i'(\texttt{in}_i\brangle{1}, \texttt{in}_i\brangle{2})|)\\
+        &= \max_{\texttt{in}\brangle{1}\sim\texttt{in}\brangle{2}} |-\texttt{in}_0\brangle{1}+\texttt{in}_0\brangle{2}-\gamma_0(\texttt{in}_0\brangle{1}, \texttt{in}_0\brangle{2})| \\
+        &= \max_{\texttt{in}\brangle{1}\sim\texttt{in}\brangle{2}} |-\texttt{in}_0\brangle{1}+\texttt{in}_0\brangle{2}+1|\\
+        &\leq 2 
+    \end{align*}
+    showing that $cost(C^*_{\rho_1}) = 2$. Similarly, there is a coupling strategy $C^*_{\rho_2}$ for which $cost(C^*_{\rho_2}) = 2$.
+    
+    \item Any pair of coupling strategies $C_{\rho_1} = (\gamma^{(1)}, \gamma^{\prime(1)})$ and $C_{\rho_2}=(\gamma^{(2)}, \gamma^{\prime(2)})$ for $\rho_1$, $\rho_2$, respectively, that assign the same shifts to $t_{init}$ in both $\rho_1$ and $\rho_2$ must be such that $\max\{cost(C_{\rho_1}), cost(C_{\rho_2})\}>2$.
+    
+    For the sake of contradiction, suppose that $\max\{cost(C_{\rho_1}), cost(C_{\rho_2})\}=2$. Note that it is thus impossible for $\gamma_0^{(1)}(0, 1) \neq -1$, since then $cost(C_{\rho_1}) > 2$ in the same manner as above.  
+
+    Thus, $\gamma_0^{(1)}(0, 1) = -1$ in $C_{\rho_1}$, which by hypothesis, means that $\gamma_0^{(2)}(0, 1) = -1$ as well. We have the privacy constraint $\gamma_i^{(2)} \leq \gamma_0^{(2)}$ for $i>0$, which also means that $\gamma_i = -1$ identically for all $i > 0$. However, this means that 
+    \begin{align*}
+        cost(C_{\rho_2}) &= \max_{\texttt{in}\brangle{1}\sim\texttt{in}\brangle{2}}\sum_{i=0}^{n+2}(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i^{(2)}(\texttt{in}_i\brangle{1}, \texttt{in}_i\brangle{2}))\\&\qquad+(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i^{\prime(2)}(\texttt{in}_i\brangle{1}, \texttt{in}_i\brangle{2})|)\\
+        &\geq \max_{\texttt{in}\brangle{1}\sim\texttt{in}\brangle{2}} \sum_{i=0}^{n+2}(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i^{(2)}(\texttt{in}_i\brangle{1}, \texttt{in}_i\brangle{2})|)\\
+        &\geq \max_{\Delta \in [-1, 1]^{n+2}} |\Delta_0 - \gamma_i^{(2)}(0, \Delta_0)| + \sum_{i=1}^{n+2}(|\Delta_i-\gamma_i^{(2)}(0, \Delta_i)|)\\
+        &\geq |1 - \gamma_i^{(2)}(0, 1)| + \sum_{i=1}^{n+2}(|1+1|)\\
+        &= 2 \cdot (n + 2)
+    \end{align*}
+    which is a contradiction. 
+
+    \end{itemize}
+    This completes the proof.     
+\end{proof}
+
+\begin{prop}(Precise statement of proposition \ref{quadraticPenaltyProp})
+    There exist a family of sets of SLPs $\{B_n\}_{n\in \NN}$ for which the cost of any unified coupling strategy $C$ for SLPs in $B_n$ is in $\Omega(n^2)$, but for which there exist SLP-specific coupling strategies for $B_n$ suc   h that their total cost is in $O(n)$.
+\end{prop}
+
+\begin{proof}
+    \sky{this construction is very confusing - asking Vishnu about it but remove if he doesn't get back to me}
+    We first define the following transitions for all $1\leq i\leq n$: \begin{itemize}
+        \item $t_{true}^{(i)} = (\texttt{true}, \bot, \texttt{true})$
+        \item $t_{geq}^{(i)} = (\gguard[\texttt{x}],\bot, \texttt{true})$
+        \item $t_{leq}^{(i)} = (\lguard[\texttt{x}], \top, \texttt{false})$
+        \item $t_{loop}^{(i)} = (\lguard[\texttt{x}], \top, \texttt{false})$
+    \end{itemize}
+
+    For all transitions $t$, let $P(t) = (1, 1)$. 
+
+
+    Consider an SLP $\rho = t_{true}^{(1)} t_{geq}^{(1)} \left(t_{leq}^{(1)}\right)^n \dots t_{true}^{(n)} t_{geq}^{(n)} \left(t_{leq}^{(n)}\right)^n$
+
+    For each $i$, construct also the periodic program $L_i = L\left(t_{true}^{(n + i)} \left(t_{loop}^{(i)}\right)^* t_{geq}^{(i)}\right)$ such that each transition $t_{geq}^{(i)}$ is preceded by an arbitrary number of transitions with guard $\lguard$.
+    
+    Let $C$ be an SLP-independent coupling strategy for $B_n$ -- this menas that $C$ must assign the same shift to each transition in $B_n$. 
+
+    From the privacy constraints on the periodic programs $L_i$, we see that $\gamma_{t_{true}^{n + i}}(1, 0) = 1$ from the same method as in \ref{costDependspathProp}, which then implies from the constraint $\gamma_{t_{true}^{n + i}} \leq \gamma_{t_{geq}^{(i)}}$ that $\gamma_{t_{geq}^{(i)}}(1, 0) = 1$. 
+
+    Since the preceding assignment transition for $t_{leq}^{(i)}$ is given by $t_{geq}^{(i)}$, for which we have the privacy constraint $\gamma_{t_{geq}^{(i)}} \leq \gamma_{t_{leq}^{(i)}}$, we see that $\gamma_{t_{leq}^{(i)}}(1, 0) = 1$ as well. 
+
+    Computing the cost of the coupling strategy assigned to $\rho$, which has $n \cdot (n + 2)$ transitions, we get 
+
+    \begin{align*}
+        cost(C_\rho) &\geq \max_{\Delta = \texttt{in}\brangle{2} - \texttt{in}\brangle{1}} \sum_{i=1}^{n} \big(|\Delta_{t_{true}^{(i)}} - \gamma_{t_{true}^{(i)}}(-\Delta_{t_{true}^{(i)}}, 0)| + |\Delta_{t_{geq}^{(i)}} - \gamma_{t_{geq}^{(i)}}(-\Delta_{t_{geq}^{(i)}}, 0)| \\ & \qquad \qquad \qquad \qquad + n \cdot |\Delta_{t_{leq}^{(i)}} - \gamma_{t_{leq}^{(i)}}(-\Delta_{t_{leq}^{(i)}}, 0)|\big)\\
+        &\geq \sum_{i = 1}^n \left(|-1 - \gamma_{t_{true}^{(i)}}(1, 0)| + |-1 - \gamma_{t_{geq}^{(i)}}(1, 0)| + n \cdot |-1 - \gamma_{t_{leq}^{(i)}}(1, 0)|\right)\\
+        &= \sum_{i = 1}^n \left(|-1 - \gamma_{t_{true}^{(i)}}(1, 0)| + |-1 - 1| + n \cdot |-1 - 1|\right)\\
+        &\geq \sum_{i = 1}^n \left(2 n + 1\right)\\
+        &= n \cdot (2 n + 1)
+    \end{align*} 
+
+    whereas there exists another coupling strategy $C_\rho^* = (\gamma^*, \gamma^{'*})$ for $\rho$ that would assign 
+    \begin{align*}
+        \gamma_{t_{true}^{(i)}}^*(\texttt{in}\brangle{1}, \texttt{in}\brangle{2}) &= -\texttt{in}\brangle{1} + \texttt{in}\brangle{2}\\
+        \gamma_{t_{geq}^{(i)}}^*(\texttt{in}\brangle{1}, \texttt{in}\brangle{2}) &= 1\\
+        \gamma_{t_{leq}^{(i)}}^*(\texttt{in}\brangle{1}, \texttt{in}\brangle{2}) &= -\texttt{in}\brangle{1} + \texttt{in}\brangle{2}
+    \end{align*}
+    which satisfies the privacy constraints \[\gamma_{t_{true}^{(i)}}^* \leq \gamma_{t_{geq}^{(i)}}^* \geq \gamma_{t_{leq}^{(i)}}^*\] for all $i$, which has cost $2n$.
+    
+    For the periodic programs $L_i$, the coupling strategy $C_{L_i}^* = (\gamma^*, \gamma^{'*})$ assigns
+
+    \begin{align*}
+        \gamma_{t_{true}^{(n + i)}}^*(\texttt{in}\brangle{1}, \texttt{in}\brangle{2}) &= 1\\
+        \gamma_{t_{loop}^{(i)}}^*(\texttt{in}\brangle{1}, \texttt{in}\brangle{2}) &= -\texttt{in}\brangle{1} + \texttt{in}\brangle{2}\\
+        \gamma_{t_{geq}^{(i)}}^*(\texttt{in}\brangle{1}, \texttt{in}\brangle{2}) &= 1
+    \end{align*}
+
+    which satisfies the privacy constraints \[\gamma_{t_{geq}^{(i)}}^* \geq \gamma_{t_{true}^{(n + i)}}^* \leq \gamma_{t_{loop}^{(i)}}^*\] for all $i$, and has cost $4$.
+    
+    Putting these strategies together, we have a coupling startegy $C^*$ for $B_n$ with cost $2n$, as opposed to at least $n (2n + 1)$ for any SLP-independent coupling strategy $C$.
+\end{proof}
+
+
+
+\begin{proof}[\proofname~of lemma \ref{finiteCostConstraintLemma}]
+
+    ($\impliedby$)
+
+    Let $T$ be the set of transitions $t_i$ in $L$ such that $t_i$ is \textbf{not} found under a star in $R_L$. 
+
+    Fix a initialized SLP $\rho\in L$ and let $C_\rho$ be the coupling strategy for $\rho$ induced by $C$. 
+
+    Let $D_\rho$ be the set of transitions $t_i\in \rho$ such that $t_i$ is under a star in $R_L$, i.e., $t_i\notin T$.  
+
+    If the given constraint holds, then we know that $\max_{\texttt{in}\brangle{1}\sim\texttt{in}\brangle{2}}\sum_{i: t_i\in D_\rho}(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i|)d_i+(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i'|)d_i' = 0$
+
+    So \begin{align*}
+        cost(C_\rho) = \max_{\texttt{in}\brangle{1}\sim\texttt{in}\brangle{2}}&\sum_{i: t_i\in D_\rho}(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i|)d_i+(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i'|)d_i'\\
+        &+\sum_{i: t_i\notin D_\rho}(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i|)d_i+(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i'|)d_i'\\
+        = \max_{\texttt{in}\brangle{1}\sim\texttt{in}\brangle{2}}&\sum_{i: t_i\in T}(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i|)d_i+(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i'|)d_i'\\
+        \leq \sum_{i:t_i\in T}(2d_i& + 2d_i')\\
+        \leq |T|\max_{i:t_i\in T}&(2d_i + 2d_i')
+    \end{align*}
+
+    Thus, $cost(C)\leq |T|\max_{i:t_i\in T}(2d_i + 2d_i') <\infty$.
+
+    ($\implies$)
+
+    Let $t_i$ be a transition in $L$ under a star in $R_L$ such that $\gamma_i\neq -\texttt{in}\brangle{1}_i+\texttt{in}\brangle{2}_i$ or $\gamma_i'\neq  -\texttt{in}\brangle{1}_i+\texttt{in}\brangle{2}_i$.     Thus, $\exists \texttt{in}\brangle{1}\sim \texttt{in}\brangle{2}$ such that $(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i|)d_i+(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i'|)d_i'>0$.
+    Fix such a $\texttt{in}\brangle{1}\sim \texttt{in}\brangle{2}$. 
+
+    Then there exists some initialized SLP $\rho$ in $L$ of the form $a(bt_ic)^*d$ for some $a, b, c, d\in \Sigma_T^*$.
+    
+    Let $\rho_k=a(bt_ic)^kd$ be the corresponding initialized SLP in $L$ with $(bt_ic)$ iterated $k$ times. This is equivalent to iterating the cycle containing $t_i$ $k$ times. Then for all $k\in \NN$, \begin{align*}
+        cost(\rho_k) \geq k((|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i|)d_i+(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i'|)d_i'),
+    \end{align*}
+    so for all $M\in \RR$, $\exists \rho_k$ such that $cost(\rho_k) > M$.
+\end{proof}
+
+
+\begin{lemma}\label{cycleGammaConstraints}
+    If a coupling strategy $C=(\mathbf{\gamma}, \mathbf{\gamma}')$ for a periodic program $L$ is valid and has finite cost, then the following must hold for all $i$:
+    \begin{enumerate}
+        \item If $t_i$ is in a cycle and $c_i = \lguard[\texttt{x}]$, then $\gamma_i = -\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}$ and $\gamma_{at(i)} = 1$.
+        \item If $t_i$ is in a cycle and $c_i = \gguard[\texttt{x}]$, then $\gamma_i = -\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}$ and $\gamma_{at(i)} = -1$.
+    \end{enumerate}
+\end{lemma}
+\begin{proof}
+    We will show (1). (2) follows symmetrically.
+
+    Consider some $t_i$ in a cycle where $c_i = \lguard[\texttt{x}]$. Because $C$ is has finite cost, we know from lemma \ref{finiteCostConstraintLemma} that $\gamma_i = -\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}$ for all  $\texttt{in}_i\brangle{1}\sim\texttt{in}_i\brangle{2}$. In particular, when $-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}=1$, then $\gamma_i=1$. 
+    
+    Further, because $\gamma_{at(i)}$ must be greater than $\gamma_i$ for all $\texttt{in}_i\brangle{1}\sim\texttt{in}_i\brangle{2}$ for $C$ to be valid, we must have that $\gamma_{at(i)}=1$.
+\end{proof}
+
+\begin{lemma}\label{integersAreEnoughForATLemma}
+    If a valid finite cost coupling strategy $C = (\gamma, \gamma')$ exists for a periodic program $L_\rho$, then there exists a valid finite cost coupling strategy $C^*= (\gamma^*, \gamma^{*\prime})$ such that for all $i\in AT(L_\rho)$, $\gamma_i^*\in \{-1, 0, 1\}$. 
+\end{lemma}
+\begin{proof}
+    Since $L_\rho$ is differentially private, the cost $opt(L_\rho)$ of its optimal coupling strategy is finite. By Proposition \ref{prop:approx_opt_are_close}, we see also that $approx(L)$ is finite. Thus, there exists $\beta \in [-1, 1]^{n}$ which satisfies the approximate privacy constraints on $L_\rho$.
+
+    Define 
+    \[\gamma_i = \lfloor \beta_i \rfloor \]
+
+    and notice that $\gamma_i, \gamma^{\prime}$ also satisfy the approximate privacy constraints on $L_\rho$:
+    \begin{align*}
+        \beta_{at(i)} \leq \beta_i &\implies \lfloor \beta_{at(i)} \rfloor \leq \lfloor \beta_i \rfloor \implies \gamma_{at(i)} \leq \gamma_i\\
+        \beta_{at(i)} \geq \beta_i &\implies \lfloor \beta_{at(i)} \rfloor \geq \lfloor \beta_i \rfloor \implies \gamma_{at(i)} \geq \gamma_i\\
+        \beta_{i} = 0 &\implies \lfloor \beta_{i} \rfloor = 0 \implies \gamma_{i} = 0\\
+        \beta_{i} = 1 &\implies \lfloor \beta_{i} \rfloor = 1 \implies \gamma_{i} = 1\\
+        \beta_{i} = -1 &\implies \lfloor \beta_{i} \rfloor = -1 \implies \gamma_{i} = -1
+    \end{align*}
+    Since $L_\rho$ is private, none of the transitions $t_i$ for $i \in AT(L_\rho)$ are in cycles by lemma \ref{unsatisfiableImpliesNotWellformedLemma}.
+    
+    By Proposition \ref{prop:approx_exists}, we see that there is a valid coupling strategy $C^* = (\gamma^*, \gamma^{*\prime})$ for $\gamma^*_i = \gamma_i \in \{-1, 0, 1\}$ for all $i \in AT(L_\rho)$.
+\end{proof}
+
+
+
+
+\begin{proof}[Proof of prop \ref{syntacticEquivalenceProp}]
+    Let $G_P = (V, E)$ be a proper control flow graph that generates an output distinct program $P$. By definition, there exists some unique starting location $\ell_{init} \in V$.
+
+    Then let $A_P = (V, \RR, C, \Gamma, \ell_{init}, X, P_A, \delta)$ where
+    \begin{itemize}
+        \item $\Sigma, C, X$ are as in the definition of a DiPA
+        \item $P_A, \delta$ are (partial) functions defined below.
+    \end{itemize}
+    
+    For all states $\ell\in V$, let $T_\ell$ be the set of transitions that label edges leaving $\ell$. Because of the shared noise condition, $\forall t, t'\in T_{\ell}, P(t) = P(t')$. Let $P(t) = (d_\ell, d_\ell')$ for some $t\in T_\ell$. Then $P_A(\ell) = (0, d_\ell, 0, d_{\ell}')$.
+
+    For all $e = (\ell, \ell')\in E$, let $T(e) = (c, \sigma, \tau)$. We define $\delta(\ell, c) = (\ell', \sigma, \tau)$.
+
+    Observe that because $G_P$ is proper, $\delta$ is a valid transition function for $A_P$. 
+
+    Now let $A = (Q, \Sigma, C, \Gamma, q_{init}, X, P, \delta)$ be a DiPA and let $G_A = (V, E)$ be the underlying graph of $A$; observe that $q_{init}\in V$ is a unique initial state for $G_A$. Additionally, for all $e = (q, q')\in E$, let $\delta(q, c) = (q', \sigma, \tau)$. Then $T(e) = (c, \sigma, \tau)$ is the transition labeling $e$. 
+
+    Because $\delta$ is a valid partial transition function, $G_A$ must be a proper control flow graph that generates an output distinct program. 
+\end{proof}
+
+
+
+
+\begin{prop}[Proposition \ref{ClassCouplingStrategiesAreEnoughProp}]
+    If there exists a valid coupling strategy $C_\rho$ with cost $cost(C_\rho)$ for every SLP $\rho$ of periodic program $L$ and $\sup_{\rho\in L}cost(C_\rho)< \infty$, then there exists a valid class coupling strategy $C'$ for $L$ such that $cost(C') \leq \sup_{\rho\in L}cost(C_\rho)$. 
+\end{prop}
+
+\begin{proof}[Proof of proposition \ref{ClassCouplingStrategiesAreEnoughProp}]
+
+
+    Because $\sup_{\rho\in L}cost(C_\rho)< \infty$, we can assume that there are no leaking cycles, disclosing cycles, leaking pairs, or privacy violating paths in $L$ by lemma \ref{unsatisfiableImpliesNotWellformedLemma}.
+
+
+    For a given SLP $\rho$ and a coupling strategy $C_\rho$, recall that we effectively assign each transition $t_i$ in $\rho$ the cost $\max_{\Delta \in \{-1, 0, 1\}}|\Delta - \gamma_i(\Delta)| + |\Delta' - \gamma'_i(\Delta)|$. For convenience, we will shorthand this quantity as $\delta(\rho, t_i) + \delta'(\rho, t_i)$.
+
+
+    For all $n\in \NN$, let $\rho_n$ be the SLP in $L$ with every cycle in $\rho_n$ repeated $n$ times. 
+
+   Let $cycle(L)$ be the set of all transitions in $L$ that are contained within a cycle in $L$. Observe that for all $t\in cycle(L)$, \[
+        \lim_{n\to\infty}\inf_{t_i\in\rho_n: t_i=t} \delta(\rho_n, t_i) = 0
+    \]
+    Informally, for every cycle transition $t$ in $L$, if the cycle it is contained in is iterated enough times, there must be some iteration $t_i$ of $t$ that is assigned costs approaching 0. 
+
+    This can be shown by considering a transition $t$ in a cycle in $L$ whose minimum coupling cost is non-zero (i.e. $\inf_{\rho\in L; t_i=t} \delta(t_i) > 0$). Then for any finite $d>0$, there exists an SLP $\rho_n$ where $n>\lceil\frac{d}{\inf\delta(t_i)}\rceil+1$. Then $cost(C_{\rho^*})>d$, which implies that $\sup_{\rho\in L}cost(C_\rho) = \infty$, so the observation must hold. 
+
+    Let $t_i$ be a transition in a cycle in $L$ and let $\mathcal{C}_i$ be the cycle containing $t_i$. 
+
+    Then in particular, if $\mathcal{C}_i$ contains a transition with guard $\lguard[\texttt{x}]$, then for all $\psi>0$, there exists $n\in \NN$ such that for $\rho_n\in L$, $\gamma_{at(i)}> 1-\psi$ and if $\mathcal{C}_i$ contains a transition with guard $\lguard[\texttt{x}]$, then for all $\psi>0$, $\gamma_{at(i)}> -1+\psi$. 
+    Informally, assignment transitions before an \lcycle\ have shifts that approach 1 and assignment transitions before a \gcycle\ have shifts that approach -1 in $\rho_n$ as $n\to\infty$. 
+
+    Because we know that all coupling strategies $C_{\rho}$ are valid, this may also imply that other assignment transitions also have shifts that approach 1 or -1. 
+
+    Further, if the shifts for an assignment transition $t_i$ approach 1, then the shifts for a transition $t_j$ such that $at(j) = i$ and $c_j = \gguard[\texttt{x}]$ must also approach 1; symmetrically, if the shifts for an assignment transition $t_i$ approach -1, then the shifts for a transition $t_j$ such that $at(j) = i$ and $c_j = \lguard[\texttt{x}]$ must also approach -1. 
+
+    Let $T_1$ and $T_{-1}$ be the sets of assignment transitions in $L$ that approach 1 and -1, respectively. 
+
+    Note that every other transition in $L$ is a non-cycle transition. Consider such a transition $t$ in $L$. Then for every SLP $\rho\in L$ and its corresponding coupling strategy $C_\rho$, there is exactly one shift assignment for $t$ because $t$ is not in a cycle. 
+
+    Let the coupling strategy $C' = (\gamma, \gamma')$ be partially defined as follows: \begin{align*}
+        \gamma(t_i)(\texttt{in}\brangle{1}, \texttt{in}\brangle{2}) &= \begin{cases}
+            1 & t_i \in T_1\\
+            -1 & t_i \in T_{-1}\\
+            \texttt{in}\brangle{1}-\texttt{in}\brangle{2} & c_i = \lguard[\texttt{x}]\land t_{at(i)}\in T_1\\
+            \texttt{in}\brangle{1}-\texttt{in}\brangle{2} & c_i = \gguard[\texttt{x}]\land t_{at(i)}\in T_{-1}\\
+            1 & c_i = \gguard[\texttt{x}]\land t_{at(i)}\in T_1\\
+            -1 & c_i = \lguard[\texttt{x}]\land t_{at(i)}\in T_{-1}
+        \end{cases}\\
+        \gamma'(t_i)(\texttt{in}\brangle{1}, \texttt{in}\brangle{2}) &=\begin{cases}
+            0 & t_i\text{ outputs }\texttt{insample}'\\
+            \texttt{in}\brangle{1}-\texttt{in}\brangle{2} & \text{otherwise}
+        \end{cases}
+    \end{align*}
+
+    Let $T_{un}$ be the set of transitions in $L$ that are not assigned by $\gamma$ so far. Note that all transitions in $T_{un}$ are not in cycles. 
+
+    Let $C^* = (\gamma^*, \gamma^{*\prime})$ be the minimal-cost valid class coupling strategy such that for all $t\notin T_{un}$, $\gamma^*(t) = \gamma(t)$. 
+
+    In other words, $cost(C^*) = \inf_{\text{all such valid coupling strategies } C} cost(C)$. Note that $C^*$ is valid. 
+
+    We additionally claim that $cost(C^*)\leq \sup_{\rho\in L}cost(C_\rho)$. The cost of $C^*$ can be separated into costs attributed to $\gamma^{*\prime}$, costs attributed to all transitions not in $T_{un}$ by $\gamma^*$, and costs attributed to all transitions in $T_{un}$ by $\gamma^*$. 
+    
+    First, note that the coupling cost attributed to $\gamma^{*\prime}$ in $C^*$ must be at most the maximimum coupling cost attributed to $\gamma'$ over all SLP-specific coupling strategies. From before, we additionally know that the cost attributed to all transitions $t\notin T_{un}$ by $\gamma^*$ is at most the supremum of the costs attributed to $t$ over all SLPs in $L$, since we take the limit of all such shifts for $\rho_n$ as $n\to\infty$.
+
+    Finally, since all SLP-specific coupling strategies are valid, taking the remaining transition shifts to minimize the overall cost while retaining a valid coupling strategy sufficies. 
+\end{proof}
 
 
 \begin{proof}[Proof of \ref{prop:compute_opt_cost}]
@@ -808,7 +838,7 @@ Indeed, there exist a family of counterexamples such that the relative ``cost'' 
 \end{proof}
 
 
-\begin{proof}
+\begin{proof}[Proof of prop \ref{privacyConstraintGraphProp}]
     $(\implies)$ Let $L$ be differentially private. Then $approx(L) < \infty$, and so there exists $\gamma \in [-1, 1]^n$ such that the approximate privacy constraints are satisfied by $\gamma$. Aiming for a contradiction, assume that there exists a path ${\bf 1} \to v_{i_1} \to \dots \to v_{i_k} \to {\bf -1}$ in the privacy constraint graph of $L$. This corresponds to the sequence of privacy constraint inequalities
     \[1 \leq \gamma_{i_1} \leq \dots \leq \gamma_{i_k} \leq -1\]
     which is a contradiction, showing that no such $\gamma$ could exist. Therefore, there is no path from $\bf 1$ to $\bf -1$ in the privacy constraint graph of $L$.
@@ -820,7 +850,7 @@ Indeed, there exist a family of counterexamples such that the relative ``cost'' 
             -1 &\text{ otherwise}
         \end{cases}
     \end{align*}
-    We claim that the approximate privacy constraints are satisfied by $\gamma$. \vishnu{Need to do a better job of stating what approximate privacy constraints are and why they only depend on $\gamma \in [-1, 1]^n$ and not some function of $\texttt{in}\brangle{1}$ and $\texttt{in}\brangle{2}$}.
+    We claim that the approximate privacy constraints are satisfied by $\gamma$.
     
     \begin{itemize}
         \item Consider the approximate privacy constraint $\gamma_i \leq \gamma_j$. This corresponds to the edge $(v_i, v_j)$ in $G_L$. If $\gamma_i = 1$, there is a path from $\bf 1$ to $v_i$, and so there is a path from $\bf 1$ to $v_j$, and so $\gamma_j = 1$, satisfying the constraint. If $\gamma_i = -1$, then any assignment of $\gamma_j$ satisfies the constraint. 
@@ -831,11 +861,11 @@ Indeed, there exist a family of counterexamples such that the relative ``cost'' 
     Thus, the approximate privacy constraints are satisfied by $\gamma$, which means that $approx(L) < \infty$ and $L$ is differentially private.
 \end{proof}
 
-\textbf{The following claims help prove theorem \ref{LinearTimeDecidingPrograms}}
+\textbf{The following claims help prove prop \ref{programPrivacyConstraintGraphPathReq} and theorem \ref{LinearTimeDecidingPrograms}}
 
 \begin{prop}
     \label{prop:paths_in_privacy_graph}
-    Let $v_{i_0}, \dots, v_{i_k}$ be vertices in $G_P$ corresponding to transitions $t_{i_0}, \dots, t_{i_k}$ in $P$. If $v_{i_0} \to \dots \to v_{i_k}$ is a path in $G_P$, then there exists a path $\rho \in P$ such that 
+    Let $v_{i_0}, \dots, v_{i_k}$ be vertices in $G_P$ corresponding to transitions $t_{i_0}, \dots, t_{i_k}$ in $P$. If $v_{i_0} \to \dots \to v_{i_k}$ is a path in $G_P$, then there exists an SLP $\rho \in P$ such that 
     \begin{align*}
         t_{i_0} \cdots t_{i_k} \text{ is a subsequence of } \rho \text{ with } guard(t_{i_j}) = \gguard \text { for all } j \in \{1, \dots, k\}
     \end{align*}
@@ -853,28 +883,28 @@ Indeed, there exist a family of counterexamples such that the relative ``cost'' 
     \begin{itemize}
         \item Base Case ($k = 1$)
         
-        If $k = 1$, then the path $v_{i_0} \to v_{i_1}$ comprises of a single edge $(v_{i_0}, v_{i_1})$ in $G_P$. So, there is a trajectory $L$ for which $(v_{i_0}, v_{i_1}) \in G_L$, for which there is the privacy constraint $\gamma_{i_0} \leq \gamma_{i_1}$. 
+        If $k = 1$, then the path $v_{i_0} \to v_{i_1}$ comprises of a single edge $(v_{i_0}, v_{i_1})$ in $G_P$. So, there is a periodic program $L$ for which $(v_{i_0}, v_{i_1}) \in G_L$, for which there is the privacy constraint $\gamma_{i_0} \leq \gamma_{i_1}$. 
         
-        We either have that $i_0 = at(i_1)$ and $c_{i_1} = \gguard$, or $i_1 = at(i_0)$ and $c_{i_0} = \lguard$. In the first case, we have that $t_{i_0} t_{i_1}$ is a subsequence of some path $\rho$ in $L$ with $guard(t_{i_1}) = \gguard$. In the second case, we have that $t_{i_1} t_{i_0}$ is a subsequence of some path $\rho$ in $L$ with $guard(t_{i_0}) = \lguard$.
+        We either have that $i_0 = at(i_1)$ and $c_{i_1} = \gguard$, or $i_1 = at(i_0)$ and $c_{i_0} = \lguard$. In the first case, we have that $t_{i_0} t_{i_1}$ is a subsequence of some SLP $\rho$ in $L$ with $guard(t_{i_1}) = \gguard$. In the second case, we have that $t_{i_1} t_{i_0}$ is a subsequence of some SLP $\rho$ in $L$ with $guard(t_{i_0}) = \lguard$.
 
         \item Inductive Step ($k > 1$)
         
         By the inductive hypothesis, we have one of the following cases: 
 
         \begin{enumerate}
-            \item There exists a path $\rho_1 \in P$ such that $t_{i_0} \cdots t_{i_{k - 1}}$ is a subsequence of $\rho_1$ with $guard(t_{i_j}) = \gguard$ for all $j \in \{1, \dots, k - 1\}$.
+            \item There exists an SLP $\rho_1 \in P$ such that $t_{i_0} \cdots t_{i_{k - 1}}$ is a subsequence of $\rho_1$ with $guard(t_{i_j}) = \gguard$ for all $j \in \{1, \dots, k - 1\}$.
             
-            Since we have the edge $(v_{i_{k - 1}}, v_{i_k})$ in $G_P$, there exists a trajectory $L$ for which $(v_{i_{k - 1}}, v_{i_k}) \in G_L$, for which there is the privacy constraint $\gamma_{i_{k - 1}} \leq \gamma_{i_k}$.
+            Since we have the edge $(v_{i_{k - 1}}, v_{i_k})$ in $G_P$, there exists a periodic program $L$ for which $(v_{i_{k - 1}}, v_{i_k}) \in G_L$, for which there is the privacy constraint $\gamma_{i_{k - 1}} \leq \gamma_{i_k}$.
 
             We either have that $i_{k - 1} = at(i_k)$ and $c_{i_k} = \gguard$ ($t_{i_{k - 1}}$ precedes $t_{i_k}$ in $L$), or $i_k = at(i_{k - 1})$ and $c_{i_{k - 1}} = \lguard$ ($t_{i_k}$ precedes $t_{i_{k - 1}}$ in $L$). Notice, however, that we cannot have that $t_{i_k}$ precedes $t_{i_{k - 1}}$, since we have assumed $c_{i_{k - 1}} = \gguard$. 
 
-            So, there exists a path $\rho_2 \in L$ such that $t_{i_{k - 1}} t_{i_k}$ is a subsequence of $\rho_2$ with $guard(t_{i_k}) = \gguard$. 
+            So, there exists an SLP $\rho_2 \in L$ such that $t_{i_{k - 1}} t_{i_k}$ is a subsequence of $\rho_2$ with $guard(t_{i_k}) = \gguard$. 
 
-            Let $j_1$ be the index at which $t_{i_{k - 1}}$ appears in $\rho_1$, and $j_2$ be the index at which it appears in $\rho_2$. Then, the path $\rho_1[:j_1] \rho_2[j_2:]$ is a path in $P$ such that $t_{i_0} \cdots t_{i_k}$ is a subsequence of $\rho_1[:j_1] \rho_2[j_2:]$ with $guard(t_{i_j}) = \gguard$ for all $j \in \{1, \dots, k\}$.
+            Let $j_1$ be the index at which $t_{i_{k - 1}}$ appears in $\rho_1$, and $j_2$ be the index at which it appears in $\rho_2$. Then, the SLP $\rho_1[:j_1] \rho_2[j_2:]$ is an SLP in $P$ such that $t_{i_0} \cdots t_{i_k}$ is a subsequence of $\rho_1[:j_1] \rho_2[j_2:]$ with $guard(t_{i_j}) = \gguard$ for all $j \in \{1, \dots, k\}$.
 
-            \item There exists a path $\rho_1 \in P$ such that $t_{i_{k - 1}} \cdots t_{i_0}$ is a subsequence of $\rho_1$ with $guard(t_{i_j}) = \lguard$ for all $j \in \{k - 2, \dots, 0\}$.
+            \item There exists an SLP $\rho_1 \in P$ such that $t_{i_{k - 1}} \cdots t_{i_0}$ is a subsequence of $\rho_1$ with $guard(t_{i_j}) = \lguard$ for all $j \in \{k - 2, \dots, 0\}$.
             
-            Similar to the argument above, we either have that $t_{i_{k - 1}}$ precedes $t_{i_k}$, or $t_{i_k}$ precedes $t_{i_{k - 1}}$ in some trajectory. We cannot have that $t_{i_{k - 1}}$ precedes $t_{i_k}$, and so $c_{i_{k - 1}}$ is forced to be $\lguard$. We can then construct a path $\rho \in P$ such that $t_{i_k} \cdots t_{i_0}$ is a subsequence of $\rho$ with $guard(t_{i_j}) = \lguard$ for all $j \in \{k - 1, \dots, 0\}$. 
+            Similar to the argument above, we either have that $t_{i_{k - 1}}$ precedes $t_{i_k}$, or $t_{i_k}$ precedes $t_{i_{k - 1}}$ in some periodic program. We cannot have that $t_{i_{k - 1}}$ precedes $t_{i_k}$, and so $c_{i_{k - 1}}$ is forced to be $\lguard$. We can then construct an SLP $\rho \in P$ such that $t_{i_k} \cdots t_{i_0}$ is a subsequence of $\rho$ with $guard(t_{i_j}) = \lguard$ for all $j \in \{k - 1, \dots, 0\}$. 
         \end{enumerate}
     \end{itemize}
 
@@ -883,17 +913,17 @@ Indeed, there exist a family of counterexamples such that the relative ``cost'' 
 
 
 \begin{cor}
-    The path $v_{i_0} \to \dots \to v_{i_k}$ is in $G_P$ if and only if there is a trajectory $L$ in $P$ such that $v_{i_0} \to \dots \to v_{i_k}$ is a path in $G_L$.
+    The path $v_{i_0} \to \dots \to v_{i_k}$ is in $G_P$ if and only if there is a periodic program $L$ in $P$ such that $v_{i_0} \to \dots \to v_{i_k}$ is a path in $G_L$.
 \end{cor}
 
 \begin{proof}[Proof of \ref{programPrivacyConstraintGraphPathReq}]
-    There is a path from $\bf 1$ to $\bf -1$ in the privacy constraint graph of $P$ if and only if there is a path from $\bf 1$ to $\bf -1$ in the privacy constraint graph of some trajectory $L$ in $P$ by Proposition \ref{prop:paths_in_privacy_graph}. This is true if and only if there exists some $L$ which is not differentially private, which is true if and only if $P$ is not differentially private.
+    There is a path from $\bf 1$ to $\bf -1$ in the privacy constraint graph of $P$ if and only if there is a path from $\bf 1$ to $\bf -1$ in the privacy constraint graph of some periodic program $L$ in $P$ by Proposition \ref{prop:paths_in_privacy_graph}. This is true if and only if there exists some $L$ which is not differentially private, which is true if and only if $P$ is not differentially private.
 \end{proof}
 
-\subsection{Multivariable}
+\section{Multivariable Programs}
 
 
-\begin{lemma}\label{mvParallelCouplingsLemma}
+\begin{lemma}[Precise Version of lemma \ref{simplifiedMvParallelCouplingsLemma}]\label{mvParallelCouplingsLemma}
     Let $\vec{X}\brangle{1} = (X_1\brangle{1}, \ldots X_k\brangle{1})$ where $X_i\brangle{1}\sim \Lap(\mu_{x_i}\brangle{1}, \frac{1}{d_{x_i}\varepsilon})$ are independent random variables and $\vec{X}\brangle{2} = (X_1\brangle{2}, \ldots X_k\brangle{2})$ where $X_i\brangle{2}\sim \Lap(\mu_{x_i}\brangle{2}, \frac{1}{d_{x_i}\varepsilon})$ are independent random variables be representations of two possible initial values of $\vec{X}$, respectively.
 
     Let $t = (c, \sigma, \tau)$ be a $k$v-transition such that $P(t) = (d_t, d_t')$.
@@ -945,3 +975,4 @@ Indeed, there exist a family of counterexamples such that the relative ``cost'' 
     $d = |\mu_i\brangle{1}-\mu_i\brangle{2}+\gamma_{x_i}|d_x\varepsilon + |\texttt{in}\brangle{1}-\texttt{in}\brangle{2}+\gamma_t^{(x_i)}|d_t\varepsilon+|\texttt{in}\brangle{1}-\texttt{in}\brangle{2}+\gamma_t'|d_t'\varepsilon$.
 
 \end{proof}
+

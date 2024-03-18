@@ -1,21 +1,21 @@
 
 \subsection{Straightline Programs}
 
-We now demonstrate how to concatenate transitions and their corresponding coupling strategies together into program \textit{paths}.
+We now demonstrate how to concatenate transitions and their corresponding coupling strategies together into \textit{straight line programs} (SLPs).
 
-\begin{defn}[Paths]
-    A path is a sequence of transitions. For a path $\rho = t_0\cdot t_1\cdot\ldots\cdot t_{n-1}$, if $t_0$ is of the form $t_0 = (\texttt{true}, \sigma, \texttt{true})$ for some $\sigma$, then we call $\rho$ an \textbf{initialized} path.
+\begin{defn}[Straight Line Programs]
+    A straight line program (SLP) is a sequence of transitions. For an SLP $\rho = t_0\cdot t_1\cdot\ldots\cdot t_{n-1}$, if $t_0$ is of the form $t_0 = (\texttt{true}, \sigma, \texttt{true})$ for some $\sigma$, then we call $\rho$ an \textbf{initialized} SLP.
 \end{defn}
 
-We use standard properties of sequences for paths, such as the notion of the length of a path and the tail of a path, in the expected manner. For a path $\rho$, we use the notation $\rho_{i:j}$ to represent the subpath  $t_i t_{i+1} \ldots t_{j-1}$ of $\rho$.
+We use standard properties of sequences for SLPs, such as the notion of the length of an SLP and the tail of an SLP, in the expected manner. For an SLP $\rho$, we use the notation $\rho_{i:j}$ to represent the subsequence  $t_i t_{i+1} \ldots t_{j-1}$ of $\rho$.
 
-We directly lift the concept of inputs and outputs from individual transitions to paths; thus, each path reads in a \textbf{sequence} of inputs and outputs a sequence of outputs, one for each transition in the path. 
+We directly lift the concept of inputs and outputs from individual transitions to SLPs; thus, each SLP reads in a \textbf{sequence} of inputs and outputs a sequence of outputs, one for each transition in the SLP. 
 
-\subsubsection{Path Semantics}
+\subsubsection{Straight Line Program Semantics}
 
-The semantics of a path are defined as a function mapping a subdistribution of program states and a real-valued input sequence to a subdistribution of final program states. 
+The semantics of an SLP are defined as a function mapping a subdistribution of program states and a real-valued input sequence to a subdistribution of final program states. 
 
-More specifically, the semantics of a path $\rho = t_0t_1\cdots t_{n-1}$ are a function $\Phi_\rho: dist_\downarrow(S)\times \RR^n \to dist_\downarrow(S)$. $\Phi_\rho$ can be defined by composing transition semantics in the expected manner:
+More specifically, the semantics of an SLP $\rho = t_0t_1\cdots t_{n-1}$ are a function $\Phi_\rho: dist_\downarrow(S)\times \RR^n \to dist_\downarrow(S)$. $\Phi_\rho$ can be defined by composing transition semantics in the expected manner:
 
 \[\Phi_\rho(s, \texttt{in}) = \begin{cases}
     \Phi_{t_0}(s, \texttt{in}_0)& |\rho| = 1\\
@@ -23,25 +23,25 @@ More specifically, the semantics of a path $\rho = t_0t_1\cdots t_{n-1}$ are a f
 \end{cases}\]
 
 
-Like with transitions, we denote the probability that a path $\rho = t_0 t_1\ldots t_{n-1}$ outputs a specific value given an initial $\texttt{x}\in\RR$, input sequence $\texttt{in} \in \RR^n$, and possible measurable output sequence $o \subseteq (\Gamma\cup\RR)^n$ as $\PP[\texttt{x}, \rho, \texttt{in}, o]$. As before, $\PP[\texttt{x}, t, \texttt{in}, o]$ is the marginal of $\Phi_\rho((\texttt{x}, \lambda), \texttt{in})$ on $(\cdot, o)$.
+Like with transitions, we denote the probability that an SLP $\rho = t_0 t_1\ldots t_{n-1}$ outputs a specific value given an initial $\texttt{x}\in\RR$, input sequence $\texttt{in} \in \RR^n$, and possible measurable output sequence $o \subseteq (\Gamma\cup\RR)^n$ as $\PP[\texttt{x}, \rho, \texttt{in}, o]$. As before, $\PP[\texttt{x}, t, \texttt{in}, o]$ is the marginal of $\Phi_\rho((\texttt{x}, \lambda), \texttt{in})$ on $(\cdot, o)$.
 
-For a initialized path $\rho$, note that the initial value of $\texttt{x}$ is irrelevant, so we will shorthand $\PP[\texttt{x}_0, \rho, \texttt{in}, \sigma]$ to $\PP[\rho, \texttt{in}, \sigma]$.
+For a initialized SLP $\rho$, note that the initial value of $\texttt{x}$ is irrelevant, so we will shorthand $\PP[\texttt{x}_0, \rho, \texttt{in}, \sigma]$ to $\PP[\rho, \texttt{in}, \sigma]$.
 
 
 \subsubsection{Privacy}
 
-By leveraging the construction of couplings for individual transitions, we can construct a set of approximate liftings for paths.
+By leveraging the construction of couplings for individual transitions, we can construct a set of approximate liftings for SLPs.
 
-Because paths read in a \textit{sequence} of real-valued inputs, we need to slightly modify our definition of valid adjacent inputs.
+Because SLPs read in a \textit{sequence} of real-valued inputs, we need to slightly modify our definition of valid adjacent inputs.
 
 \begin{defn}[Validity for a sequence of inputs]
-    Two input sequences $\{\texttt{in}_i\brangle{1}\}_{i=1}^n\sim\{\texttt{in}_i\brangle{2}\}_{i=1}^n$ are \textbf{valid} and \textbf{adjacent} input sequences for a path $\rho = t_0\ldots t_{n-1}$ if, for all $1\leq i\leq n$, 
+    Two input sequences $\{\texttt{in}_i\brangle{1}\}_{i=1}^n\sim\{\texttt{in}_i\brangle{2}\}_{i=1}^n$ are \textbf{valid} and \textbf{adjacent} input sequences for an SLP $\rho = t_0\ldots t_{n-1}$ if, for all $1\leq i\leq n$, if $t_i$ is a private transition, then $\texttt{in}_i\brangle{1}\sim_1\texttt{in}_i\brangle{2}$ and if $t_i$ is a public transition, then $\texttt{in}_i\brangle{1}=\texttt{in}_i\brangle{2}$
 \end{defn}
 
-Thus, we have the following definition of privacy for initialized paths:
+Thus, we have the following definition of privacy for initialized SLPs:
 
-\begin{defn}[$d\varepsilon$-differential privacy for a path]
-    A initialized path $\rho$ of length $n$ is $d\varepsilon$-differentially private for some $d>0$ if $\forall \varepsilon>0$, for all valid adjacent input sequences $\texttt{in}\brangle{1}\sim \texttt{in}\brangle{2}$ of length $n$ and all possible output sequences $\sigma$ of length $n$, $\PP[\rho, \texttt{in}\brangle{1}, \sigma]\leq e^{d\varepsilon}\PP[\rho, \texttt{in}\brangle{2}, \sigma]$.
+\begin{defn}[$d\varepsilon$-differential privacy for an SLP]
+    An initialized SLP $\rho$ of length $n$ is $d\varepsilon$-differentially private for some $d>0$ if $\forall \varepsilon>0$, for all valid adjacent input sequences $\texttt{in}\brangle{1}\sim \texttt{in}\brangle{2}$ of length $n$ and all possible output sequences $\sigma$ of length $n$, $\PP[\rho, \texttt{in}\brangle{1}, \sigma]\leq e^{d\varepsilon}\PP[\rho, \texttt{in}\brangle{2}, \sigma]$.
 \end{defn}
 
 Note that, following \cite{chadhaLinearTimeDecidability2021}, we slightly redefine $\varepsilon$-differential privacy as $d\varepsilon$-differential privacy, treating $\varepsilon$ as a universal scaling parameter that can be fine-tuned by users for their own purposes. 
@@ -49,24 +49,24 @@ We argue that this definition is functionally equivalent, since if we are target
 
 \subsubsection{Sequential composition of couplings}
 
-We can compose together couplings associated with each transition to produce a coupling proof of privacy for an entire path. 
+We can compose together a series of couplings associated with each transition to produce a coupling proof of privacy for an entire SLP. 
 
-If $o\brangle{1}, o\brangle{2}$ are random variables representing the output of a program path $\rho$ given input sequences $\texttt{in}\brangle{1}$ and $\texttt{in}\brangle{2}$, respectively, 
+If $o\brangle{1}, o\brangle{2}$ are random variables representing the output of an SLP $\rho$ given input sequences $\texttt{in}\brangle{1}$ and $\texttt{in}\brangle{2}$, respectively, 
 then if we can create the coupling $o\brangle{1}\{(a, b): a=\sigma\implies b=\sigma\}^{\#d\varepsilon}o\brangle{2}$ for some $d>0$ for all adjacent inputs $\texttt{in}\brangle{1}\sim\texttt{in}\brangle{2}$ and all possible outputs $\sigma$, we show that $\rho$ is differentially private.
 
-As it turns out, directly composing together the couplings from lemma \ref{simplifiedIndTransitionCoupling} are essentially sufficient; the constraints imposed upon shifts for a coupling for transition $t_i$ depend solely on the shift at the most recent \textbf{assignment transition} in $\rho$ (i.e. the most recent transition $t_j$ such that $\tau_j = \texttt{true}$). 
+As it turns out, directly composing together the couplings from lemma \ref{simplifiedIndTransitionCoupling} are sufficient; the constraints imposed upon shifts for a coupling for transition $t_i$ depend solely on the shift at the most recent \textbf{assignment transition} in $\rho$ (i.e. the most recent transition $t_j$ such that $\tau_j = \texttt{true}$). 
 The coupling shifts for \textit{non-assignment transitions} can thus never impact each other. 
 
-We will let $A_\rho$ be the set of \textbf{assignment transitions} in a path $\rho$. Additionally, for every transition $t_i$ in $\rho$, let $t_{at(i)}$ be the most recent assignment transition in $\rho$ before $t_i$; i.e., $at(i) = \max\{j<i: t_j\in A_\rho\}$. If such a $j$ does not exist, we set $at(i)=-1$. 
+We will let $A_\rho$ be the set of \textbf{assignment transitions} in an SLP $\rho$. Additionally, for every transition $t_i$ in $\rho$, let $t_{at(i)}$ be the most recent assignment transition in $\rho$ before $t_i$; i.e., $at(i) = \max\{j<i: t_j\in A_\rho\}$. If such a $j$ does not exist, we set $at(i)=-1$. 
 
-In particular, note that for transition $t_i$, $\gamma_x = \gamma_{at(i)}$, where $\gamma_{-1}$ is the shift applied to the initial $\texttt{x}$-values $\texttt{x}_0\brangle{1}$ and $\texttt{x}_0\brangle{2}$ (for initialized paths, note that $\gamma_{-1}$ is irrelevant).
+In particular, note that for transition $t_i$, $\gamma_x = \gamma_{at(i)}$, where $\gamma_{-1}$ is the shift applied to the initial $\texttt{x}$-values $\texttt{x}_0\brangle{1}$ and $\texttt{x}_0\brangle{2}$ (for initialized SLPs, note that $\gamma_{-1}$ is irrelevant).
 
 Thus, for an individual transition $t_i$ of $\rho$, we have a family of valid coupling strategies $C_i(\gamma_{at(i)}, \gamma_i, \gamma_i')$. 
 
-We can merge these coupling strategies together to create a proof of privacy for the entire path: 
+We can merge these coupling strategies together to create a proof of privacy for the entire SLP: 
 
-\begin{defn}[Coupling Strategies for Paths]
-  For a initialized path $\rho$ of length $n$, a \textbf{valid coupling strategy} is a tuple of two functions $\bm{\gamma}(\texttt{in}\brangle{1}, \texttt{in}\brangle{2}):\RR^n\times \RR^n\to [-1, 1]^n$ and $\bm{\gamma}'(\texttt{in}\brangle{1}, \texttt{in}\brangle{2}):\RR^n\times \RR^n\to [-1, 1]^n$ 
+\begin{defn}[Coupling Strategies for Straight Line Programs]
+  For a initialized SLP $\rho$ of length $n$, a \textbf{valid coupling strategy} is a tuple of two functions $\bm{\gamma}(\texttt{in}\brangle{1}, \texttt{in}\brangle{2}):\RR^n\times \RR^n\to [-1, 1]^n$ and $\bm{\gamma}'(\texttt{in}\brangle{1}, \texttt{in}\brangle{2}):\RR^n\times \RR^n\to [-1, 1]^n$ 
   that produce shifts for each transition of $\rho$ for every possible pair of adjacent input sequences $\texttt{in}\brangle{1}\sim\texttt{in}\brangle{2}$ such that $\bm{\gamma}, \bm{\gamma'}$ satisfy the constraints \[
     \begin{cases}
       \gamma_i\leq\gamma_{at(i)} & c_i = \lguard[\texttt{x}]\\
@@ -80,7 +80,7 @@ We can merge these coupling strategies together to create a proof of privacy for
 
 
 \begin{lemma}\label{simplifiedMultTransitionsCouplingProof}
-  For any initialized path $\rho = t_0\ldots t_{n-1}$, any possible output event $\sigma$ of $\rho$, and any two valid adjacent input sequences $\texttt{in}\brangle{1}\sim \texttt{in}\brangle{2}$, if we are given $2n$ real-valued ``shifts'' $\{\gamma_i, \gamma_i'\}_{i=0}^{n-1}$ that, for all $i$, satisfy the constraints \[
+  For any initialized SLP $\rho = t_0\ldots t_{n-1}$, any possible output event $\sigma$ of $\rho$, and any two valid adjacent input sequences $\texttt{in}\brangle{1}\sim \texttt{in}\brangle{2}$, if we are given $2n$ real-valued ``shifts'' $\{\gamma_i, \gamma_i'\}_{i=0}^{n-1}$ that, for all $i$, satisfy the constraints \[
         \begin{cases}
           \gamma_i\leq\gamma_{at(i)} & c_i = \lguard[\texttt{x}]\\
           \gamma_i\geq\gamma_{at(i)} & c_i = \gguard[\texttt{x}]\\
@@ -92,26 +92,26 @@ We can merge these coupling strategies together to create a proof of privacy for
 \end{lemma}
 
 
-Thus, if we have a \textbf{valid} coupling strategy $C$ for a path $\rho$, then immediately by lemma \ref{multTransitionsCouplingProof}, we have a proof that $\rho$ is $d\varepsilon$-differentially private for some $d>0$; we call this $d$ the \textit{cost} of the coupling strategy for $\rho$. 
+Thus, if we have a \textbf{valid} coupling strategy $C$ for an SLP $\rho$, then immediately by lemma \ref{multTransitionsCouplingProof}, we have a proof that $\rho$ is $d\varepsilon$-differentially private for some $d>0$; we call this $d$ the \textit{cost} of the coupling strategy for $\rho$. 
 
 \begin{defn}
-    For a initialized path $\rho$ of length $n$, the \textbf{cost} of a coupling strategy $C_\rho=(\bm{\gamma}, \bm{\gamma}')$ is \[cost(C_\rho) = \max_{\texttt{in}\brangle{1}\sim\texttt{in}\brangle{2}}\sum_{i=0}^{n-1}(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i|)d_i+(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i'|)d_i'.\]
+    For an initialized SLP $\rho$ of length $n$, the \textbf{cost} of a coupling strategy $C_\rho=(\bm{\gamma}, \bm{\gamma}')$ is \[cost(C_\rho) = \max_{\texttt{in}\brangle{1}\sim\texttt{in}\brangle{2}}\sum_{i=0}^{n-1}(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i|)d_i+(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i'|)d_i'.\]
 
     Additionally, let $G$ be the set of all valid coupling strategies $C_\rho=(\bm{\gamma}, \bm{\gamma}')$ for $\rho$. Then the \textbf{coupling cost} of $\rho$ is 
     \[cost(\rho) = \min_{(\bm{\gamma}, \bm{\gamma}')\in G}cost((\bm{\gamma}, \bm{\gamma}')).\]
 \end{defn}
 
-\begin{cor}
-    If $C_\rho=(\bm{\gamma}, \bm{\gamma}')$ is a valid coupling strategy for a path $\rho$, then $\rho$ is $cost(C_\rho)\varepsilon$-differentially private.
+\begin{cor}\label{pathCostCor}
+    If $C_\rho=(\bm{\gamma}, \bm{\gamma}')$ is a valid coupling strategy for an SLP $\rho$, then $\rho$ is $cost(C_\rho)\varepsilon$-differentially private.
 \end{cor}
 
-In particular, we observe that for any individual initialized path $\rho$, there always exists \textit{some} valid coupling strategy for $\rho$; so every path $\rho$ is always differentially private. 
+In particular, we observe that for any individual initialized SLP $\rho$, there always exists \textit{some} valid coupling strategy for $\rho$; so every SLP $\rho$ is always differentially private. 
 
-Our program model fundamentally considers programs to be collections of individual paths; to this end, we extend the definition of privacy to sets of paths in the expected manner:
+Our program model fundamentally considers programs to be collections of individual SLPs; to this end, we extend the definition of privacy to sets of SLPs in the expected manner:
 
-\begin{defn}
-  Let $S$ be a set of initialized paths and let $O$ be a set of all possible outputs of paths in $S$. 
-  Then $S$ is $d\varepsilon$-differentially private for some $d>0$ if, for all paths $\rho\in S$ and outputs $\sigma\in O$, $\forall \varepsilon>0$, for all valid adjacent input sequences $\texttt{in}\brangle{1}\sim \texttt{in}\brangle{2}$, $\PP[\rho, \texttt{in}\brangle{1}, \sigma]\leq e^{d\varepsilon}\PP[\rho, \texttt{in}\brangle{2}, \sigma]$.
+\begin{defn}\label{setOfPathsDPDefn}
+  Let $S$ be a set of initialized SLPs and let $O$ be a set of all possible outputs of SLPs in $S$. 
+  Then $S$ is $d\varepsilon$-differentially private for some $d>0$ if, for all SLPs $\rho\in S$ and outputs $\sigma\in O$, $\forall \varepsilon>0$, for all valid adjacent input sequences $\texttt{in}\brangle{1}\sim \texttt{in}\brangle{2}$, $\PP[\rho, \texttt{in}\brangle{1}, \sigma]\leq e^{d\varepsilon}\PP[\rho, \texttt{in}\brangle{2}, \sigma]$.
 \end{defn}
 
 

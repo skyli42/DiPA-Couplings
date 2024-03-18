@@ -8,7 +8,7 @@ We finally conjecture that coupling proofs also characterize $k$-threshold varia
 
 \subsection{Multivariable Transitions}
 
-Our basic building block for programs with multiple threshold variables will be a single program \textit{transition}, as in the single variable case. 
+Our basic building block for programs with multiple threshold variables will be a single transition, as in the single variable case. 
 
 \begin{defn}[$k$-variable guards]
     Let $\texttt{x}_1, \ldots \texttt{x}_k$ be real-valued program variables. Then a \textbf{$k$-variable guard} is a boolean statement $c = c^{(\texttt{x}_1)}\oplus_1 c^{(\texttt{x}_2)}\oplus_2\ldots\oplus_{k-1}c^{(\texttt{x}_k)}$ where for all $i$, \begin{itemize}
@@ -143,32 +143,32 @@ We say that a collection of means $\{\mu_i\brangle{1}, \mu_i\brangle{2}\}_{i=1}^
 
 Note that cross-couplings require every single component of the initial variable distribution to have the same spread parameter.
 
-\subsection{Multivariable Paths}
+\subsection{Multivariable Straight Line Programs}
 
-By sequentially concatenating $k$v-transitions, we can again create $k$-variable path programs, which represent executions of a program in our program model. 
+By sequentially concatenating $k$v-transitions, we can again create $k$-variable straight line programs, which represent executions of a program in our program model. 
 
-\begin{defn}[$k$-variable paths]
-    A $k$-variable path ($k$v-path) is a finite string of $k$v-transitions. Analogously to single variable paths, we call a $k$v-path $\rho = t_0t_1\ldots t_{n-1}$, \textbf{initialized} if, for all $0\leq i < k$, $t_i = (\texttt{true}, \sigma_i, i+1)$ for some $\sigma_i$.
+\begin{defn}[$k$-variable straight line programs]
+    A $k$-variable straight line program ($k$v-SLP) is a finite string of $k$v-transitions. Analogously to single variable SLPs, we call a $k$v-SLP $\rho = t_0t_1\ldots t_{n-1}$, \textbf{initialized} if, for all $0\leq i < k$, $t_i = (\texttt{true}, \sigma_i, i+1)$ for some $\sigma_i$.
 \end{defn}
 
-The semantics of a $k$v-path are again defined by composing the semantics of each individual transition in the path; we denote the probability of a path $\rho$ outputting a specific measurable output sequence event $\sigma$ given initial threshold distributions $\vec{\texttt{x}}$ and input sequence $\texttt{in}$ as $\PP[\vec{\texttt{x}}, \rho, \texttt{in}, \sigma]$, which we shorthand to $\PP[\rho, \texttt{in}, \sigma]$ when $\rho$ is an initialized path.
+The semantics of a $k$v-SLP are again defined by composing the semantics of each individual transition in the SLP; we denote the probability of an SLP $\rho$ outputting a specific measurable output sequence event $\sigma$ given initial threshold distributions $\vec{\texttt{x}}$ and input sequence $\texttt{in}$ as $\PP[\vec{\texttt{x}}, \rho, \texttt{in}, \sigma]$, which we shorthand to $\PP[\rho, \texttt{in}, \sigma]$ when $\rho$ is an initialized SLP.
 
-Analogously to single variable paths, we will use the notation $t_{at_j(i)}$ to refer to the assignment transition for variable $\texttt{x}_j$ that immediately precedes transition $t_i$ within a path. 
+Analogously to single variable SLPs, we will use the notation $t_{at_j(i)}$ to refer to the assignment transition for variable $\texttt{x}_j$ that immediately precedes transition $t_i$ within an SLP. 
 
-As previously noted, cross-couplings require that the spread parameter of threshold variables are identical across variables; we thus say that a path $\rho = t_0\ldots t_{n-1}$ \textbf{allows for cross-couplings} if there exists some constant $d_{at}>0$ such that, for every assignment transition $t_i$ of $\rho$, $P(t_i) = (d_{at}, d'_i)$. 
+As previously noted, cross-couplings require that the spread parameter of threshold variables are identical across variables; we thus say that an SLP $\rho = t_0\ldots t_{n-1}$ \textbf{allows for cross-couplings} if there exists some constant $d_{at}>0$ such that, for every assignment transition $t_i$ of $\rho$, $P(t_i) = (d_{at}, d'_i)$. 
 
 
-Combining our ``parallel'' and ``cross'' coupling strategies allows us to create $k$v-path coupling strategies:
+Combining our ``parallel'' and ``cross'' coupling strategies allows us to create $k$v-SLP coupling strategies:
 
 \begin{defn}[$k$-variable Coupling Strategies]
-    A $k$v-coupling strategy for a $k$v-path $\rho$ of length $n$ is a collection of shifts $\{\gamma_i^{(\texttt{x}_1)},\ldots, \gamma_i^{(\texttt{x}_k)}, \gamma_i'\}_{i=0}^{n-1}$ such that every $\{\gamma_i^{(\texttt{x}_1)},\ldots, \gamma_i^{(\texttt{x}_k)}, \gamma_i'\}_{i=0}^{n-1}$ is a function of two adjacent input sequences $\texttt{in}\brangle{1}\sim \texttt{in}\brangle{2}$ with range $[-1, 1]$. 
+    A $k$v-coupling strategy for a $k$v-SLP $\rho$ of length $n$ is a collection of shifts $\{\gamma_i^{(\texttt{x}_1)},\ldots, \gamma_i^{(\texttt{x}_k)}, \gamma_i'\}_{i=0}^{n-1}$ such that every $\{\gamma_i^{(\texttt{x}_1)},\ldots, \gamma_i^{(\texttt{x}_k)}, \gamma_i'\}_{i=0}^{n-1}$ is a function of two adjacent input sequences $\texttt{in}\brangle{1}\sim \texttt{in}\brangle{2}$ with range $[-1, 1]$. 
     We call a coupling strategy \textbf{valid} if, for \textbf{all} input sequences $\texttt{in}\brangle{1}\sim\texttt{in}\brangle{2}$, it satisfies the constraints in lemma \ref{mvPathCouplingLemma}.
 \end{defn}
 
-As expected, if a coupling strategy satisfies certain conditions (see lemma \ref{mvPathCouplingLemma}), then we can use it to prove that a path is private. 
+As expected, if a coupling strategy satisfies certain conditions (see lemma \ref{mvPathCouplingLemma}), then we can use it to prove that an SLP is private. 
 
 \begin{lemma}\label{mvPathCouplingLemma}
-    Let $\rho = t_0\ldots t_{n-1}$ be a initialized $k$v-path of length $n$ where $t_i = (c_i, \sigma_i, \tau_i)$ and $P(t_i) = (d_i, d'_i)$ for all $i$. 
+    Let $\rho = t_0\ldots t_{n-1}$ be a initialized $k$v-SLP of length $n$ where $t_i = (c_i, \sigma_i, \tau_i)$ and $P(t_i) = (d_i, d'_i)$ for all $i$. 
     Let $\texttt{in}\brangle{1}\sim \texttt{in}\brangle{2}$ be arbitrary adjacent input sequences of length $n$. Additionally, fix some potential measurable output sequence event $\sigma$ of $\rho$ of length $n$.
 
     Then $\forall \varepsilon>0$ and for all $\{\gamma_i^{(\texttt{x}_1)},\ldots, \gamma_i^{(\texttt{x}_k)}, \gamma_i'\}_{i=0}^{n-1}$ that, for all $0\leq i\leq n-1$ and $1\leq j\leq k$ satisfy the following constraints:\begin{enumerate}
@@ -188,7 +188,7 @@ As expected, if a coupling strategy satisfies certain conditions (see lemma \ref
     Follows from lemmas \ref{simplifiedMvParallelCouplingsLemma} and \ref{mvCrossCoupling} exactly as lemma \ref{multTransitionsCouplingProof} follows from lemma \ref{indTransitionCoupling}.
 \end{proof}
 
-We denote the cost of a coupling strategy $C=\{\gamma_i^{(\texttt{x}_1)},\ldots, \gamma_i^{(\texttt{x}_k)}, \gamma_i'\}_{i=0}^{n-1}$ for a $k$v-path $\rho$ as $cost(C) = \max_{\texttt{in}\brangle{1}\sim\texttt{in}\brangle{2}}\sum_{i=0}^{n-1}\left(|\texttt{in}\brangle{2}-\texttt{in}\brangle{1}-\gamma_i'|d_i'+\sum_{j=1}^k|\texttt{in}\brangle{2}-\texttt{in}\brangle{1}-\gamma_i^{(\texttt{x}_j)}|d_i\right)$.
+We denote the cost of a coupling strategy $C=\{\gamma_i^{(\texttt{x}_1)},\ldots, \gamma_i^{(\texttt{x}_k)}, \gamma_i'\}_{i=0}^{n-1}$ for a $k$v-SLP $\rho$ as $cost(C) = \max_{\texttt{in}\brangle{1}\sim\texttt{in}\brangle{2}}\sum_{i=0}^{n-1}\left(|\texttt{in}\brangle{2}-\texttt{in}\brangle{1}-\gamma_i'|d_i'+\sum_{j=1}^k|\texttt{in}\brangle{2}-\texttt{in}\brangle{1}-\gamma_i^{(\texttt{x}_j)}|d_i\right)$.
 
 \subsection{$k$v-Programs}
 
@@ -210,7 +210,7 @@ For clarity, we call control flow graphs for $k$-variable programs $k$v-CFGs.
     \end{itemize}
 \end{defn}
 
-We will again use $\Psi(r)$ to denote the forgetful homomorphism from an execution $r$ of $G$ that drops all program locations from $r$ to produce a $k$v-path and say that $\{\Psi(r): r\text{ is a execution of }G\}$ is the set of $k$v-paths \textbf{generated} by a proper $k$v-CFG $G$. 
+We will again use $\Psi(r)$ to denote the forgetful homomorphism from an execution $r$ of $G$ that drops all program locations from $r$ to produce a $k$v-SLP and say that $\{\Psi(r): r\text{ is a execution of }G\}$ is the set of $k$v-SLPs \textbf{generated} by a proper $k$v-CFG $G$. 
 
 Naturally, $k$v-programs can be defined using a $k$v-CFG in analogy to the single variable case. 
 
@@ -218,26 +218,26 @@ Naturally, $k$v-programs can be defined using a $k$v-CFG in analogy to the singl
     A $k$v-program $P$ is a language over a finite alphabet of $k$v-transitions generated by a proper $k$v-CFG $G$. 
 \end{defn}
 
-Observe that a $k$v-program is still a regular language, simply over a finite alphabet of $k$v-transitions rather than single variable transitions. Thus, we again apply the decomposition result of \cite{afoninMinimalUnionFreeDecompositions2009} and analyze every $k$v-program as a finite collection of \textbf{trajectories}.
+Observe that a $k$v-program is still a regular language, simply over a finite alphabet of $k$v-transitions rather than single variable transitions. Thus, we again apply the decomposition result of \cite{afoninMinimalUnionFreeDecompositions2009} and analyze every $k$v-program as a finite collection of \textbf{periodic programs}.
 
-\begin{defn}[$k$-variable Trajectories]
-    A $k$v-trajectory $L$ is a union-free regular language generated by a proper $k$v-CFG $G$. 
+\begin{defn}[$k$-variable Periodic Programs]
+    A $k$v-periodic program $L$ is a union-free regular language generated by a proper $k$v-CFG $G$. 
 \end{defn}
 
-We again associate a single coupling strategy with every $k$v-trajectory:
+We again associate a single coupling strategy with every $k$v-periodic program:
 
-\begin{defn}[Coupling strategy for a $k$v-trajectory]
-    Let $L$ be a $k$v-trajectory generated by the graph $G_L = (V_L, E_L)$, where $m = |E_L|$. Then a coupling strategy $C = \{\gamma_i^{(\texttt{x}_1)},\ldots, \gamma_i^{(\texttt{x}_k)}, \gamma_i'\}_{i=0}^{m-1}$ for $L$ is a function $C:E_L\times\RR \times\RR\to [-1, 1]^{k+1}$ that computes $k+1$ shifts for each transition-labeled edge in $L$ as a function of two adjacent inputs.
+\begin{defn}[Coupling strategy for a $k$v-periodic program]
+    Let $L$ be a $k$v-periodic program generated by the graph $G_L = (V_L, E_L)$, where $m = |E_L|$. Then a coupling strategy $C = \{\gamma_i^{(\texttt{x}_1)},\ldots, \gamma_i^{(\texttt{x}_k)}, \gamma_i'\}_{i=0}^{m-1}$ for $L$ is a function $C:E_L\times\RR \times\RR\to [-1, 1]^{k+1}$ that computes $k+1$ shifts for each transition-labeled edge in $L$ as a function of two adjacent inputs.
 \end{defn}
 
-A coupling strategy for a $k$v-trajectory $L$ induces a coupling strategy for each $k$v-path in $L$ in the same manner as the single variable case (see definition \ref{svInducedCouplingStrategy}). 
+A coupling strategy for a $k$v-periodic program $L$ induces a coupling strategy for each $k$v-SLP in $L$ in the same manner as the single variable case (see definition \ref{svInducedCouplingStrategy}). 
 
-As expected, the cost $cost(C)$ of a coupling strategy $C$ for a $k$v-trajectory $L$ is the supremum of the costs of the $k$v-path coupling strategies induced by $C$ over all paths in $L$.
+As expected, the cost $cost(C)$ of a coupling strategy $C$ for a $k$v-periodic program $L$ is the supremum of the costs of the $k$v-SLP coupling strategies induced by $C$ over all SLPs in $L$.
 
-We can also directly translate the constraints for a coupling strategy to have finite cost from single variable trajectories to define the multivariable privacy constraint system.
+We can also directly translate the constraints for a coupling strategy to have finite cost from single variable periodic programs to define the multivariable privacy constraint system.
 
 \begin{defn}\label{mvPrivacyConstraintSystem}
-    Let $L$ be a $k$v-trajectory generated by $G_L = (V_L, E_L)$ and let $C = \{\gamma_i^{(\texttt{x}_1)},\ldots, \gamma_i^{(\texttt{x}_k)}, \gamma_i'\}_{i=0}^{m-1}$ be a coupling strategy for $L$. If, for every path $\rho$ in $L$, the coupling strategy for $\rho$ induced by $C$ satisfies the constraints from lemma \ref{mvPathCouplingLemma} as well as the following constraints for all input sequences $\texttt{in}\brangle{1}\sim\texttt{in}\brangle{2}$ and all $i$: \begin{enumerate}
+    Let $L$ be a $k$v-periodic program generated by $G_L = (V_L, E_L)$ and let $C = \{\gamma_i^{(\texttt{x}_1)},\ldots, \gamma_i^{(\texttt{x}_k)}, \gamma_i'\}_{i=0}^{m-1}$ be a coupling strategy for $L$. If, for every SLP $\rho$ in $L$, the coupling strategy for $\rho$ induced by $C$ satisfies the constraints from lemma \ref{mvPathCouplingLemma} as well as the following constraints for all input sequences $\texttt{in}\brangle{1}\sim\texttt{in}\brangle{2}$ and all $i$: \begin{enumerate}
         \setcounter{enumi}{2}
         \item If $\Psi^{-1}(t_i)$ is in a cycle in $G_L$, then for all $1\leq j\leq k$, $\gamma_i^{(\texttt{x}_j)} = -\texttt{in}\brangle{1}_i+\texttt{in}\brangle{2}_i$
         \item If $\Psi^{-1}(t_i)$ is in a cycle in $G_L$, then $\gamma_i' = -\texttt{in}\brangle{1}_i+\texttt{in}\brangle{2}_i$
@@ -246,13 +246,13 @@ We can also directly translate the constraints for a coupling strategy to have f
 \end{defn}
 
 \begin{lemma}
-    If a coupling strategy $C$ satisfies the privacy constraint system for a $k$v-trajectory $L$, then $cost(C)<\infty$ and $L$ is $cost(C)\varepsilon$-differentially private. 
+    If a coupling strategy $C$ satisfies the privacy constraint system for a $k$v-periodic program $L$, then $cost(C)<\infty$ and $L$ is $cost(C)\varepsilon$-differentially private. 
 \end{lemma}
 
 \begin{proof}
     Because the privacy constraint system includes constraints for validity by definition, we know that $C$ is a valid coupling strategy. In particular, by lemma \ref{mvPathCouplingLemma}, this means that $C$ will produce a proof that $L$ is $cost(C)\varepsilon$-differentially private. 
     
-    It remains to show that $C$ has finite cost. For every path $\rho\in L$, let $\rho^{(\texttt{x}_i)}$ be the single variable path created from $\rho$ by isolating every transition to the variable $\texttt{x}_i$. 
+    It remains to show that $C$ has finite cost. For every SLP $\rho\in L$, let $\rho^{(\texttt{x}_i)}$ be the single variable SLP created from $\rho$ by isolating every transition to the variable $\texttt{x}_i$. 
 
     Because of constraints (3) and (4), we know that, for all $\texttt{x}_i$, $\sup_{\rho\in L}\sum_{i=0}^{|\rho|-1}|\texttt{in}_i\brangle{2}-\texttt{in}_i\brangle{1}-\gamma_i^{(\texttt{x}_i)}|d_i + |\texttt{in}_i\brangle{2}-\texttt{in}_i\brangle{1}-\gamma_i'|d_i'$ is finite by applying lemma \ref{finiteCostConstraintLemma} to $\rho^{(\texttt{x}_i)}$ and a single variable coupling strategy constructed using $(\gamma^{(\texttt{x}_i)}, \gamma')$. 
 
@@ -261,8 +261,8 @@ We can also directly translate the constraints for a coupling strategy to have f
 
 Thus, we can extend corollary \ref{svProgramPrivacyCorollary} to multiple variable programs. 
 
-\begin{lemma}
-    If, for every trajectory $L$ in $P$, there exists a valid coupling strategy $C_L$, then $P$ is $cost(P) = (\max_{L\subseteq P} cost(C_L))\varepsilon$-differentially private. In particular, if for every $L\subseteq P$ there exists a coupling strategy for $L$ that satisfies the privacy constraint system, then $P$ is $d\varepsilon$-differentially private for some finite $d>0$.
+\begin{lemma}\label{mvCouplingImpliesPrivacyLemma}
+    If, for every periodic program $L$ in $P$, there exists a valid coupling strategy $C_L$, then $P$ is $cost(P) = (\max_{L\subseteq P} cost(C_L))\varepsilon$-differentially private. In particular, if for every $L\subseteq P$ there exists a coupling strategy for $L$ that satisfies the privacy constraint system, then $P$ is $d\varepsilon$-differentially private for some finite $d>0$.
 \end{lemma}
 
 \subsection{Demonstrating Violations of Privacy for 2-variable programs}
@@ -295,8 +295,8 @@ Thus, for example, either all of the transitions with guard $\mvlguard[\texttt{x
 
 Incorporating this exception, we show that an unsatisfiable coupling strategy still implies the presence of these ``bad'' graph structures. 
 
-\begin{lemma}
-    If no coupling strategy for a 2v-trajectory $L$ satisfies the privacy constraint system, then there exists a leaking cycle, non-cancelling leaking pair, disclosing cycle, or privacy violating path in either $\texttt{x}$ or $\texttt{y}$ in $L$.
+\begin{lemma}\label{2vUnsatisfiableImpliesNotWellformedLemma}
+    If no coupling strategy for a 2v-periodic program $L$ satisfies the privacy constraint system, then there exists a leaking cycle, non-cancelling leaking pair, disclosing cycle, or privacy violating path in either $\texttt{x}$ or $\texttt{y}$ in $L$.
 \end{lemma}
 \begin{proof}
     Suppose that we have some maximally satisfied coupling strategy $C$ for $L$. There must be some constraint that is violated by $C$. Note that if constraint (11) is violated, then there must be a leaking cycle in $L$ since we only allow cross-couplings between assignment transitions. 
@@ -326,17 +326,17 @@ Incorporating this exception, we show that an unsatisfiable coupling strategy st
 
 Finally, through a careful analysis, we extend the single variable DiPA counterexample results to two variables to show that the presence of these bad graph structures in a generating graph $G$ for a program $P$ implies that $P$ is not differentially private. 
 
-As in the single variable case, this result holds for the class of programs whose paths can be uniquely identified with specific outputs, which we call output-distinct (see definition \ref{outputDistinctionDef}).
+As in the single variable case, this result holds for the class of programs whose SLPs can be uniquely identified with specific outputs, which we call output-distinct (see definition \ref{outputDistinctionDef}).
 
 
-\begin{lemma}
+\begin{lemma}\label{mvNotwellformedImpliesNotPrivate}
     Consider a 2v-program $P$ generated by $G$. If $G$ satisfies output distinction and there exists a leaking cycle, disclosing cycle, or privacy violating path in a single variable or a non-cancelling leaking pair in either $\texttt{x}$ or $\texttt{y}$, then $P$ is not $d\varepsilon$-differentially private for any $d>0$. 
 \end{lemma}
 
 We conclude that the privacy constraint system completely characterizes privacy even for 2 variable programs.
 
-\begin{thm}
-    A 2v-program $P$ is $d\varepsilon$-differentially private for some $d>0$ if and only if there exists coupling strategy for every trajectory of $P$ that satisfies the privacy constraint system.
+\begin{thm}\label{2vCompletenessTheorem}
+    A 2v-program $P$ is $d\varepsilon$-differentially private for some $d>0$ if and only if there exists coupling strategy for every periodic program of $P$ that satisfies the privacy constraint system.
 \end{thm}
 
 \subsection{Beyond Two Variables}\label{generalizingToKVariables}

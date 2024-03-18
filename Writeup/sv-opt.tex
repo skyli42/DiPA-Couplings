@@ -1,37 +1,38 @@
 
 Beyond solving the decision problem of privacy, we can also optimize the specific privacy cost obtained by a coupling proof of privacy for a program. 
 
-In general, there is no way to reuse couplings for shared transitions on different paths if we are trying to find an optimal coupling strategy. In other words, one cannot choose a single coupling strategy for an arbitrary set of paths; we must choose a new coupling strategy for each path.
+In general, there is no way to reuse couplings for shared transitions on different SLPs if we are trying to find an optimal coupling strategy. In other words, one cannot choose a single coupling strategy for an arbitrary set of SLPs; we must choose a new coupling strategy for each SLP.
 
-For example, even if two paths share a prefix, we cannot necessarily ``reuse'' the shifts from an optimal (with regards to cost) coupling strategy for the prefix in the context of the first path in the context of an optimal coupling strategy for the second path. 
+For example, even if two SLPs share a prefix, we cannot necessarily ``reuse'' the shifts from an optimal (with regards to cost) coupling strategy for the prefix in the context of the first SLP in the context of an optimal coupling strategy for the second SLP. 
 
 \begin{prop}\label{noSharingStrategiesProp}
-  There exist paths $\rho'=\pi\cdot \pi$, $\rho^*=\pi\cdot\pi^*$ that share a prefix path $\pi$ such that for all optimal coupling strategies $C'$ for $\rho'$ and $C^*$ for $\rho^*$, $C'$ and $C^*$ differ on the shift assigned to some transition in $\pi$. 
+  There exist SLPs $\rho'=\pi\cdot \pi$, $\rho^*=\pi\cdot\pi^*$ that share a prefix SLP $\pi$ such that for all optimal coupling strategies $C'$ for $\rho'$ and $C^*$ for $\rho^*$, $C'$ and $C^*$ differ on the shift assigned to some transition in $\pi$. 
 \end{prop}
 
 A specific counterexample is provided as proposition \ref{costDependspathProp} in the appendix. 
 
-In particular, we show that the penalty to choosing only a single coupling strategy for a set of paths increases quadratically in the size of the paths.
+In particular, we show that the penalty to choosing only a single coupling strategy for a set of SLPs increases quadratically in the size of the SLPs.
 
-\begin{prop}
-  For all $n\in \NN$, there exist sets of paths $B_n$ such that the cost of a coupling strategy that uses the same set of shifts for all shared transitions between paths in $B_n$ has cost that is a quadratic factor larger than the cost of an optimal coupling strategy. 
+\sky{Note: proof is very unclear atm, waiting on Vishnu to get back to me about that}
+\begin{prop}\label{quadraticPenaltyProp}
+  For all $n\in \NN$, there exist sets of SLPs $B_n$ such that the cost of a coupling strategy that uses the same set of shifts for all shared transitions between SLPs in $B_n$ has cost that is a quadratic factor larger than the cost of an optimal coupling strategy. 
 \end{prop}
 
-Fortunately, while we cannot analyze \textit{arbitrary} sets of paths with the same coupling strategy, we can still analyze an entire \textit{trajectory} with a single coupling strategy.
+Fortunately, while we cannot analyze \textit{arbitrary} sets of SLPs with the same coupling strategy, we can still analyze an entire \textit{periodic program} with a single coupling strategy.
 
-We show that it is in fact optimal to only consider a single coupling strategy for an entire trajectory; not only is finding individual coupling strategies for every single path in a trajectory intractable, but it also does not lead to a better overall privacy cost. 
+We show that it is in fact optimal to only consider a single coupling strategy for an entire periodic program; not only is finding individual coupling strategies for every single SLP in a periodic program intractable, but it also does not lead to a better overall privacy cost. 
 
 \begin{prop}\label{ClassCouplingStrategiesAreEnoughProp}
-    If there exists a valid coupling strategy $C_\rho$ with cost $cost(C_\rho)$ for every path $\rho$ of trajectory $L$ and $\sup_{\rho\in L}cost(C_\rho)< \infty$, then there exists a valid class coupling strategy $C'$ for $L$ such that $cost(C') \leq \sup_{\rho\in L}cost(C_\rho)$. 
+    If there exists a valid coupling strategy $C_\rho$ with cost $cost(C_\rho)$ for every SLP $\rho$ of periodic program $L$ and $\sup_{\rho\in L}cost(C_\rho)< \infty$, then there exists a valid class coupling strategy $C'$ for $L$ such that $cost(C') \leq \sup_{\rho\in L}cost(C_\rho)$. 
 \end{prop}
 
-Thus, as with the decision problem, we will optimize the cost of each trajectory of a program independently.
+Thus, as with the decision problem, we optimize the cost of each periodic program of a program independently.
 
-We first define a linear program that computes the optimal cost of any coupling strategy for a trajectory. 
+We first define a linear program that computes the optimal cost of any coupling strategy for a periodic program. 
 
 \begin{prop}
     \label{prop:compute_opt_cost}
-    Let $L$ be a trajectory containing $n$ distinct transitions $t_i = (c_i, \sigma_i, \tau_i)$ such that each $t_i$ has spread parameters $P(t_i) = (d_i, d'_i)$. The cost $opt(L)$ of the optimal coupling strategy for $L$ can be computed by solving the following optimization problem: 
+    Let $L$ be a periodic program containing $n$ distinct transitions $t_i = (c_i, \sigma_i, \tau_i)$ such that each $t_i$ has spread parameters $P(t_i) = (d_i, d'_i)$. The cost $opt(L)$ of the optimal coupling strategy for $L$ can be computed by solving the following optimization problem: 
     \begin{align*}
         opt(L) = \max_{\texttt{in}\brangle{2}-\texttt{in}\brangle{1} \in [-1, 1]^n} &\min_{\gamma, \gamma' \in [-1, 1]^n} \sum_{i = 1}^n \left(|\texttt{in}_i\brangle{2}-\texttt{in}_i\brangle{1} - \gamma_i| d_i + |\texttt{in}_i\brangle{2}-\texttt{in}_i\brangle{1} - \gamma_i'|d_i' \right)\\ 
             \text{subject to }
@@ -41,7 +42,7 @@ We first define a linear program that computes the optimal cost of any coupling 
             &\ \gamma_i' = 0 \text{ if } \sigma_i = \texttt{insample}'\\
             &\ \gamma_i = \gamma_i'= \texttt{in}_i\brangle{2}-\texttt{in}_i\brangle{1} \text{ if } t_i \text{ is in a cycle}
     \end{align*}
-    If a trajectory $L$ is not differentially private, a solution to this optimization problem does not exist, and we write $opt(L) = \infty$.
+    If a periodic program $L$ is not differentially private, a solution to this optimization problem does not exist, and we write $opt(L) = \infty$.
 \end{prop}
 
 Observe that the inner problem is convex, and so the outer problem is that of convex maximization. 
@@ -49,7 +50,7 @@ Observe that the inner problem is convex, and so the outer problem is that of co
 It is unclear whether or not a polynomial time algorithm for solving this optimization problem exists; instead, we consider an approximation of the problem for trajectories that are known to be private. 
 
 \begin{defn}[Approximate Privacy Cost]
-    Let $L$ be a differentially private trajectory generated by $G$ containing $n$ distinct transitions $t_i = (c_i, \sigma_i, \tau_i)$ such that each $t_i$ has spread parameters $P(t_i) = (d_i, d'_i)$.
+    Let $L$ be a differentially private periodic program generated by $G$ containing $n$ distinct transitions $t_i = (c_i, \sigma_i, \tau_i)$ such that each $t_i$ has spread parameters $P(t_i) = (d_i, d'_i)$.
     Let $I$ be the set of transitions in $L$ that do \textit{not} appear in a cycle in $G$. The \textbf{approximate privacy cost} $approx(L)$ of $L$ is defined as:
     \begin{align*} 
         approx(L) = &\sum_{t_i \text{outputs \texttt{insample}'}} d_i' + \min_{\gamma \in [-1, 1]^n} \sum_{t_i \in I} \left(1 + |\gamma_i| \right) d_i  \\
@@ -66,14 +67,14 @@ Observe that this is the cost of a coupling strategy $(\gamma, \gamma')$ such th
 Importantly, we show that the approximate LP is solvable in polynomial time through an application of the ellipsoid method.
 
 \begin{prop}\label{approximateSolutionPolyTimeProp}
-    The approximate privacy cost of a differentially private trajectory $L$ can be computed in time polynomial in $n$, the number of distinct transitions in $L$.
+    The approximate privacy cost of a differentially private periodic program $L$ can be computed in time polynomial in $n$, the number of distinct transitions in $L$.
 \end{prop}
 
 As hoped, solving this approximation still provides us with a valid coupling strategy.
 
 \begin{prop}
     \label{prop:approx_exists}
-    Given a differentially private trajectory $L$, there exists a valid coupling strategy $C_L$ for $L$ such that $cost(C_L) = approx(L)$.
+    Given a differentially private periodic program $L$, there exists a valid coupling strategy $C_L$ for $L$ such that $cost(C_L) = approx(L)$.
 
     Moreover, if $\gamma \in [-1, 1]^n$ satisfies the approximate privacy constraints, then there is a valid coupling strategy $C_L = (\gamma^*, {\gamma'}^*)$ for $L$ such that $\gamma_i^*(\texttt{in}\brangle{1}, \texttt{in}\brangle{2}) = \gamma_i$ for all $t_i$ that do not appear in cycles. 
 \end{prop}
@@ -82,20 +83,20 @@ Further, we obtain an approximation factor bounded by a term linear in the numbe
 
 \begin{prop}
     \label{prop:approx_opt_are_close}
-    For a trajectory $L$ with $n$ distinct transitions, we have 
+    For a periodic program $L$ with $n$ distinct transitions, we have 
     \[opt(L) \leq approx(L) \leq opt(L) + \sum_{i \in I }^n d_i + \sum_{t_i \text{outputs \texttt{insample}}} d_i'\]
     where $I$ is the set of transitions in $L$ that do $\textit{not}$ appear in a cycle.
 \end{prop}
 
-We remark that our decision algorithm for privacy (section \ref{decisionSection}) is an even more simplified encoding of approximate privacy constraints into a privacy constraint graph; we also note that it is possible, if less intuitive, to directly encode the approximate privacy constraints as an instance of 2SAT. 
+We remark that our decision algorithm for privacy (section \ref{decisionSection}) is a simplified encoding of approximate privacy constraints into a privacy constraint graph; we also note that it is possible, if less intuitive, to directly reduce the approximate privacy constraints to an instance of 2SAT. 
 
 \azadeh{check with sasho about this part}
-We conjecture that the optimal coupling cost, as represented by the linear program from \ref{prop:compute_opt_cost}, exactly matches the ``true'' privacy cost of a program, as represented by the max-divergence between the distributions of a trajectory's outputs on adjacent input sequences. In this case, coupling proofs would provide an exact bound on the privacy cost of any program that can be represented by our model. 
+We conjecture that the optimal coupling cost, as represented by the linear program from \ref{prop:compute_opt_cost}, exactly matches the ``true'' privacy cost of a program, as represented by the max-divergence between the distributions of a program's outputs on adjacent input sequences. In this case, coupling proofs would provide an exact bound on the privacy cost of any program that can be represented by our model. 
 
 \begin{conj}
-    For a trajectory $L$, the optimal coupling cost $opt(L)$ of $L$ matches the ``true'' privacy cost, i.e.:
+    For a periodic program $L$, the optimal coupling cost $opt(L)$ of $L$ matches the ``true'' privacy cost, i.e.:
     \begin{align*}
         opt(L) = \sup_{\rho \in L} \sup_{\texttt{in}\brangle{1} \sim \texttt{in}\brangle{2}} D_\infty(\PP[\rho, \texttt{in}\brangle{1}, \cdot]\; ||\; \PP[\rho, \texttt{in}\brangle{2}, \cdot])
     \end{align*}
-    representing the worst-case privacy loss over all paths in $L$, all valid adjacent inputs, and all measurable output events.
+    representing the worst-case privacy loss over all SLPs in $L$, all valid adjacent inputs, and all measurable output events.
 \end{conj}

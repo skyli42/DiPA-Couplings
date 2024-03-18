@@ -1,0 +1,1125 @@
+\section{Violations of Privacy for 2-variable Programs}
+
+\subsection{Approach}
+
+This section serves as a proof of lemma \ref{mvNotwellformedImpliesNotPrivate}: 
+
+
+Together with lemma \ref{mvCouplingImpliesPrivacyLemma} and lemma \ref{2vUnsatisfiableImpliesNotWellformedLemma}, this serves to prove theorem \ref{2vCompletenessTheorem}.
+
+
+Throughout this section, we consider some family of paths $\rho$ of a proper and output-distinct $2$v-CFG with either a leaking cycle, non-cancelling leaking pair, disclosing cycle, or privacy violating path and aim to show that there exist two input sequences for the path such that for all $d>0$, there exists a path $\rho$ such that $\rho$ is not $d\varepsilon$-differentially private. 
+In general, our approach is to ``eliminate'' one variable from the analysis by assigning it a very small or very large input; we thus frequently refer back to the analysis of \cite{chadhaLinearTimeDecidability2021}. 
+
+
+
+\subsection{Preliminary definitions and notation}
+
+\begin{defn}
+	For a transition $t_i = q_i\to q_{i+1}$ in a path $\eta_\ell$, the guard of $t_i$ is denoted by $c_i$. Additionally, for all guards $c_i$, let $c_i(x)$ represent the ``$x$-component'' of the guard, and similarly for $c_i(y)$.
+	
+	For example, if $t_i$ is a transition with guard $\lguard[\texttt{x}]$ and $\gguard[\texttt{y}]$, then $c_i = \lguard[\texttt{x}]$ and $\gguard[\texttt{y}]$, $c_i(x)=\lguard[\texttt{x}]$, and $c_i(y)=\gguard[\texttt{y}]$.
+	\end{defn}
+	
+We use $\PP_\alpha[c_i]$ generically to denote the probability of guard $c_i$ being satisfied for input $\alpha$.
+
+\subsection{Leaking Cycles}
+
+\subsubsection{Case 1: There is no assignment into $y$ in the leaking cycle and there exists some ``leaky transition'' that is not an assignment into $\texttt{x}$}
+
+\begin{thm}
+	If there is no assignment into $y$ in the cycle, a leaking cycle $\implies$ no privacy. 
+\end{thm}
+\begin{proof}
+
+
+	Fix $d>0$. We will consider some $\varepsilon>0$ to be fixed later. 
+
+	Consider a path $\eta_\ell = q_0\to\ldots\to q_u\to \ldots\to \overbrace{q_m\to \ldots q_{m+\ell n}}^{C}$ with the leaking cycle $C$ repeated $\ell$ times. Additionally, suppose that $q_u$ is the last assignment transition into $\texttt{y}$ before $C$. 
+
+	Let $\sigma_\ell$ be a valid output of $\eta_\ell$ and WLOG suppose that $\sigma_\ell\in\Gamma^*$. 
+
+		
+	Let $i, j$ be any integers such that \begin{itemize}
+		\item $0\leq i <j<n$.
+		\item $t_{m+i}$ is an assignment transition.
+		\item $c_{m+j}\neq \texttt{true}$.
+		\item $\forall k:i<k<j$, $t_{m+k}$ is not an assignment transition.
+		\item $t_{m+j}$ is not an assignment transition. 
+	\end{itemize}
+
+	Note that $i, j$ must exist by assumption. 	
+
+	Define the input sequences $\alpha(\ell), \beta(\ell)$ (abbr $\alpha, \beta$) as follows:  
+	
+	For all $0\leq r < \ell$, let $\alpha_{m+rn+j} = \frac{1}{2}$ and $\beta_{m+rn+j} = -\frac{1}{2}$ if $c_{m+rn+j}(x) = \gguard[\texttt{x}]$. Otherwise if $c_{m+rn+j}(x)=\lguard[\texttt{x}]$, let $\alpha_{m+rn+j}=-\frac{1}{2}$ and $\beta_{m+rn+j} =\frac{1}{2}$.
+	
+	Finally, let $\alpha_u = \beta_u = \varrho_y$. For all other $k$, let $\alpha_k=\beta_k=0$. 
+
+Let $F_o(\theta, y_0) = \begin{cases}
+	\int_{-\infty}^\infty \PP[X_1^\theta=z_1]\prod_j \PP[c_j\text{ is satisfied}|X_1^\theta = z_1, \texttt{y}=y_0]dz_1 & o = 1\\
+	\int_{-\infty}^\infty \PP[X_o^\theta=z_1, \texttt{y}=y_0]\prod_j \PP[c_j\text{ is satisfied}|X_o^\theta = z_o] F_{i-1}(\theta, y_0)dz_o & o > 1
+\end{cases}$.
+
+Note that $\PP[x, y, \eta_\ell^{(\theta, \sigma_\ell)}[m:]]=F_\ell(\theta, y)$.
+
+
+\begin{lemma}\label{leakingcycleprivacyviolationlemma}
+	If $\exists c>0$ such that $\forall y_0>\zeta$, $\forall o, \frac{\int_{-\infty}^\infty\PP[X_i^\alpha=x_o]\prod_j \PP[c_j\text{ is satisfied}|X_o^\alpha = x_o, \texttt{y}=y_0]dz_o}{\int_{-\infty}^\infty\PP[X_o^\beta=x_o]\prod_j \PP[c_j\text{ is satisfied}|X_o^\beta = x_o, \texttt{y}=y_0]dz_o}\geq e^{c\varepsilon}$, then $\forall \ell, \frac{F_\ell(\alpha)}{F_\ell(\beta)}\geq e^{c\ell\varepsilon}$. 
+\end{lemma}
+\begin{proof}
+	This follows immediately from induction on $\ell$:
+
+	Fix $y_0> \zeta$. 
+
+	Suppose that $\ell = 1$. Then clearly \begin{align*}
+		\frac{F_\ell(\alpha, y_0)}{F_\ell(\beta, y_0)} &= \frac{\int_{-\infty}^\infty \PP[X_1^\alpha=z_1]\prod_j \PP_\alpha[c_j|X_1^\alpha = z_1, \texttt{y}=y_0]dz_1}{\int_{-\infty}^\infty \PP[X_1^\beta=z_1]\prod_j \PP_\beta[c_j|X_1^\beta = z_1, \texttt{y}=y_0]dz_1}\\
+		&\geq e^{c\varepsilon}
+	\end{align*}
+
+	Now suppose that $\ell>1$ and $\frac{F_{\ell-1}(\alpha, y_0)}{F_{\ell-1}(\beta, y_0)}\geq e^{c(\ell-1)\varepsilon}$. Then \begin{align*}
+		\frac{F_\ell(\alpha)}{F_\ell(\beta)} &= \frac{\int_{-\infty}^\infty \PP[X_\ell^\alpha=z_\ell]\prod_j \PP_\alpha[c_j|X_\ell^\alpha = z_\ell, \texttt{y}=y_0]F_{\ell-1}(\alpha)dz_\ell}{\int_{-\infty}^\infty \PP[X_\ell^\beta=z_\ell]\prod_j \PP_\beta[c_j|X_\ell^\beta = z_\ell, \texttt{y}=y_0]F_{\ell-1}(\beta)dz_\ell}\\
+		&\geq \frac{e^{c(\ell-1)\varepsilon}\int_{-\infty}^\infty \PP[X_\ell^\alpha=z_\ell]\prod_j \PP_\alpha[c_j|X_\ell^\alpha = z_\ell, \texttt{y}=y_0]F_{\ell-1}(\beta)dz_\ell}{\int_{-\infty}^\infty \PP[X_\ell^\beta=z_\ell]\prod_j \PP_\beta[c_j|X_\ell^\beta = z_\ell, \texttt{y}=y_0]F_{\ell-1}(\beta)dz_\ell}\\
+		&= \frac{e^{c(\ell-1)\varepsilon}\int_{-\infty}^\infty \prod_j \PP_\alpha[c_j|X_\ell^\alpha = z_\ell, \texttt{y}=y_0]dz_\ell}{\int_{-\infty}^\infty \prod_j \PP_\beta[c_j|X_\ell^\beta = z_\ell, \texttt{y}=y_0]dz_\ell}\\
+		&\geq e^{c\ell\varepsilon}
+	\end{align*}
+\end{proof}
+
+\begin{lemma}\label{bigenoughlemmacase1leakingcycle}
+	One of the following is true: \begin{enumerate}
+		\item $\exists \zeta\in \RR$ such that if $y\geq\zeta$, then $\forall x\in \RR, \forall o, \frac{\int_{-\infty}^\infty\PP_\alpha[c_{m+j}|\texttt{x}=x, \texttt{y}=y]dx_o}{\int_{-\infty}^\infty \PP_\beta[c_{m+j}|\texttt{x}=x, \texttt{y}=y]dx_o}\geq e^{c\varepsilon}$ for some constant $c$.
+		\item  $\exists \zeta\in \RR$ such that if $y<\zeta$, then$\forall x\in \RR, \forall o, \frac{\int_{-\infty}^\infty\PP_\alpha[c_{m+j}|\texttt{x}=x, \texttt{y}=y]dx_o}{\int_{-\infty}^\infty \PP_\beta[c_{m+j}|\texttt{x}=x, \texttt{y}=y]dx_o}\geq e^{c\varepsilon}$ for some constant $c$.
+	\end{enumerate}
+	
+\end{lemma}
+\begin{proof}
+	WLOG suppose that $c_{m+j}(x) = \lguard[x]$
+
+	From \cite{chadhaLinearTimeDecidability2021}, we have that for some $\gamma\in \{-\infty, \infty\}$, \[\lim_{y\to\gamma}\frac{\PP_\alpha[c_j|\texttt{x}=x, \texttt{y}=y]}{\PP_\beta[c_j|\texttt{x}=x, \texttt{y}=y]} = \frac{\PP_\alpha[c_j(x)|\texttt{x}=x]}{\PP_\beta[c_j(x)|\texttt{x}=x]}\geq \begin{cases}
+		e^{\frac{1}{2}d_{m+j}\varepsilon} & x<0\\
+		1 & x\geq 0
+	\end{cases}\]
+
+	WLOG suppose that $\gamma =\infty$. 
+
+	Thus, $\exists \zeta\in \RR$ such that if $y\geq \zeta$, then $\frac{\PP[c_i|X_o^\alpha = x_o]\PP[c_j|X_o^\alpha = x_o]}{\PP[X_o^\beta=x_o] \PP[c_i|X_o^\beta = x_o]\PP[c_j|X_o^\beta = x_o]} \geq \begin{cases}
+		e^{\frac{1}{4}d_{m+j}\varepsilon} & x<0\\
+		e^{-\psi} & x\geq 0
+	\end{cases}$ where $0<\psi < \inf_{y\geq \zeta}\left\{-\ln\left(\frac{\int_{-\infty}^{0}\PP_\beta[c_j|\texttt{x}=x, \texttt{y}=y]dx+(1-e^{\frac{1}{4}d_{m+j}\varepsilon})\int_{0}^{\infty}\PP_\beta[c_j|\texttt{x}=x, \texttt{y}=y]dx}{\int_{-\infty}^{0}\PP_\beta[c_j|\texttt{x}=x, \texttt{y}=y]dx}\right)\right\}$.
+
+	Then $\forall y\geq \zeta$, \begin{align*}
+		&\frac{\int_{-\infty}^\infty\PP_\alpha[c_j|\texttt{x}=x, \texttt{y}=y]dx}{\int_{-\infty}^\infty \PP_\beta[c_j|\texttt{x}=x, \texttt{y}=y]dx} \\
+		=&\frac{\int_{-\infty}^{0}\PP_\alpha[c_j|\texttt{x}=x, \texttt{y}=y]dx+\int_{0}^{\infty}\PP_\alpha[c_j|\texttt{x}=x, \texttt{y}=y]dx}{\int_{-\infty}^{0=\infty}\PP_\beta[c_j|\texttt{x}=x, \texttt{y}=y]dx}\\
+		>& \frac{e^{-\psi}\int_{-\infty}^{0}\PP[c_j|X_o^\beta = x_o]dx+e^{\frac{1}{4}d_{m+j}\varepsilon}\int_{0}^{\infty}\PP[c_j|X_o^\beta = x_o]dx}{\int_{-\infty}^{\infty}\PP_\beta[c_j|\texttt{x}=x, \texttt{y}=y]dx}\\
+		>&1
+	\end{align*}
+
+	Therefore, $\exists c>0$ such that $\forall y\geq \zeta$, $\forall o, \frac{\int_{-\infty}^\infty\PP_\alpha[c_j|\texttt{x} = x, \texttt{y}=y]dx}{\int_{-\infty}^\infty\PP_\beta[c_j|\texttt{x} = x, \texttt{y}=y]dx}\geq e^{c\varepsilon}$.
+\end{proof}
+
+	Note that because $t_{m+j}$ is not an assignment transition, this means that $\mu_k^{(\alpha)} = \mu_k^{(\beta)}$ for all $k$, so for all $k\neq j$, $\forall x, y\in \RR, \frac{\PP_\alpha[c_k|\texttt{x} = x, \texttt{y}=y]}{\PP_\beta[c_k|\texttt{x} = x, \texttt{y}=y]}=1$.
+
+	Further, because $\alpha_k = \beta_k$ for all $k<m$, $\frac{\PP[x, \eta_\ell^{(\alpha, \sigma_\ell)}]}{\PP[x, \eta_\ell^{(\beta, \sigma_\ell)}]}\geq \frac{\int_{-\infty}^\infty\PP_\alpha[\texttt{y}=y] F_\ell(\alpha, y)dy}{\int_{-\infty}^\infty\PP_\beta[\texttt{y}=y] F_\ell(\beta, y)dy}$.
+
+	By lemma \ref{bigenoughlemmacase1leakingcycle}, we know that $\exists \varepsilon>0, \zeta\in \RR$ such that $\forall y>\zeta$, $\forall o\in \NN$, $\frac{\int_{-\infty}^\infty\PP[X_i^\alpha=x_o]\prod_j \PP[c_j\text{ is satisfied}|X_o^\alpha = x_o, \texttt{y}=y_0]dz_o}{\int_{-\infty}^\infty\PP[X_o^\beta=x_o]\prod_j \PP[c_j\text{ is satisfied}|X_o^\beta = x_o, \texttt{y}=y_0]dz_o}\geq e^{c\varepsilon}$. Let $\varepsilon$ be such a $\varepsilon$. 
+
+	Also, there must be some $\varrho_y$ such that $\int_{\zeta}^\infty\PP_\beta[\texttt{y}=y] F_\ell(\beta, y)dy>\int_{-\infty}^\zeta\PP_\beta[\texttt{y}=y] F_\ell(\beta, y)dy$. 
+
+	Thus, by lemma \ref{leakingcycleprivacyviolationlemma}, we have that \begin{align*}
+		\frac{\PP[x, \eta_\ell^{(\alpha, \sigma_\ell)}]}{\PP[x, \eta_\ell^{(\beta, \sigma_\ell)}]}&\geq \frac{\int_{-\infty}^\infty\PP_\alpha[\texttt{y}=y] F_\ell(\alpha, y)dy}{\int_{-\infty}^\infty\PP_\beta[\texttt{y}=y] F_\ell(\beta, y)dy}\\
+		&\geq \frac{\int_{\zeta}^\infty\PP_\alpha[\texttt{y}=y] F_\ell(\alpha, y)dy}{2\int_{\zeta}^\infty\PP_\beta[\texttt{y}=y] F_\ell(\beta, y)dy}\\
+		&\geq \frac{\int_{\zeta}^\infty F_\ell(\alpha, y)dy}{2\int_{\zeta}^\infty F_\ell(\beta, y)dy}\\
+		&\geq \frac{1}{2}e^{c\varepsilon\ell}
+	\end{align*}
+	
+	Thus, $\exists \ell\in \NN$ (specifically, $\ell \geq \frac{d\varepsilon+\ln 2}{c\varepsilon}$) such that $\PP[x, \eta_\ell^{(\alpha, \sigma_\ell)}]\geq e^{d\varepsilon}\PP[x, \eta_\ell^{(\beta, \sigma_\ell)}]$. 
+\end{proof}
+
+\subsubsection{Case 2: There are assignment(s) into $y$ in the leaking cycle and there exists some ``leaky transition'' that is not an assignment}
+
+\begin{thm}
+	In this case, a leaking cycle $\implies$ no privacy.
+\end{thm}
+
+\begin{proof}
+	Fix $d>0$. We will consider some $\varepsilon>0$ that we fix later. 
+
+	Consider a path $\eta_\ell = q_0\to\ldots\to q_u\to \ldots\to \overbrace{q_m\to \ldots q_{m+\ell n}}^{C}$ with the leaking cycle $C$ repeated $\ell$ times.
+
+Let $\sigma_\ell$ be a valid output of $\eta_\ell$ and WLOG suppose that $\sigma_\ell\in\Gamma^*$. 
+
+We will show that $\forall d>0, \exists \varepsilon>0$ such that $\forall x, \PP[x, \eta_\ell^{(\alpha, \sigma_\ell)}[m:]]>e^{d\varepsilon} \PP[x, \eta_\ell^{(\beta, \sigma_\ell)}[m:]]$. This is sufficient to show an overall violation of privacy. 
+
+Let $T_y$ be the set of transitions in $\eta_\ell$ that are assignments to $y$. 
+
+Let $i, j$ be the smallest integers such that \begin{itemize}
+	\item $0\leq i <j<n$.
+	\item $t_{m+i}$ is an assignment transition for $\texttt{x}$.
+	\item $c_{m+j}\neq \texttt{true}$.
+	\item $\forall k:i<k<j$, $t_{m+k}$ is not an assignment transition for $\texttt{x}$.
+	\item $t_{m+j}\notin T_y$.
+\end{itemize}
+
+We know that such $i, j$ must exist by assumption. Note that $t_{m+i}\notin T_y$. 
+
+WLOG suppose that $i=0$ (i.e. we start the cycle at the first assignment into $\texttt{x}$)
+
+Let $i=0\leq u <n$ be the largest integer such that $t_{m+u}$ is an assignment transition into $\texttt{y}$; i.e. $t_{m+u}$ is the final assignment into $\texttt{y}$ before the cycle ``loops''. 
+
+Define the input sequences $\alpha(\ell), \beta(\ell)$ (abbr $\alpha, \beta$) as follows: 
+
+For all $0\leq r < \ell$, let $\alpha_{m+rn+j} = \frac{1}{2}$ and $\beta_{m+rn+j} = -\frac{1}{2}$ if $c_{m+rn+j}(x) = \gguard[\texttt{x}]$. Otherwise if $c_{m+rn+j}(x)=\lguard[\texttt{x}]$, let $\alpha_{m+rn+j}=-\frac{1}{2}$ and $\beta_{m+rn+j} =\frac{1}{2}$.
+	
+Finally, for all $t_u\in T_y$, let $\alpha_u = \beta_u = \varrho$, which is some constant that we will determine later. For all other $k$, let $\alpha_k=\beta_k=0$. Note that in particular, $\alpha_{m+rn+i} = \beta_{m+rn+i} = 0$ for all $0\leq r < \ell$. 
+
+Then let $F_o(\theta, y_0):{\alpha, \beta}\times \RR \to \RR$ be the probability of the cycle repeating $o$ times on input sequence $\theta$ given starting $\texttt{y}$ value $y_0$. $F_o$ can be loosely defined as follows:\[
+	F_o(\theta, y_0) = \begin{cases}
+		\int_{-\infty}^\infty  \PP[X_o^\theta=x_1]\PP[\text{all transitions in }C]dx_1 & o = 1\\
+		\int_{-\infty}^\infty \PP[X_o^\theta=x_o] \PP[\text{transitions before }t_{m+u}]\int_{-\infty}^\infty\PP[Y_o^{\theta}=y_o]\PP[\text{remaining transitions}] F_{o-1}(\theta, y_o)dy_odx_o & o > 1
+	\end{cases}	
+\]
+
+First, note that for all $0\leq k<n, k\neq j$ and $\forall x, y\in \RR$, $\PP_\alpha[c_{m+k}|\texttt{x}=x, \texttt{y}=y] = \PP_\beta[c_{m+k}|\texttt{x}=x, \texttt{y}=y]$. This is because for every assignment transition $t_a$, $\alpha_a = \beta_a$ and for all such $k$, $\alpha_{m+k} = \beta_{m+k}$.
+
+Clearly then, \begin{align*}
+	\frac{F_o(\alpha, y_0)}{F_o(\beta, y_0)}&=\begin{cases}
+		\frac{\int_{-\infty}^\infty  \PP[X_o^\alpha=x_1]\PP_\alpha[c_j|\texttt{x}=x_1, \texttt{y} = y_1]dx_1}{\int_{-\infty}^\infty  \PP[X_o^\beta=x_1]\PP_\beta[c_j|\texttt{x}=x_1, \texttt{y} = y_1]dx_1} & o = 1\\
+		\frac{\int_{-\infty}^\infty \PP[X_o^\alpha=x_o]\PP_\alpha[c_j|\texttt{x}=x_o, \texttt{y} = y_0]\int_{-\infty}^\infty\PP[Y_o^{\alpha}=y_o]F_{o-1}(\alpha, y_o)dy_odx_o}{\int_{-\infty}^\infty \PP[X_o^\beta=x_o]\PP_\beta[c_j|\texttt{x}=x_o, \texttt{y} = y_0]\int_{-\infty}^\infty\PP[Y_o^{\beta}=y_o]F_{o-1}(\beta, y_o)dy_odx_o} & o > 1
+	\end{cases}	
+\end{align*}
+
+\begin{lemma}
+	One of the following is true: \begin{enumerate}
+		\item $\exists \varepsilon>0, \zeta\in \RR$ such that if $y_0\geq\zeta$, then $\forall o, \frac{\int_{-\infty}^\infty \PP[X_o^\alpha=x_o]\PP_\alpha[c_j|\texttt{x}=x_o, \texttt{y} = y_0]dx_o}{\int_{-\infty}^\infty \PP[X_o^\beta=x_o]\PP_\beta[c_j|\texttt{x}=x_o, \texttt{y} = y_0]dx_o}\geq e^{c\varepsilon}$ for some constant $c>0$.
+		\item  $\exists \varepsilon>0, \zeta\in \RR$ such that if $y_0<\zeta$, then $\forall o, \frac{\int_{-\infty}^\infty \PP[X_o^\alpha=x_o]\PP_\alpha[c_j|\texttt{x}=x_o, \texttt{y} = y_0]dx_o}{\int_{-\infty}^\infty \PP[X_o^\beta=x_o]\PP_\beta[c_j|\texttt{x}=x_o, \texttt{y} = y_0]dx_o}\geq e^{c\varepsilon}$ for some constant $c>0$.
+	\end{enumerate}
+\end{lemma}
+\begin{proof}
+	Let $o\in \NN$ be arbitrary (it doesn't end up affecting any probabilities). 
+
+	WLOG suppose that $c_{m+j}(x)=\lguard[\texttt{x}]$. From \cite{chadhaLinearTimeDecidability2021}, we know that $\frac{\PP_\alpha[\lguard[\texttt{x}]|\texttt{x} = x]}{\PP_\beta[\lguard[\texttt{x}]|\texttt{x} = x]}\geq \begin{cases}
+		1 & x > 0\\
+		e^{\frac{d_{j+m}\varepsilon}{2}} & x\leq 0
+	\end{cases}$, where the spread parameter of the input Laplace noise at transition $t_{j+m}$ is $\frac{1}{d_{j+m}\varepsilon}$. 
+
+	Further, $\exists \gamma \in \{-\infty, \infty\}$ such that $\lim_{y_0\to\gamma}\PP[c_{m+j}|\texttt{x}=x,\texttt{y}=y_0] = \PP[c_{m+j}(x)|\texttt{x}=x]=\PP[\lguard[\texttt{x}]|\texttt{x}=x]$. WLOG suppose that $\gamma = \infty$. Then there exists some $\zeta\in \RR$ such that if $y_0\geq \zeta$, $\frac{\PP_\alpha[c_{m+j}|\texttt{x}=x,\texttt{y}=y_0]}{\PP_\beta[c_{m+j}|\texttt{x}=x,\texttt{y}=y_0]}\geq \begin{cases}
+		e^{-\psi} & x > 0\\
+		e^{\frac{d_{j+m}\varepsilon}{4}} & x\leq 0
+	\end{cases}$, 
+	
+	where $0<\psi< -\ln\left(\frac{\int_{0}^{\infty}\PP_\beta[c_j|\texttt{x} = x_o, \texttt{y}=y_0]dx_o+(1-e^{\frac{d_{j+m}\varepsilon}{4}})\int_{-\infty}^{0}\PP_\beta[c_j|\texttt{x} = x_o, \texttt{y}=y_0]dx_o}{\int_{0}^{\infty}\PP_\beta[c_j|\texttt{x} = x_o, \texttt{y}=y_0]dx_o}\right)$. Note that such an $psi$ exists because $e^{\frac{d_{j+m}\varepsilon}{4}}>1$.
+
+	Then $\forall y_0\geq \zeta$, \begin{align*}
+		&\frac{\int_{-\infty}^\infty\PP[X_o^\alpha=x_o]\PP_\alpha[c_j|\texttt{x}= x_o, \texttt{y}=y_0]dx_o}{\int_{-\infty}^\infty\PP[X_o^\beta=x_o] \PP_\beta[c_j|\texttt{x} = x_o, \texttt{y}=y_0]dx_o} \\
+		=&\frac{\int_{-\infty}^\infty\PP_\alpha[c_j|\texttt{x}= x_o, \texttt{y}=y_0]dx_o}{\int_{-\infty}^\infty\PP_\beta[c_j|\texttt{x} = x_o, \texttt{y}=y_0]dx_o}\\
+		=&\frac{\int_{-\infty}^{0}\PP_\alpha[c_j|\texttt{x}= x_o, \texttt{y}=y_0]dx_o+\int_{0}^{\infty}\PP_\alpha[c_j|\texttt{x}= x_o, \texttt{y}=y_0]dx_o}{\int_{-\infty}^{0}\PP_\beta[c_j|\texttt{x} = x_o, \texttt{y}=y_0]dx_o+\int_{0}^{\infty}\PP_\beta[c_j|\texttt{x} = x_o, \texttt{y}=y_0]dx_o}\\
+		>& \frac{e^{\frac{d_{j+m}\varepsilon}{4}}\int_{-\infty}^{0}\PP_\beta[c_j|\texttt{x} = x_o, \texttt{y}=y_0]dx_o+e^{-\psi}\int_{0}^{\infty}\PP_\beta[c_j|\texttt{x} = x_o, \texttt{y}=y_0]dx_o}{\int_{-\infty}^{0}\PP[c_j|\texttt{x} = x_o, \texttt{y}=y_0]dx_o+\int_{0}^{\infty}\PP[c_j|\texttt{x} = x_o, \texttt{y}=y_0]dx_o}\\
+		>&1
+	\end{align*}
+	Therefore, $\exists c>0, \zeta\in\RR$ such that if $y_0\geq \zeta$, then $\forall o, \frac{\int_{-\infty}^\infty\PP[X_o^\alpha=x_o]\PP[c_i|X_o^\alpha = x_o]\PP[c_j|X_o^\alpha = x_o]dx_o}{\int_{-\infty}^\infty\PP[X_o^\beta=x_o] \PP[c_i|X_o^\beta = x_o]\PP[c_j|X_o^\beta = x_o]dx_o}\geq e^{c\varepsilon}$.
+\end{proof}
+
+
+Note that for all $o\in \ZZ^+$, 
+
+
+\begin{lemma}
+	One of the following are true:
+	\begin{enumerate}
+		\item There are constants $c>0, \zeta\in \RR$ such that for all $\ell\in \ZZ^+$, if $y_0\geq \zeta$, then $\frac{F_\ell(\alpha, y_0)}{F_\ell(\beta, y_0)}\geq e^{c\ell\varepsilon} $.
+		\item There are constants $c>0, \zeta\in \RR$ such that for all $\ell\in \ZZ^+$, if $y_0< \zeta$, then $\frac{F_\ell(\alpha, y_0)}{F_\ell(\beta, y_0)}\geq e^{c\ell\varepsilon} $.
+	\end{enumerate}
+	
+\end{lemma}
+\begin{proof}
+	We show this by induction on $\ell$. 
+
+	WLOG we suppose that (1) is true from the previous lemma. Let $\zeta$ be as in the previous lemma and fix an arbitrary $y_0\geq \zeta$. 
+
+	Suppose that $\ell = 1$. By the previous lemma, we know that $\frac{F_1(\alpha, y_0)}{F_1(\beta, y_0)}\geq e^{c\varepsilon}$ for some $c>0$. 
+
+	Suppose that $\ell >1$. Then \begin{align*}
+		\frac{F_1(\alpha, y_0)}{F_1(\beta, y_0)}&\geq \frac{\int_{-\infty}^\infty \PP[X_o^\alpha=x_o]\PP_\alpha[c_j|\texttt{x}=x_o, \texttt{y} = y_0]\int_{-\infty}^\infty\PP[Y_o^{\alpha}=y_o]F_{o-1}(\alpha, y_o)dy_odx_o}{\int_{-\infty}^\infty \PP[X_o^\beta=x_o]\PP_\beta[c_j|\texttt{x}=x_o, \texttt{y} = y_0]\int_{-\infty}^\infty\PP[Y_o^{\beta}=y_o]F_{o-1}(\beta, y_o)dy_odx_o}\\
+		&\geq e^{c\ell\varepsilon}
+	\end{align*}
+	by the inductive hypothesis and the previous lemma. 
+\end{proof}
+
+Let $\ell \geq \frac{d\ln 2}{c}$. Then $\frac{F_\ell(\alpha, y_0)}{F_\ell(\beta, y_0)}\geq 2e^{d\varepsilon}$
+
+\begin{lemma}
+	Let $t_u$ be the last assignment transition into $\texttt{y}$ before $t_m$ (i.e. before the cycle). Then if $\varrho$ is sufficiently (large/small), $\frac{\PP[x, \eta_\ell^{(\alpha, \sigma_\ell)}[u:]]}{\PP[x, \eta_\ell^{(\beta, \sigma_\ell)}[u:]]}\geq e^{d\varepsilon}$.
+\end{lemma}
+
+\begin{proof}
+	WLOG suppose that case (1) of both of the previous two lemmas hold and let $\zeta\in \RR$ be such a $\zeta$. 
+
+	Let $Y_\alpha\sim \Lap(\varrho, \frac{1}{d_u\varepsilon})$, $Y_\beta\sim \Lap(\varrho, \frac{1}{d_u\varepsilon})$ be random variables representing the value assigned into $\texttt{y}$ at transition $t_u$ on inputs $\alpha$ and $\beta$, respectively. 
+
+	First, note that $\exists \varrho\in \RR$ such that $\int_{-\infty}^\zeta\PP[Y_\beta=y_0]F_\ell(\beta, y_0)dy_0\leq \int_{\zeta}^\infty\PP[Y_\beta=y_0]F_\ell(\beta, y_0)dy_0$ and fix $\varrho$ such that this holds. 
+
+	Then note that because for all non-cycle transitions, non-$\texttt{y}$ assignments $t_k$, $\alpha_k=\beta_k=0$, we have that, $\forall x\in \RR$, \begin{align*}
+		\frac{\PP[x, \eta_\ell^{(\alpha, \sigma_\ell)}[u:]]}{\PP[x, \eta_\ell^{(\beta, \sigma_\ell)}[u:]]}&=\frac{\int_{-\infty}^\infty\PP[Y_\alpha=y_0]F_\ell(\alpha, y_0)dy_0}{\int_{-\infty}^\infty\PP[Y_\beta=y_0]F_\ell(\beta, y_0)dy_0}\\
+		&=\frac{\int_{-\infty}^\zeta\PP[Y_\alpha=y_0]F_\ell(\alpha, y_0)dy_0+\int_{\zeta}^\infty\PP[Y_\alpha=y_0]F_\ell(\alpha, y_0)dy_0}{\int_{-\infty}^\zeta\PP[Y_\beta=y_0]F_\ell(\beta, y_0)dy_0+\int_{\zeta}^\infty\PP[Y_\beta=y_0]F_\ell(\beta, y_0)dy_0}\\
+		&\geq \frac{\int_{\zeta}^\infty\PP[Y_\alpha=y_0]F_\ell(\alpha, y_0)dy_0}{\int_{-\infty}^\zeta\PP[Y_\beta=y_0]F_\ell(\beta, y_0)dy_0+\int_{\zeta}^\infty\PP[Y_\beta=y_0]F_\ell(\beta, y_0)dy_0}\\
+		&\geq \frac{2e^{d\varepsilon}\int_{\zeta}^\infty\PP[Y_\beta=y_0]F_\ell(\beta, y_0)dy_0}{\int_{-\infty}^\zeta\PP[Y_\beta=y_0]F_\ell(\beta, y_0)dy_0+\int_{\zeta}^\infty\PP[Y_\beta=y_0]F_\ell(\beta, y_0)dy_0}\\
+		&\geq \frac{2e^{d\varepsilon}\int_{\zeta}^\infty\PP[Y_\beta=y_0]F_\ell(\beta, y_0)dy_0}{2\int_{\zeta}^\infty\PP[Y_\beta=y_0]F_\ell(\beta, y_0)dy_0}\\
+		&\geq e^{d\varepsilon}
+	\end{align*}
+\end{proof}
+
+
+It immediately follows that $\eta_\ell$ is not differentially private. 
+
+\end{proof}
+
+\subsubsection{Case 3: There no assignments into $y$ in the leaking cycle and there does not exist some ``leaky transition'' that is not an assignment}
+
+
+\begin{proof}
+	Fix $d>0$. We will consider some $\varepsilon>0$ that we fix later. 
+
+	Consider a path $\eta_\ell = q_0\to\ldots\to q_u\to \ldots\to \overbrace{q_m\to \ldots q_{m+\ell n}}^{C}$ with the leaking cycle $C$ repeated $\ell$ times.
+
+	Let $\sigma_\ell$ be a valid output of $\eta_\ell$ and WLOG suppose that $\sigma_\ell\in\Gamma^*$.
+
+	We will show that $\forall d>0, \exists \varepsilon>0$ such that $\forall x, \PP[x, \eta_\ell^{(\alpha, \sigma_\ell)}[m:]]>e^{d\varepsilon} \PP[x, \eta_\ell^{(\beta, \sigma_\ell)}[m:]]$. This is sufficient to show an overall violation of privacy. 
+
+	Let $T_y$ be the set of transitions in $\eta_\ell$ that are assignments to $y$. 
+
+	Let $i, j$ be the smallest integers such that \begin{itemize}
+		\item $0\leq i <j<n$.
+		\item $t_{m+i}$ is an assignment transition for $\texttt{x}$.
+		\item $c_{m+j}\neq \texttt{true}$.
+		\item $\forall k:i<k<j$, $t_{m+k}$ is not an assignment transition for $\texttt{x}$.
+	\end{itemize}
+
+	WLOG suppose that $i=0$ (i.e. we start the cycle at the first assignment into $\texttt{x}$)
+
+	Thus, we assume that all non-\texttt{true} transitions that aren't $t_{m+i}$ or $t_{m+j}$ are assignments into $\texttt{x}$. 
+
+	Define the input sequences $\alpha(\ell), \beta(\ell)$ (abbr $\alpha, \beta$) as follows: 
+
+
+	For all transition $t_k$, let $\mu_k^{(\alpha, x)}$ be the mean of the Laplace distribution from which $\texttt{x}$ is drawn at transition $t_k$, i.e. $\mu_k^{(\alpha, x)}=\alpha_l$ where $t_l$ is the last assignment transition into $\texttt{x}$ before $t_k$. 
+
+	Then for all $0\leq r < \ell$ and all $0\leq k<n$, let $\alpha_{m+rn+k} = \mu_{m+rn+k}^{(\alpha, x)}-1$ if $c_{m+rn+k}(x) = \lguard[x]$ and $\alpha_{m+rn+k} = \mu_{m+rn+k}^{(\alpha, x)}+1$ otherwise. 
+
+	Further, let $\beta_{m+rn+i} = \alpha_{m+rn+j}$ and $\beta_{m+rn+j}= \alpha_{m+rn+i}$. For all other $k$, let $\beta_k = \alpha_k$. Note that, ignoring $\texttt{y}$, this is the exact input sequence from \cite{chadhaLinearTimeDecidability2021}'s analysis of leaking cycles. 
+
+
+	We know that there exists some $\gamma \in \{\infty, -\infty\}$ such that $\forall x\in\RR, \lim_{y\to\infty}\PP[c_{m+j}|x, y]=\PP[c_{m+j}(x)|x]$. 
+
+	Let $t_v$ be the final assignment transition into $\texttt{y}$ before $C$. 
+
+	If $\gamma = \infty$, then let $\alpha_v = \varrho_y$ and $\beta_v = \varrho_y+1$; otherwise let $\alpha_v = \varrho_y$ and $\beta_v = \varrho_y-1$, where $\varrho_y\in \RR$ is some shift constant to be fixed later (depending on $\gamma$).
+
+	For all other $k$, let $\alpha_k=\beta_k=0$. 
+
+	WLOG suppose that $\gamma = \infty$. 
+
+	Consider a different non-\texttt{true} transition $t_k$ in $C$. We claim that $\forall x_1, x_2\in \RR, \lim_{y\to\gamma}\frac{\PP_\alpha[c_{m+j}|x_1, y]}{\PP_\beta[c_{m+j}|x_2, y+1]}\geq \min(1, \frac{\PP_\alpha[c_{m+j}(x)|x_1]}{\PP_\beta[c_{m+j}(x)|x_2]})$. 
+
+	Note that this is actually sufficient to prove a violation of privacy, leveraging \cite{chadhaLinearTimeDecidability2021}. 
+
+	If $c_k(y) = \texttt{true}$, then $\PP_\alpha[c_{m+j}|x, y]=\PP_\alpha[c_{m+j}(x)|x]$ and $\PP_\beta[c_{m+j}|x, y+1]=\PP_\beta[c_{m+j}(x)|x]$ trivially. 
+
+	If $c_k$ is an OR guard and $c_k(y) = \lguard[y]$, then note that $\forall x_1, x_2\in \RR$, \begin{align*}
+		\lim_{y\to\infty}\frac{\PP_\alpha[c_k|x_1, y]}{\PP_\beta[c_k|x_2, y+1]}&=\lim_{y\to\infty}\frac{\PP_\alpha[c_k(x)\lor \lguard[\texttt{y}]|x_1, y]}{\PP_\beta[c_k(x)\lor \lguard[\texttt{y}]|x_2, y+1]}\\
+		&=\lim_{y\to\infty}\frac{\PP_\alpha[c_k(x)|x_1]+ \PP_\alpha[\lguard[\texttt{y}]|y]-\PP_\alpha[c_k(x)|x_1]\PP_\alpha[\lguard[\texttt{y}]|y]}{\PP_\beta[c_k(x)|x_2]+ \PP_\beta[\lguard[\texttt{y}]|y+1]-\PP_\beta[c_k(x)|x_2]\PP_\beta[\lguard[\texttt{y}]|y+1]}\\
+		&=\frac{\PP_\alpha[c_k(x)|x_1]+ 1-\PP_\alpha[c_k(x)|x_1]}{\PP_\beta[c_k(x)|x_2]+ 1-\PP_\beta[c_k(x)|x_2]}\\
+		&= 1
+	\end{align*}
+
+	If $c_k$ is an OR guard and $c_k(y) = \gguard[y]$, then note that 
+	$\forall x_1, x_2\in \RR$, \begin{align*}
+		\lim_{y\to\infty}\frac{\PP_\alpha[c_k|x_1, y]}{\PP_\beta[c_k|x_2, y+1]}&=\lim_{y\to\infty}\frac{\PP_\alpha[c_k(x)\lor \gguard[\texttt{y}]|x_1, y]}{\PP_\beta[c_k(x)\lor \gguard[\texttt{y}]|x_2, y+1]}\\
+		&=\lim_{y\to\infty}\frac{\PP_\alpha[c_k(x)|x_1]+ \PP_\alpha[\gguard[\texttt{y}]|y]-\PP_\alpha[c_k(x)|x_1]\PP_\alpha[\gguard[\texttt{y}]|y]}{\PP_\beta[c_k(x)|x_2]+ \PP_\beta[\gguard[\texttt{y}]|y+1]-\PP_\beta[c_k(x)|x_2]\PP_\beta[\gguard[\texttt{y}]|y+1]}\\
+		&=\frac{\PP_\alpha[c_k(x)|x_1]}{\PP_\beta[c_k(x)|x_2]}
+	\end{align*}
+
+	If $c_k$ is an AND guard and $c_k(y) = \lguard[y]$, then note that $\forall x_1, x_2\in \RR$, \begin{align*}
+		\lim_{y\to\infty}\frac{\PP_\alpha[c_k|x_1, y]}{\PP_\beta[c_k|x_2, y+1]}&=\lim_{y\to\infty}\frac{\PP_\alpha[c_k(x)\land \lguard[\texttt{y}]|x_1, y]}{\PP_\beta[c_k(x)\land \lguard[\texttt{y}]|x_2, y+1]}\\
+		&=\lim_{y\to\infty}\frac{\PP_\alpha[c_k(x)|x_1]\PP_\alpha[\lguard[\texttt{y}]|y]}{\PP_\beta[c_k(x)|x_2]\PP_\beta[\lguard[\texttt{y}]|y+1]}\\
+		&=\frac{\PP_\alpha[c_k(x)|x_1]}{\PP_\beta[c_k(x)|x_2]}
+	\end{align*}
+
+	If $c_k$ is an AND guard and $c_k(y) = \lguard[y]$, then note that $\forall x_1, x_2\in \RR$, \begin{align*}
+		\lim_{y\to\infty}\frac{\PP_\alpha[c_k|x_1, y]}{\PP_\beta[c_k|x_2, y+1]}&=\lim_{y\to\infty}\frac{\PP_\alpha[c_k(x)\land \lguard[\texttt{y}]|x_1, y]}{\PP_\beta[c_k(x)\land \lguard[\texttt{y}]|x_2, y+1]}\\
+		&=\lim_{y\to\infty}\frac{\PP_\alpha[c_k(x)|x_1]\PP_\alpha[\lguard[\texttt{y}]|y]}{\PP_\beta[c_k(x)|x_2]\PP_\beta[\lguard[\texttt{y}]|y+1]}\\
+		&=\frac{\PP_\alpha[c_k(x)|x_1]}{\PP_\beta[c_k(x)|x_2]}
+	\end{align*}
+
+\end{proof}
+
+
+\subsubsection{Case 4: There are assignment(s) into $y$ in the leaking cycle, all possible ``leaky transitions'' are assignments into $y$, and there are multiple assignments into $y$ in the cycle}
+
+
+\begin{thm}
+	In this case, a leaking cycle $\implies$ no privacy.
+\end{thm}
+
+\begin{proof}
+	Fix $d>0$. We will consider some $\varepsilon>0$ that we fix later. 
+
+	Consider a path $\eta_\ell = q_0\to\ldots\to q_u\to \ldots\to \overbrace{q_m\to \ldots q_{m+\ell n}}^{C}$ with the leaking cycle $C$ repeated $\ell$ times.
+
+	Let $\sigma_\ell$ be a valid output of $\eta_\ell$ and WLOG suppose that $\sigma_\ell\in\Gamma^*$. Also wlog suppose that $\ell$ is a multiple of 2. 
+
+	We will show that $\forall d>0, \exists \varepsilon>0$ such that $\forall x, \PP[x, \eta_\ell^{(\alpha, \sigma_\ell)}[m:]]>e^{d\varepsilon} \PP[x, \eta_\ell^{(\beta, \sigma_\ell)}[m:]]$. This is sufficient to show an overall violation of privacy. 
+
+	Let $T_y$ be the set of transitions in $\eta_\ell$ that are assignments to $y$. 
+
+	Let $i, j$ be the smallest integers such that \begin{itemize}
+		\item $0\leq i <j<n$.
+		\item $t_{m+i}$ is an assignment transition for $\texttt{x}$.
+		\item $c_{m+j}\neq \texttt{true}$.
+		\item $\forall k:i<k<j$, $t_{m+k}$ is not an assignment transition for $\texttt{x}$.
+	\end{itemize}
+
+	We know that such $i, j$ must exist and $t_{m+j}\in T_y$ by assumption. Note that $t_{m+i}\notin T_y$. 
+
+	WLOG suppose that $i=0$ (i.e. we start the cycle at the first assignment into $\texttt{x}$)
+
+	Let $j<u <n$ be the smallest integer such that $t_{m+u}$ is an assignment transition into $\texttt{y}$; i.e. $t_{m+u}$ is the first assignment into $\texttt{y}$ after $t_{m+j}$. Additionally, let $u\leq u'<n$ be the largest integer such that $t_{m+u'}$ is an assignment transition into $\texttt{y}$; i.e. $t_{m+u'}$ is the last assignment into $\texttt{y}$ in $C$. 
+
+	By assumption, $u \neq j$.
+	
+	Consider a transition $t_k$ in $C$. Then if $\guard(t_k)\neq \texttt{true}$, it must be an assignment transition into $\texttt{x}$. This is because we know that no non-assignment transitions have $c_k(x) \neq \texttt{true}$ by assumption and if a non-assignment transition has $c_k(y) \neq \texttt{true}$, then we have a leaking cycle in the style of case 2 in $\texttt{y}$. In particular, this means that every transition between $t_{m+i}$ and $t_{m+j}$ must have guard $\texttt{true}$.
+	
+	Additionally, we can assume that every non-\texttt{true} transition between $t_{m+j}$ and $t_{m+u}$ is an assignment into $\texttt{x}$. 
+
+	Let $T^{(u\to u')} = \{t_k: u<k<u'\land t_k$ is an assignment transition$ \}$ be the set of assignment transitions in $C$ after $t_{m+u}$ and before $t_{m+u'}$. Let $T^{(u\to n)}_\texttt{true} = \{t_k\in T^{(u\to u')} \land \guard(t_k) = \texttt{true} \}$ be the set of assignment transitions in $C$ with guard $\texttt{true}$ after $t_{m+u}$ and before $t_{m+u'}$.
+
+	Let $\varrho_x, \varrho_y \in \RR$ be shift parameters whose exact values we will fix later. 
+
+	Define the input sequences $\alpha(\ell), \beta(\ell)$ (abbr $\alpha, \beta$) as follows: 
+
+	Let $t_v$ be the final assignment transition into $\texttt{y}$ before $C$. 
+
+	Let $\alpha_v = \beta_v = \varrho_y$. 
+
+	For all $0\leq r < \frac{\ell}{2}$, let $\alpha_{m+2rn+i} = \beta_{m+2rn+i} =0$ and $\alpha_{m+(2r+1)n+i} = \beta_{m+(2r+1)n+i} = 0$.
+	
+	Let $\alpha_{m+2rn+j} = \frac{1}{2}$, $\beta_{m+2rn+j} = -\frac{1}{2}$ if $c_{m+j}(x) = \gguard[\texttt{x}]$.
+	
+	Otherwise if $c_{m+j}(x)=\lguard[\texttt{x}]$, let $\alpha_{m+2rn+j}=-\frac{1}{2}$, $\beta_{m+2rn+j} =\frac{1}{2}$.
+
+	Let $\alpha_{m+(2r+1)n+j} = \beta_{m+(2r+1)n+j}=\varrho_y$.
+
+	Let $\alpha_{m+2rn+u} = \beta_{m+2rn+u} = \varrho_y'$.
+
+	Also, for all $j<k<u$, let $\alpha_{m+2rn+k}=\beta_{m+2rn+k} = \varrho_x$.
+
+	Let $\alpha_{m+(2r+1)n+u'} = \beta_{m+(2r+1)n+u'} = \varrho_y$.
+		
+	For all other $k$, let $\alpha_k=\beta_k=0$. 
+
+	Then let $F_o(\theta, x_0, y_0):{\alpha, \beta}\times \RR \times \RR \to \RR$ be the probability of the cycle repeating $o$ times on input sequence $\theta$ given starting $\texttt{x}, \texttt{y}$ values $x_0, y_0$. $F_o$ can be loosely defined as follows:\begin{align*}
+		F_o(\theta, x_0, y_0) &= \begin{cases}
+			\PP[c_{i+m}|\texttt{x}=x_0, \texttt{y}=y_0]\\
+			*\int_{-\infty}^\infty  \PP[X_o^\theta=x_1]\PP[\text{all other transitions in }C]dx_1 & o = 1\\
+			\PP[c_{i+on+m}|\texttt{x}=x_0, \texttt{y}=y_0]\\
+			*\int_{-\infty}^\infty \PP[X_o^\theta=x_o] \int_{-\infty}^\infty\PP[Y_o^{\theta}=y_o]\PP[\text{remaining transitions}] F_{o-1}(\theta, x_o, y_o)dy_odx_o & o > 1
+		\end{cases}	\\
+		&=\begin{cases}
+			\PP[c_{i+m}|\texttt{x}=x_0, \texttt{y}=y_0]\\
+			*\int_{-\infty}^\infty \int_{-\infty}^\infty\PP[Y_1^{\theta}=y_1]\PP[X_o^\theta=x_1]\PP[\text{remaining transitions}]dx_1dy_1 & o = 1\\
+			\PP[c_{i+on+m}|\texttt{x}=x_0, \texttt{y}=y_0]\\
+			*\int_{-\infty}^\infty\int_{-\infty}^\infty\PP[Y_o^{\theta}=y_o] \PP[X_o^\theta=x_o] \PP[\text{remaining transitions}]dx_o * F_{o-1}(\theta, x_o, y_o)dy_o & o > 1
+		\end{cases}	
+	\end{align*}
+	
+	The second equality is by Fubini's theorem and because there must only be one assignment into $\texttt{y}$ in the cycle. 
+
+	We will shorthand the non-recursive part of $F_o$ to $f_o(\theta, x_0, y_0, x_o, y_o)$, so
+	\[
+		F_o(\theta, x_0, y_0) = \begin{cases}
+			\int_{-\infty}^\infty\int_{-\infty}^\infty f_1(\theta,x_0, y_0, x_1, y_1)dx_1dy_1 & o = 1\\
+			\int_{-\infty}^\infty \int_{-\infty}^\infty f_o(\theta, x_0, y_0, x_o, y_o) F_{o-1}(\theta, x_o, y_o)dx_ody_o & o > 1
+		\end{cases}	
+	\]
+	\begin{lemma}
+		One of the following is true: \begin{enumerate}
+			\item $\exists \varepsilon>0, \zeta\in \RR$ such that $\forall x_0\in \RR$, if $y_0\geq\zeta$, then $\exists c>0$ such that $\forall 0\leq r< \frac{\ell}{2}$, \\
+			$\frac{\int_{-\infty}^\infty \int_{-\infty}^\infty f_{2r}(\alpha, x_0, y_0, x_1, y_1)\int_{-\infty}^\infty \int_{-\infty}^\infty f_{2r+1}(\alpha,x_1, y_1, x_2) dx_{2}dy_{2} dx_{1}dy_{1}}
+			{\int_{-\infty}^\infty \int_{-\infty}^\infty f_{2r}(\beta, x_0, y_0, x_1, y_1)\int_{-\infty}^\infty \int_{-\infty}^\infty f_{2r+1}(\beta,x_1, y_1, x_2) dx_{2}dy_{2} dx_{1}dy_{1}}\geq e^{c\varepsilon}$.
+			\item $\exists \varepsilon>0, \zeta\in \RR$ such that $\forall x_0\in \RR$, if $y_0<\zeta$, then $\exists c>0$ such that $\forall 0\leq r< \frac{\ell}{2}$, \\
+			$\frac{\int_{-\infty}^\infty \int_{-\infty}^\infty f_{2r}(\alpha, x_0, y_0, x_1, y_1)\int_{-\infty}^\infty \int_{-\infty}^\infty f_{2r+1}(\alpha,x_1, y_1, x_2) dx_{2}dy_{2} dx_{1}dy_{1}}
+			{\int_{-\infty}^\infty \int_{-\infty}^\infty f_{2r}(\beta, x_0, y_0, x_1, y_1)\int_{-\infty}^\infty \int_{-\infty}^\infty f_{2r+1}(\beta,x_1, y_1, x_2) dx_{2}dy_{2} dx_{1}dy_{1}}\geq e^{c\varepsilon}$.
+		\end{enumerate}
+	\end{lemma}
+	\begin{proof}
+		Let $0\leq r< \frac{\ell}{2}$ be arbitrary. 
+
+		WLOG suppose that $c_{m+j}(x)=\lguard[\texttt{x}]$. 
+
+		We know that $\exists \gamma \in \{-\infty, \infty\}$ such that $\lim_{y_0\to\gamma}\PP[c_{m+j}|\texttt{x}=x,\texttt{y}=y_0] = \PP[c_{m+j}(x)|\texttt{x}=x]=\PP[\lguard[\texttt{x}]|\texttt{x}=x]$.
+		
+		WLOG suppose that $\gamma = \infty$. Note then that $c_{m+j}\in \{\lguard[\texttt{x}]\land \lguard[\texttt{y}], \lguard[\texttt{x}]\lor \gguard[\texttt{y}]\}$.
+		
+		For all transitions $t_k$, let $\mu_k^{(\alpha, x)}$ be the mean of the Laplace noise assigned into $\texttt{x}$ for input $\alpha$ when evaluating the guard of transition $t_k$ and let $\mu_k^{(\beta, x)}$, $\mu_k^{(\alpha, y)}$, and $\mu_k^{(\beta, y)}$ be defined analogously. 
+
+		Note that by construction, $\mu_{m+2rn+i}^{(\alpha, x)}=\mu_{m+2rn+i}^{(\beta, x)}$ and $\mu_{m+2rn+i}^{(\alpha, y)}=\mu_{m+2rn+i}^{(\beta, y)}$. 
+		
+		Thus, $\frac{\PP_\alpha[c_{m+2rn+i}|\texttt{x}=x_0, \texttt{y}=y_0]}{\PP_\beta[c_{m+2rn+i}|\texttt{x}=x_0, \texttt{y}=y_0]}=1$.
+
+		From \cite{chadhaLinearTimeDecidability2021}, we know that if $\frac{\PP_\alpha[\lguard[\texttt{x}]|\texttt{x} = x]}{\PP_\beta[\lguard[\texttt{x}]|\texttt{x} = x]}\geq \begin{cases}
+			1 & x > 0\\
+			e^{\frac{d_{m+j}\varepsilon}{2}} & x\leq 0
+		\end{cases}$. Thus, $\exists \zeta\in \RR$ such that $\forall y_0\geq \zeta$, $\frac{\PP_\alpha[c_{m+2rn+j}|\texttt{x} = x, \texttt{y} = y_0]}{\PP_\beta[c_{m+2rn+j}|\texttt{x} = x, \texttt{y} = y_0]}\geq \begin{cases}
+			e^{-\psi} & x > 0\\
+			e^{\frac{d_{m+j}\varepsilon}{4}} & x\leq 0
+		\end{cases}$ for some (very small) constant $\psi>0$ (to be fixed later).
+
+		Consider $t_{m+2rn+k}\in T^{(u\to u')}$. Because $\mu_{m+2rn+k}^{(\alpha, x)}=\mu_{m+2rn+k}^{(\beta, x)}$, $\forall x, \PP_\alpha[c_{m+2rn+k}(x)|\texttt{x}=x]=\PP_\beta[c_{m+2rn+k}(x)|\texttt{x}=x]$. Note also that $\mu_{m+2rn+k}^{(\alpha, y)}+1=\mu_{m+2rn+k}^{(\beta, y)}$. Recall that $\alpha_{m+2rn+k} = \beta_{m+2rn+k} = \varrho_x$. 
+		
+		If $c_{m+2rn+k}$ is an OR guard and if $c_{m+2rn+k}(y)=\gguard[\texttt{y}]$, $\forall y\in \RR, \PP_\alpha[\gguard[y]]\geq\PP_\beta[\gguard[y+1]]$, so $\frac{\PP_\alpha[c_{m+2rn+k}|\texttt{x}=x, \texttt{y}=y]}{\PP_\beta[c_{m+2rn+k}|\texttt{x}=x, \texttt{y}=y+1]}\geq 1$. 
+		Otherwise if $c_{m+2rn+k}(y)=\lguard[\texttt{y}]$, we have that if $\varrho_x\leq y$, then $\lim_{\varepsilon\to\infty}\frac{\PP_\alpha[c_{m+2rn+k}|\texttt{x}=x, \texttt{y}=y]}{\PP_\beta[c_{m+2rn+k}|\texttt{x}=x, \texttt{y}=y+1]} = 1$.
+			
+		Thus, $\exists \varepsilon_1>0$ such that $\forall \varepsilon\geq \varepsilon_1$, if $y\geq \varrho_x$, then $\frac{\PP_\alpha[c_{m+2rn+k}|\texttt{x}=x, \texttt{y}=y]}{\PP_\beta[c_{m+2rn+k}|\texttt{x}=x, \texttt{y}=y+1]}\geq e^{-\psi}\frac{\PP_\alpha[c_{m+2rn+k}(x)|\texttt{x}=x]}{\PP_\beta[c_{m+2rn+k}(x)|\texttt{x}=x]}=e^{-\psi}$. 
+
+		If $c_{m+3rn+k}$ is an AND guard and $c_{m+3rn+k}(y) \in \{\texttt{true}, \gguard[\texttt{y}]\}$, then $\forall y$, $\PP_\alpha[c_{m+3rn+k}(y)|\texttt{y}=y]\geq \PP_\beta[c_{m+3rn+k}(y)|\texttt{y}=y+1]$ also, so $\forall x, y\in \RR, \frac{\PP_\alpha[c_{m+3rn+k}|\texttt{x}=x, \texttt{y}=y]}{\PP_\beta[c_{m+3rn+k}|\texttt{x}=x, \texttt{y}=y+1]}\geq 1$.
+
+		Otherwise, if $c_{m+2rn+k}(y) =\lguard[y]$, we have that $\forall x\in \RR, \forall y\geq \varrho_x$, $\frac{\PP_\alpha[c_{m+2rn+k}|\texttt{x}=x, \texttt{y}=y]}{\PP_\beta[c_{m+2rn+k}|\texttt{x}=x, \texttt{y}=y+1]} \geq \frac{2-e^{d_{m+k}\varepsilon(\varrho_x-y)}}{2-e^{d_{m+k}\varepsilon(\varrho_x-y-1)}}$; 
+		thus, $\exists \varepsilon_2>0$ such that $\forall \varepsilon>\varepsilon_2, \forall x\in \RR, \forall y\geq \varrho_x$, $\frac{\PP_\alpha[c_{m+2rn+k}|\texttt{x}=x, \texttt{y}=y]}{\PP_\beta[c_{m+2rn+k}|\texttt{x}=x, \texttt{y}=y+1]}\geq e^{-\psi}$.
+
+		By the same analysis, we know that if $c_{m+2rn+u}(y) =\lguard[y]$, then $\exists \varepsilon_3>0$ such that $\forall \varepsilon>\varepsilon_3, \forall x\in \RR, \forall y\geq \varrho_x$, $\frac{\PP_\alpha[c_{m+2rn+u}|\texttt{x}=x, \texttt{y}=y]}{\PP_\beta[c_{m+2rn+u}|\texttt{x}=x, \texttt{y}=y+1]}\geq e^{-\psi}$ 
+		and otherwise, $\forall x, y\in \RR$, $\frac{\PP_\alpha[c_{m+2rn+u}|\texttt{x}=x, \texttt{y}=y]}{\PP_\beta[c_{m+2rn+u}|\texttt{x}=x, \texttt{y}=y+1]}\geq 1$.
+
+		
+		For all remaining transitions $t_k$ such that $m+2rn+u<k<m+(2r+1)n$, note that $\mu_k^{(\alpha, x)}=\mu_k^{(\beta, x)}$ and $\mu_k^{(\alpha, y)}=\mu_k^{(\beta, y)}$, so $\forall x, y\in \RR, \PP_\alpha[c_k|\texttt{x}=x, \texttt{y}=y]=\PP_\beta[c_k|\texttt{x}=x, \texttt{y}=y]$.
+
+		For convenience, we will shorthand $\PP_\theta[c_{m+(2r+\iota)n+k}|\texttt{x} = x, \texttt{y} = y]$ to $\PP_\theta[c_{\iota n+k}, x, y]$. Let $t_{m+v'}$ be the final assignment into $\texttt{x}$ before the cycle repeats. 
+
+		Putting this all together, we have that \begin{align*}
+			&\frac{\int_{-\infty}^\infty \int_{-\infty}^\infty f_{2r}(\alpha, x_0, y_0, x_1, y_1)\int_{-\infty}^\infty \int_{-\infty}^\infty f_{2r+1}(\alpha,x_1, y_1, x_2) dx_{2}dy_{2} dx_{1}dy_{1}}
+			{\int_{-\infty}^\infty \int_{-\infty}^\infty f_{2r}(\beta, x_0, y_0, x_1, y_1)\int_{-\infty}^\infty \int_{-\infty}^\infty f_{2r+1}(\beta,x_1, y_1, x_2) dx_{2}dy_{2} dx_{1}dy_{1}}\\
+			\geq& \frac{\int_{-\infty}^\infty\int_{-\infty}^{\infty}\PP_\alpha[c_{j}, x_1, y_0]\PP_\alpha[\texttt{y}=y_1]\int_{-\infty}^\infty g_\alpha(x_1', y_1)\PP_\alpha[c_{n+u'}, x_1', y_1] dx_1' dx_1dy_1}{\int_{-\infty}^\infty\int_{-\infty}^{\infty}\PP_\beta[c_{j}, x_1, y_0]\PP_\beta[\texttt{y}=y_1]\int_{-\infty}^\infty g_\beta(x_1', y_1)\PP_\beta[c_{n+u'}, x_1', y_1] dx_1' dx_1dy_1}\\
+			=& \frac{\int_{-\infty}^\infty\int_{-\infty}^{\infty}\PP_\alpha[c_{j}, x_1, y_0]\PP_\alpha[\texttt{y}=y_1]\int_{-\infty}^\infty g_\alpha(x_1', y_1)\PP_\alpha[c_{n+u'}, x_1', y_1] dx_1' dx_1dy_1}{\int_{-\infty}^\infty\int_{-\infty}^{\infty}\PP_\beta[c_{j}, x_1, y_0]\PP_\beta[\texttt{y}=y_1+1]\int_{-\infty}^\infty g_\beta(x_1', y_1+1)\PP_\beta[c_{n+u'}, x_1', y_1+1] dx_1' dx_1dy_1}
+		\end{align*} where $g_\theta(x, y) = \left(\int_{-\infty}^\infty\ldots\int_{-\infty}^\infty\prod_{u<k<u'}\PP_\theta[c_{k}, x^{(k)}, y] dx^{(u+1)}\ldots dx^{(u'-1)}\right)\PP[\texttt{x}=x]\PP_\theta[c_{v'}, x, y]$.
+		
+		Note that we rely on Fubini's theorem heavily for integral manipulation. 
+
+		
+		Let $\varepsilon>\max(\varepsilon_1, \varepsilon_2, \varepsilon_3, \varepsilon_4)$. 
+
+		Recall then that $\forall x\in \RR, \forall y\geq 0$, $\frac{\PP_\alpha[c_{m+3rn+k}|\texttt{x}=x, \texttt{y}=y]}{\PP_\beta[c_{m+3rn+k}|\texttt{x}=x, \texttt{y}=y+1]}\geq e^{-\psi}$ for $u<k<n$. 
+		
+		Then $\forall x\in \RR$, if $y_1\geq \varrho_x$, \begin{align*}
+			\frac{g_\alpha(x, y)}{g_\beta(x, y)}&=\frac{\left(\int_{-\infty}^\infty\ldots\int_{-\infty}^\infty\prod_{u<k<u'}\PP_\alpha[c_{k}, x^{(k)}, y] dx^{(u+1)}\ldots dx^{(u'-1)}\right)\PP[\texttt{x}=x]\PP_\alpha[c_{v'}, x, y]}{\left(\int_{-\infty}^\infty\ldots\int_{-\infty}^\infty\prod_{u<k<u'}\PP_\beta[c_{k}, x^{(k)}, y] dx^{(u+1)}\ldots dx^{(u'-1)}\right)\PP[\texttt{x}=x]\PP_\beta[c_{v'}, x, y]}\\
+			&\geq e^{-z\psi}\frac{\PP_\alpha[\texttt{x}=x]}{\PP_\beta[\texttt{x}=x]},
+		\end{align*} where $z = |T^{(u\to u')}\setminus T^{(u\to u')}_\texttt{true} |$ is the number of non-\texttt{true} transitions between $t_{m+u}$ and $t_{m+u'}$ in $C$. 
+
+		We also have that $\forall x\in \RR$, if $y_1\geq \varrho_x$, then $\frac{\PP_\alpha[c_{n+i}|\texttt{x}=x, \texttt{y}=y_1]}{\PP_\beta[c_{n+i}|\texttt{x}=x, \texttt{y}=y_1+1]}\geq e^{-\psi}$ and $\frac{\PP_\alpha[c_{n+j}|\texttt{x}=x, \texttt{y}=y_1]}{\PP_\beta[c_{n+j}|\texttt{x}=x, \texttt{y}=y_1+1]}\geq e^{-\psi}$.
+
+		Further, note that $
+			\lim_{\varrho_x\to-\infty}\int_{-\infty}^{\varrho_x}\int_{-\infty}^{\infty}\PP_\beta[c_{j}, x_1, y_0]\PP_\beta[\texttt{y}=y_1+1]\int_{-\infty}^\infty g_\beta(x_1', y_1+1)\PP_\beta[c_{n+u'}, x_1', y_1+1] dx_1' dx_1dy_1 = 0$ 
+			and $\int_{-\infty}^{\varrho_x}\int_{-\infty}^{\infty}\PP_\beta[c_{j}, x_1, y_0]\PP_\beta[\texttt{y}=y_1+1]\int_{-\infty}^\infty g_\beta(x_1', y_1+1)\PP_\beta[c_{n+u'}, x_1', y_1+1] dx_1' dx_1dy_1 \geq 0$,
+		so there exists some $\varrho_x\in\RR$ such that 
+		$\int_{-\infty}^{\varrho_x}\int_{-\infty}^{\infty}\PP_\beta[c_{j}, x_1, y_0]\PP_\beta[\texttt{y}=y_1+1]\int_{-\infty}^\infty g_\beta(x_1', y_1+1)\PP_\beta[c_{n+u'}, x_1', y_1+1] dx_1' dx_1dy_1 \leq \int_{\varrho_x}^\infty\int_{-\infty}^{\infty}\PP_\beta[c_{j}, x_1, y_0]\PP_\beta[\texttt{y}=y_1+1]\int_{-\infty}^\infty g_\beta(x_1', y_1+1)\PP_\beta[c_{n+u'}, x_1', y_1+1] dx_1' dx_1dy_1$.
+
+		Let $\varrho_x\in\RR$ be such that the above holds. 
+
+		Finally, recall that $\exists \zeta\in \RR$ such that $\forall y_0\geq \zeta$, $\frac{\PP_\alpha[c_{m+3rn+j}|\texttt{x} = x, \texttt{y} = y_0]}{\PP_\beta[c_{m+3rn+j}|\texttt{x} = x, \texttt{y} = y_0]}\geq \begin{cases}
+			e^{-\psi} & x > 0\\
+			e^{\frac{d_{m+j}\varepsilon}{4}} & x\leq 0
+		\end{cases}$ and $\PP_\alpha[\texttt{y}=y_1] = \PP_\beta[\texttt{y}=y_1+1]$.
+
+		Let \begin{align*}
+			\psi <& \frac{1}{z+2}\bigl(\frac{d_{m+j}\varepsilon}{4}\\
+			&+\ln\left(\int_{-\infty}^{0}\int_{\varrho_x}^\infty\PP_\beta[c_{j}, x_1, y_0]\int_{-\infty}^\infty g_\beta(x_1', y_1+1)\PP_\beta[c_{n+u'}, x_1', y_1+1] dx_1' dy_1dx_1\right)\\
+			&+\ln\left(\int_{0}^{\infty}\int_{\varrho_x}^\infty\PP_\beta[c_{j}, x_1, y_0]\int_{-\infty}^\infty g_\beta(x_1', y_1+1)\PP_\beta[c_{n+u'}, x_1', y_1+1] dx_1' dy_1dx_1\right)\\
+			&-\ln\left(2\int_{-\infty}^{\infty}\int_{\varrho_x}^\infty\PP_\beta[c_{j}, x_1, y_0]\int_{-\infty}^\infty g_\beta(x_1', y_1+1)\PP_\beta[c_{n+u'}, x_1', y_1+1] dx_1' dy_1dx_1\right)\bigr)
+		\end{align*}
+
+
+		Note that if $\varepsilon$ is big enough, then $\psi >0$. 
+
+		Then $\forall y_0\geq \zeta$, \begin{align*}
+			&\frac{\int_{-\infty}^\infty\int_{-\infty}^{\infty}\PP_\alpha[c_{j}, x_1, y_0]\PP_\alpha[\texttt{y}=y_1]\int_{-\infty}^\infty g_\alpha(x_1', y_1)\PP_\alpha[c_{n+u'}, x_1', y_1] dx_1' dx_1dy_1}{\int_{-\infty}^\infty\int_{-\infty}^{\infty}\PP_\beta[c_{j}, x_1, y_0]\PP_\beta[\texttt{y}=y_1+1]\int_{-\infty}^\infty g_\beta(x_1', y_1+1)\PP_\beta[c_{n+u'}, x_1', y_1+1] dx_1' dx_1dy_1}\\
+			\geq &\frac{\int_{\varrho_x}^\infty\int_{-\infty}^{\infty}\PP_\alpha[c_{j}, x_1, y_0]\PP_\alpha[\texttt{y}=y_1]\int_{-\infty}^\infty g_\alpha(x_1', y_1)\PP_\alpha[c_{n+u'}, x_1', y_1] dx_1' dx_1dy_1}{2\int_{\varrho_x}^\infty\int_{-\infty}^{\infty}\PP_\beta[c_{j}, x_1, y_0]\PP_\beta[\texttt{y}=y_1+1]\int_{-\infty}^\infty g_\beta(x_1', y_1+1)\PP_\beta[c_{n+u'}, x_1', y_1+1] dx_1' dx_1dy_1}\\
+			\geq &\frac{e^{-(z+1)\psi}\int_{\varrho_x}^\infty\int_{-\infty}^{\infty}\PP_\alpha[c_{j}, x_1, y_0]\int_{-\infty}^\infty g_\beta(x_1', y_1+1)\PP_\beta[c_{n+u'}, x_1', y_1+1] dx_1' dx_1dy_1}{2\int_{\varrho_x}^\infty\int_{-\infty}^{\infty}\PP_\beta[c_{j}, x_1, y_0]\int_{-\infty}^\infty g_\beta(x_1', y_1+1)\PP_\beta[c_{n+u'}, x_1', y_1+1] dx_1' dx_1dy_1}\\
+			\geq &\frac{e^{-(z+1)\psi}\int_{-\infty}^{\infty}\int_{\varrho_x}^\infty\PP_\alpha[c_{j}, x_1, y_0]\int_{-\infty}^\infty g_\beta(x_1', y_1+1)\PP_\beta[c_{n+u'}, x_1', y_1+1] dx_1' dy_1dx_1}{2\int_{-\infty}^{\infty}\int_{\varrho_x}^\infty\PP_\beta[c_{j}, x_1, y_0]\int_{-\infty}^\infty g_\beta(x_1', y_1+1)\PP_\beta[c_{n+u'}, x_1', y_1+1] dx_1' dy_1dx_1}\\
+			\geq&\frac{\splitfrac{e^{-(z+1)\psi}(e^{\frac{d_{m+j}\varepsilon}{4}}\int_{-\infty}^{0}\int_{\varrho_x}^\infty\PP_\beta[c_{j}, x_1, y_0]\int_{-\infty}^\infty g_\beta(x_1', y_1+1)\PP_\beta[c_{n+u'}, x_1', y_1+1] dx_1' dy_1dx_1}{+e^{-\psi}\int_{0}^{\infty}\int_{\varrho_x}^\infty\PP_\beta[c_{j}, x_1, y_0]\int_{-\infty}^\infty g_\beta(x_1', y_1+1)\PP_\beta[c_{n+u'}, x_1', y_1+1] dx_1' dy_1dx_1)}}
+			{2\int_{-\infty}^{\infty}\int_{\varrho_x}^\infty\PP_\beta[c_{j}, x_1, y_0]\int_{-\infty}^\infty g_\beta(x_1', y_1+1)\PP_\beta[c_{n+u'}, x_1', y_1+1] dx_1' dy_1dx_1}\\
+			\geq& \frac{\splitfrac{e^{-(z+1)\psi}(e^{\frac{d_{m+j}\varepsilon}{4}}\int_{-\infty}^{0}\int_{\varrho_x}^\infty\PP_\beta[c_{j}, x_1, y_0]\int_{-\infty}^\infty g_\beta(x_1', y_1+1)\PP_\beta[c_{n+u'}, x_1', y_1+1] dx_1' dy_1dx_1)}{(e^{-\psi}\int_{0}^{\infty}\int_{\varrho_x}^\infty\PP_\beta[c_{j}, x_1, y_0]\int_{-\infty}^\infty g_\beta(x_1', y_1+1)\PP_\beta[c_{n+u'}, x_1', y_1+1] dx_1' dy_1dx_1)}}
+			{2\int_{-\infty}^{\infty}\int_{\varrho_x}^\infty\PP_\beta[c_{j}, x_1, y_0]\int_{-\infty}^\infty g_\beta(x_1', y_1+1)\PP_\beta[c_{n+u'}, x_1', y_1+1] dx_1' dy_1dx_1}\\
+			\geq& \frac{\splitfrac{e^{\frac{d_{m+j}\varepsilon}{4}-(z+2)\psi}(\int_{-\infty}^{0}\int_{\varrho_x}^\infty\PP_\beta[c_{j}, x_1, y_0]\int_{-\infty}^\infty g_\beta(x_1', y_1+1)\PP_\beta[c_{n+u'}, x_1', y_1+1] dx_1' dy_1dx_1)}{(e^{-\psi}\int_{0}^{\infty}\int_{\varrho_x}^\infty\PP_\beta[c_{j}, x_1, y_0]\int_{-\infty}^\infty g_\beta(x_1', y_1+1)\PP_\beta[c_{n+u'}, x_1', y_1+1] dx_1' dy_1dx_1)}}
+			{2\int_{-\infty}^{\infty}\int_{\varrho_x}^\infty\PP_\beta[c_{j}, x_1, y_0]\int_{-\infty}^\infty g_\beta(x_1', y_1+1)\PP_\beta[c_{n+u'}, x_1', y_1+1] dx_1' dy_1dx_1}\\
+			>&1
+		\end{align*}
+	\end{proof}
+
+	As before, it follows that $\eta_\ell$ is not differentially private by induction. 
+
+\end{proof}
+
+\subsubsection{Case 5: There are assignment(s) into $y$ in the leaking cycle, all possible ``leaky transitions'' are assignments, and there exists a possible ``leaky transition'' that is an assignment into $y$}
+
+\begin{thm}
+	In this case, a leaking cycle $\implies$ no privacy.
+\end{thm}
+
+\begin{proof}
+	Fix $d>0$. We will consider some $\varepsilon>0$ that we fix later. 
+
+	Consider a path $\eta_\ell = q_0\to\ldots\to q_u\to \ldots\to \overbrace{q_m\to \ldots q_{m+\ell n}}^{C}$ with the leaking cycle $C$ repeated $\ell$ times.
+
+	Let $\sigma_\ell$ be a valid output of $\eta_\ell$ and WLOG suppose that $\sigma_\ell\in\Gamma^*$. Also wlog suppose that $\ell$ is a multiple of 3. 
+
+	We will show that $\forall d>0, \exists \varepsilon>0$ such that $\forall x, \PP[x, \eta_\ell^{(\alpha, \sigma_\ell)}[m:]]>e^{d\varepsilon} \PP[x, \eta_\ell^{(\beta, \sigma_\ell)}[m:]]$. This is sufficient to show an overall violation of privacy. 
+
+	Let $T_y$ be the set of transitions in $\eta_\ell$ that are assignments to $y$. 
+
+	Let $i, j$ be the smallest integers such that \begin{itemize}
+		\item $0\leq i <j<n$.
+		\item $t_{m+i}$ is an assignment transition for $\texttt{x}$.
+		\item $c_{m+j}\neq \texttt{true}$.
+		\item $\forall k:i<k<j$, $t_{m+k}$ is not an assignment transition for $\texttt{x}$.
+	\end{itemize}
+
+	We know that such $i, j$ must exist and $t_{j+k}\in T_y$ by assumption. Note that $t_{m+i}\notin T_y$. 
+
+	WLOG suppose that $i=0$ (i.e. we start the cycle at the first assignment into $\texttt{x}$)
+
+	Let $i=0\leq u <n$ be the largest integer such that $t_{m+u}$ is an assignment transition into $\texttt{y}$; i.e. $t_{m+u}$ is the final assignment into $\texttt{y}$ before the cycle ``loops''. 
+
+	By assumption, $u = j$.
+	
+	Consider a transition $t_k$ in $C$. Then if $\guard(t_k)\neq \texttt{true}$, it must be an assignment transition into $\texttt{x}$. This is because we know that no non-assignment transitions have $c_k(x) \neq \texttt{true}$ by assumption and if a non-assignment transition has $c_k(x) \neq \texttt{true}$, then we have a leaking cycle in the style of case 2 in $\texttt{y}$. In particular, this means that every transition between $t_{m+j}$ and $t_{m+j}$ must have guard $\texttt{true}$. 
+
+	Thus, we assume that all non-\texttt{true} transitions that aren't $t_{m+i}$ or $t_{m+j}$ are assignments into $\texttt{x}$. 
+
+	Let $T^{(u\to n)} = \{t_k: u<k<n\land t_k$ is an assignment transition$ \}$ be the set of assignment transitions in $C$ after $t_{m+u}$ and $T^{(u\to n)}_\texttt{true} = \{t_k\in T^{(u\to n)} \land \guard(t_k) = \texttt{true} \}$ be the set of assignment transitions in $C$ with guard $\texttt{true}$ after $t_{m+u}$.
+
+	Let $\varrho_x, \varrho_y \in \RR$ be shift parameters whose exact values we will fix later. 
+
+	Define the input sequences $\alpha(\ell), \beta(\ell)$ (abbr $\alpha, \beta$) as follows: 
+
+	Let $t_v$ be the final assignment transition into $\texttt{y}$ before $C$. 
+
+	Let $\alpha_v = \beta_v = \varrho_y$. 
+
+	For all $0\leq r < \frac{\ell}{3}$, let $\alpha_{m+3rn+i} = \beta_{m+3rn+i} =0$ and $\alpha_{m+(3r+1)n+i} = \beta_{m+(3r+1)n+i} = \varrho_x$.
+	
+	Let $\alpha_{m+3rn+j} = \frac{1}{2}$, $\beta_{m+3rn+j} = -\frac{1}{2}$, and $\alpha_{m+(3r+1)n+j} = \beta_{m+(3r+1)n+j}=\varrho_x$ if $c_{m+j}(x) = \gguard[\texttt{x}]$.
+	
+	Otherwise if $c_{m+j}(x)=\lguard[\texttt{x}]$, let $\alpha_{m+3rn+j}=-\frac{1}{2}$, $\beta_{m+3rn+j} =\frac{1}{2}$, $\alpha_{m+(3r+1)n+j}=\beta_{m+(3r+1)n+j} =\varrho_x$.
+
+	Further, let $\alpha_{m+3(r+2)n+i} =\beta_{m+3(r+2)n+i}=0$ and $\alpha_{m+3(r+2)n+j} =\beta_{m+3(r+2)n+j}=\varrho_y$.
+
+	Also, for all $u<k<n$, let $\alpha_{m+3rn+k}=\beta_{m+3rn+k} = \varrho_x$.
+		
+	For all other $k$, let $\alpha_k=\beta_k=0$. 
+
+	Then let $F_o(\theta, x_0, y_0):{\alpha, \beta}\times \RR \times \RR \to \RR$ be the probability of the cycle repeating $o$ times on input sequence $\theta$ given starting $\texttt{x}, \texttt{y}$ values $x_0, y_0$. $F_o$ can be loosely defined as follows:\begin{align*}
+		F_o(\theta, x_0, y_0) &= \begin{cases}
+			\PP[c_{i+m}|\texttt{x}=x_0, \texttt{y}=y_0]\\
+			*\int_{-\infty}^\infty  \PP[X_o^\theta=x_1]\PP[\text{all other transitions in }C]dx_1 & o = 1\\
+			\PP[c_{i+on+m}|\texttt{x}=x_0, \texttt{y}=y_0]\\
+			*\int_{-\infty}^\infty \PP[X_o^\theta=x_o] \int_{-\infty}^\infty\PP[Y_o^{\theta}=y_o]\PP[\text{remaining transitions}] F_{o-1}(\theta, x_o, y_o)dy_odx_o & o > 1
+		\end{cases}	\\
+		&=\begin{cases}
+			\PP[c_{i+m}|\texttt{x}=x_0, \texttt{y}=y_0]\\
+			*\int_{-\infty}^\infty \int_{-\infty}^\infty\PP[Y_1^{\theta}=y_1]\PP[X_o^\theta=x_1]\PP[\text{remaining transitions}]dx_1dy_1 & o = 1\\
+			\PP[c_{i+on+m}|\texttt{x}=x_0, \texttt{y}=y_0]\\
+			*\int_{-\infty}^\infty\int_{-\infty}^\infty\PP[Y_o^{\theta}=y_o] \PP[X_o^\theta=x_o] \PP[\text{remaining transitions}]dx_o * F_{o-1}(\theta, x_o, y_o)dy_o & o > 1
+		\end{cases}	
+	\end{align*}
+	
+	The second equality is by Fubini's theorem and because there must only be one assignment into $\texttt{y}$ in the cycle. 
+
+	We will shorthand the non-recursive part of $F_o$ to $f_o(\theta, x_0, y_0, x_o, y_o)$, so
+	\[
+		F_o(\theta, x_0, y_0) = \begin{cases}
+			\int_{-\infty}^\infty\int_{-\infty}^\infty f_1(\theta,x_0, y_0, x_1, y_1)dx_1dy_1 & o = 1\\
+			\int_{-\infty}^\infty \int_{-\infty}^\infty f_o(\theta, x_0, y_0, x_o, y_o) F_{o-1}(\theta, x_o, y_o)dx_ody_o & o > 1
+		\end{cases}	
+	\]
+	\begin{lemma}
+		One of the following is true: \begin{enumerate}
+			\item $\exists \varepsilon>0, \zeta\in \RR$ such that $\forall x_0\in \RR$, if $y_0\geq\zeta$, then $\exists c>0$ such that $\forall 0\leq r< \frac{\ell}{3}$, \\
+			$\frac{\int_{-\infty}^\infty \int_{-\infty}^\infty f_{3r}(\alpha, x_0, y_0, x_1, y_1)\int_{-\infty}^\infty \int_{-\infty}^\infty f_{3r+1}(\alpha,x_1, y_1, x_2, y_2)\int_{-\infty}^\infty \int_{-\infty}^\infty f_{3r+2}(\alpha,x_{2}, y_{2}, x_{3}, y_{3}) dx_3dy_3 dx_{2}dy_{2} dx_{1}dy_{1}}
+			{\int_{-\infty}^\infty \int_{-\infty}^\infty f_{3r}(\beta, x_0, y_0, x_1, y_1)\int_{-\infty}^\infty \int_{-\infty}^\infty f_{3r+1}(\beta,x_1, y_1, x_2, y_2)\int_{-\infty}^\infty \int_{-\infty}^\infty f_{3r+2}(\beta,x_{2}, y_{2}, x_{3}, y_{3}) dx_3dy_3 dx_{2}dy_{2} dx_{1}dy_{1}}\geq e^{c\varepsilon}$.
+			\item $\exists \varepsilon>0, \zeta\in \RR$ such that $\forall x_0\in \RR$, if $y_0<\zeta$, then $\exists c>0$ such that $\forall 0\leq r< \frac{\ell}{3}$, \\
+			$\frac{\int_{-\infty}^\infty \int_{-\infty}^\infty f_{3r}(\alpha, x_0, y_0, x_1, y_1)\int_{-\infty}^\infty \int_{-\infty}^\infty f_{3r+1}(\alpha,x_1, y_1, x_2, y_2)\int_{-\infty}^\infty \int_{-\infty}^\infty f_{3r+2}(\alpha,x_{2}, y_{2}, x_{3}, y_{3}) dx_3dy_3 dx_{2}dy_{2} dx_{1}dy_{1}}
+			{\int_{-\infty}^\infty \int_{-\infty}^\infty f_{3r}(\beta, x_0, y_0, x_1, y_1)\int_{-\infty}^\infty \int_{-\infty}^\infty f_{3r+1}(\beta,x_1, y_1, x_2, y_2)\int_{-\infty}^\infty \int_{-\infty}^\infty f_{3r+2}(\beta,x_{2}, y_{2}, x_{3}, y_{3}) dx_3dy_3 dx_{2}dy_{2} dx_{1}dy_{1}}\geq e^{c\varepsilon}$.
+		\end{enumerate}
+	\end{lemma}
+	\begin{proof}
+		Let $0\leq r< \frac{\ell}{3}$ be arbitrary. 
+
+		WLOG suppose that $c_{m+j}(x)=\lguard[\texttt{x}]$. 
+
+		We know that $\exists \gamma \in \{-\infty, \infty\}$ such that $\lim_{y_0\to\gamma}\PP[c_{m+j}|\texttt{x}=x,\texttt{y}=y_0] = \PP[c_{m+j}(x)|\texttt{x}=x]=\PP[\lguard[\texttt{x}]|\texttt{x}=x]$.
+		
+		WLOG suppose that $\gamma = \infty$. Note then that $c_{m+j}\in \{\lguard[\texttt{x}]\land \lguard[\texttt{y}], \lguard[\texttt{x}]\lor \gguard[\texttt{y}]\}$.
+		
+		For all transitions $t_k$, let $\mu_k^{(\alpha, x)}$ be the mean of the Laplace noise assigned into $\texttt{x}$ for input $\alpha$ when evaluating the guard of transition $t_k$ and let $\mu_k^{(\beta, x)}$, $\mu_k^{(\alpha, y)}$, and $\mu_k^{(\beta, y)}$ be defined analogously. 
+
+		Note that by construction, $\mu_{m+3rn+i}^{(\alpha, x)}=\mu_{m+3rn+i}^{(\beta, x)}$ and $\mu_{m+3rn+i}^{(\alpha, y)}=\mu_{m+3rn+i}^{(\beta, y)}$. Thus, $\frac{\PP_\alpha[c_{m+3rn+i}|\texttt{x}=x_0, \texttt{y}=y_0]}{\PP_\beta[c_{m+3rn+i}|\texttt{x}=x_0, \texttt{y}=y_0]}=1$.
+
+		From \cite{chadhaLinearTimeDecidability2021}, we know that if $\frac{\PP_\alpha[\lguard[\texttt{x}]|\texttt{x} = x]}{\PP_\beta[\lguard[\texttt{x}]|\texttt{x} = x]}\geq \begin{cases}
+			1 & x > 0\\
+			e^{\frac{d_{m+j}\varepsilon}{2}} & x\leq 0
+		\end{cases}$. Thus, $\exists \zeta\in \RR$ such that $\forall y_0\geq \zeta$, $\frac{\PP_\alpha[c_{m+3rn+j}|\texttt{x} = x, \texttt{y} = y_0]}{\PP_\beta[c_{m+3rn+j}|\texttt{x} = x, \texttt{y} = y_0]}\geq \begin{cases}
+			e^{-\psi} & x > 0\\
+			e^{\frac{d_{m+j}\varepsilon}{4}} & x\leq 0
+		\end{cases}$ for some (very small) constant $\psi>0$ (to be fixed later).
+
+		Consider $t_{m+3rn+k}\in T^{(u\to n)}$. Because $\mu_{m+3rn+k}^{(\alpha, x)}=\mu_{m+3rn+k}^{(\beta, x)}$, $\forall x, \PP_\alpha[c_{m+3rn+k}(x)|\texttt{x}=x]=\PP_\beta[c_{m+3rn+k}(x)|\texttt{x}=x]$. Note also that $\mu_{m+3rn+k}^{(\alpha, y)}+1=\mu_{m+3rn+k}^{(\beta, y)}$. 
+		
+		If $c_{m+3rn+k}$ is an OR guard, then if $c_{m+3rn+k}(y)=\gguard[\texttt{y}]$, $\forall y\in \RR, \PP_\alpha[\gguard[y]]\geq\PP_\beta[\gguard[y+1]]$, so $\frac{\PP_\alpha[c_{m+3rn+k}|\texttt{x}=x, \texttt{y}=y]}{\PP_\beta[c_{m+3rn+k}|\texttt{x}=x, \texttt{y}=y+1]}\geq 1$. 
+		Otherwise if $c_{m+3rn+k}(y)=\lguard[\texttt{y}]$, then $\exists \varepsilon_1>0$ such that $\forall \varepsilon\geq \varepsilon_1$, if $y\geq \varrho_x$, then $\frac{\PP_\alpha[c_{m+3rn+k}|\texttt{x}=x, \texttt{y}=y]}{\PP_\beta[c_{m+3rn+k}|\texttt{x}=x, \texttt{y}=y+1]}\geq e^{-\psi}\frac{\PP_\alpha[c_{m+3rn+k}(x)|\texttt{x}=x]}{\PP_\beta[c_{m+3rn+k}(x)|\texttt{x}=x]}=e^{-\psi}$. 
+
+		If $c_{m+3rn+k}$ is an AND guard and $c_{m+3rn+k}(y) \in \{\texttt{true}, \gguard[\texttt{y}]\}$, then $\forall y$, $\PP_\alpha[c_{m+3rn+k}(y)|\texttt{y}=y]\geq \PP_\beta[c_{m+3rn+k}(y)|\texttt{y}=y+1]$ also, so $\forall x, y\in \RR, \frac{\PP_\alpha[c_{m+3rn+k}|\texttt{x}=x, \texttt{y}=y]}{\PP_\beta[c_{m+3rn+k}|\texttt{x}=x, \texttt{y}=y+1]}\geq 1$.
+
+		Otherwise, if $c_{m+3rn+k}(y) =\lguard[y]$, we have that $\forall x\in \RR, \forall y\geq \varrho_x$, $\frac{\PP_\alpha[c_{m+3rn+k}|\texttt{x}=x, \texttt{y}=y]}{\PP_\beta[c_{m+3rn+k}|\texttt{x}=x, \texttt{y}=y+1]} \geq \frac{2-e^{d_{m+k}\varepsilon(\varrho_x-y)}}{2-e^{d_{m+k}\varepsilon(\varrho_x-y-1)}}$; 
+		thus, $\exists \varepsilon_2>0$ such that $\forall \varepsilon>\varepsilon_2, \forall x\in \RR, \forall y\geq \varrho_x$, $\frac{\PP_\alpha[c_{m+3rn+k}|\texttt{x}=x, \texttt{y}=y]}{\PP_\beta[c_{m+3rn+k}|\texttt{x}=x, \texttt{y}=y+1]}\geq e^{-\psi}$.
+
+		By the same analysis, we know that if $t_{m+(3r+1)n+i}$ is an AND transition with $c_{m+3rn+i}(y) =\lguard[y]$, then $\exists \varepsilon_3>0$ such that $\forall \varepsilon>\varepsilon_3, \forall x\in \RR, \forall y\geq \varrho_x$, $\frac{\PP_\alpha[c_{m+3rn+i}|\texttt{x}=x, \texttt{y}=y]}{\PP_\beta[c_{m+3rn+i}|\texttt{x}=x, \texttt{y}=y+1]}\geq e^{-\psi}$ 
+		and otherwise, $\forall x, y\in \RR$, $\frac{\PP_\alpha[c_{m+3rn+i}|\texttt{x}=x, \texttt{y}=y]}{\PP_\beta[c_{m+3rn+i}|\texttt{x}=x, \texttt{y}=y+1]}\geq 1$.
+
+		As before, we know that $\PP_\alpha[c_{m+(3r+1)n+j}(x)|\texttt{x}=x]=\PP_\beta[c_{m+(3r+1)n+j}(x)|\texttt{x}=x]$. Recall that $c_{m+j}\in \{\lguard[\texttt{x}]\land \lguard[\texttt{y}], \lguard[\texttt{x}]\lor \gguard[\texttt{y}]\}$. 
+
+		Note that $\forall y\in \RR, \PP_\alpha[\gguard[y]]\geq\PP_\beta[\gguard[y+1]]$ at transition $t_{m+(3r+1)n+j}$, since $\alpha_{m+(3r+1)n+j} = \beta_{m+(3r+1)n+j}$.
+
+		Thus, if $c_{m+j} = \lguard[\texttt{x}]\lor \gguard[\texttt{y}]$, then $\forall x, y\in\RR, \PP_\alpha[c_{m+(3r+1)n+j}|\texttt{x}=x, \texttt{y}=y]\geq\PP_\beta[c_{m+(3r+1)n+j}|\texttt{x}=x, \texttt{y}=y+1]$.
+
+		Otherwise if $c_{m+j} = \lguard[\texttt{x}]\land \lguard[\texttt{y}]$, then like before, we have that $\exists \varepsilon_4>0$ such that $\forall \varepsilon>\varepsilon_4, \forall x\in \RR, \forall y\geq \varrho_x$, $\frac{\PP_\alpha[c_{m+(3r+1)n+j}|\texttt{x}=x, \texttt{y}=y]}{\PP_\beta[c_{m+(3r+1)n+j}|\texttt{x}=x, \texttt{y}=y+1]}\geq e^{-\psi}$.
+
+		For all remaining transitions $t_k$ such that $m+(3r+1)n+j<k<m+(3r+3)n$, note that $\mu_k^{(\alpha, x)}=\mu_k^{(\beta, x)}$ and $\mu_k^{(\alpha, y)}=\mu_k^{(\beta, y)}$, so $\forall x, y\in \RR, \PP_\alpha[c_k|\texttt{x}=x, \texttt{y}=y]=\PP_\beta[c_k|\texttt{x}=x, \texttt{y}=y]$.
+
+		For convenience, we will shorthand $\PP_\theta[c_{m+(3r+\iota)n+k}|\texttt{x} = x, \texttt{y} = y]$ to $\PP_\theta[c_{\iota n+k}, x, y]$. Let $t_{m+v'}$ be the final assignment into $\texttt{x}$ before the cycle repeats. 
+
+		Putting this all together, we have that \begin{align*}
+			&\frac{\int_{-\infty}^\infty \int_{-\infty}^\infty f_{3r}(\alpha, x_0, y_0, x_1, y_1)\int_{-\infty}^\infty \int_{-\infty}^\infty f_{3r+1}(\alpha,x_1, y_1, x_2, y_2)\int_{-\infty}^\infty \int_{-\infty}^\infty f_{3r+2}(\alpha,x_{2}, y_{2}, x_{3}, y_{3}) dx_3dy_3 dx_{2}dy_{2} dx_{1}dy_{1}}
+			{\int_{-\infty}^\infty \int_{-\infty}^\infty f_{3r}(\beta, x_0, y_0, x_1, y_1)\int_{-\infty}^\infty \int_{-\infty}^\infty f_{3r+1}(\beta,x_1, y_1, x_2, y_2)\int_{-\infty}^\infty \int_{-\infty}^\infty f_{3r+2}(\beta,x_{2}, y_{2}, x_{3}, y_{3}) dx_3dy_3 dx_{2}dy_{2} dx_{1}dy_{1}}\\
+			\geq& \frac{\int_{-\infty}^\infty\int_{-\infty}^{\infty}\PP_\alpha[c_{j}, x_1, y_0]\PP_\alpha[\texttt{y}=y_1]\int_{-\infty}^\infty g_\alpha(x_1')\PP_\alpha[c_{n+i}, x_1', y_1]\int_{-\infty}^\infty \PP_\alpha[c_{n+j}, x_2, y_1]dx_2 dx_1' dx_1dy_1}{\int_{-\infty}^\infty\int_{-\infty}^{\infty}\PP_\beta[c_{j}, x_1, y_0]\PP_\beta[\texttt{y}=y_1]\int_{-\infty}^\infty g_\beta(x_1')\PP_\beta[c_{n+i}, x_1', y_1]\int_{-\infty}^\infty \PP_\beta[c_{n+j}, x_2, y_1]dx_2 dx_1' dx_1dy_1}\\
+			=&\frac{\int_{-\infty}^\infty\int_{-\infty}^{\infty}\PP_\alpha[c_{j}, x_1, y_0]\PP_\alpha[\texttt{y}=y_1]\int_{-\infty}^\infty g_\alpha(x_1')\PP_\alpha[c_{n+i}, x_1', y_1]\int_{-\infty}^\infty \PP_\alpha[c_{n+j}, x_2, y_1]dx_2 dx_1' dx_1dy_1}{\int_{-\infty}^\infty\int_{-\infty}^{\infty}\PP_\beta[c_{j}, x_1, y_0]\PP_\beta[\texttt{y}=y_1+1]\int_{-\infty}^\infty g_\beta(x_1')\PP_\beta[c_{n+i}, x_1', y_1+1]\int_{-\infty}^\infty \PP_\beta[c_{n+j}, x_2, y_1+1]dx_2 dx_1' dx_1dy_1}
+		\end{align*} where $g_\theta(x) = \left(\int_{-\infty}^\infty\ldots\int_{-\infty}^\infty\prod_{u<k<v'}\PP_\theta[\texttt{x}=x^{(k)}]\PP_\theta[c_{k}, x^{(k)}, y_1] dx^{(u+1)}\ldots dx^{(v'-1)}\right)\PP[\texttt{x}=x]\PP_\theta[c_{v'}, x, y_1]$.
+		
+		Note that we rely on Fubini's theorem heavily for integral manipulation. 
+
+		Let $\varepsilon>\max(\varepsilon_1, \varepsilon_2, \varepsilon_3, \varepsilon_4)$. 
+
+		Recall then that $\forall x\in \RR, \forall y\geq 0$, $\frac{\PP_\alpha[c_{m+3rn+k}|\texttt{x}=x, \texttt{y}=y]}{\PP_\beta[c_{m+3rn+k}|\texttt{x}=x, \texttt{y}=y+1]}\geq e^{-\psi}$ for $u<k<n$. 
+		
+		Then $\forall x\in \RR$, if $y_1\geq 0$, \begin{align*}
+			\frac{g_\alpha(x)}{g_\beta(x)}&=\frac{\left(\int_{-\infty}^\infty\ldots\int_{-\infty}^\infty\prod_{u<k<v'}\PP_\alpha[\texttt{x}=x^{(k)}]\PP_\alpha[c_{k}, x^{(k)}, y_1] dx^{(u+1)}\ldots dx^{(v'-1)}\right)\PP[\texttt{x}=x]\PP_\alpha[c_{v'}, x, y_1]}{\left(\int_{-\infty}^\infty\ldots\int_{-\infty}^\infty\prod_{u<k<v'}\PP_\beta[\texttt{x}=x^{(k)}]\PP_\beta[c_{k}, x^{(k)}, y_1] dx^{(u+1)}\ldots dx^{(v'-1)}\right)\PP[\texttt{x}=x]\PP_\beta[c_{v'}, x, y_1]}\\
+			&\geq e^{-z\psi}\frac{\PP_\alpha[\texttt{x}=x]}{\PP_\beta[\texttt{x}=x]},
+		\end{align*} where $z = |T^{(u\to n)}\setminus T^{(u\to n)}_\texttt{true} |$ is the number of non-\texttt{true} transitions after $t_{m+u}$ in $C$. 
+
+		We also have that $\forall x\in \RR$, if $y_1\geq \varrho_x$, then $\frac{\PP_\alpha[c_{n+i}|\texttt{x}=x, \texttt{y}=y_1]}{\PP_\beta[c_{n+i}|\texttt{x}=x, \texttt{y}=y_1+1]}\geq e^{-\psi}$ and $\frac{\PP_\alpha[c_{n+j}|\texttt{x}=x, \texttt{y}=y_1]}{\PP_\beta[c_{n+j}|\texttt{x}=x, \texttt{y}=y_1+1]}\geq e^{-\psi}$.
+
+		Further, note that $
+			\lim_{\varrho_x\to-\infty}\int_{-\infty}^{\varrho_x}\int_{-\infty}^{\infty}\PP_\beta[c_{j}, x_1, y_0]\PP_\beta[\texttt{y}=y_1+1]\int_{-\infty}^\infty g_\beta(x_1')\PP_\beta[c_{n+i}, x_1', y_1+1]\int_{-\infty}^\infty \PP_\beta[c_{n+j}, x_2, y_1+1]dx_2 dx_1' dx_1dy_1 = 0$ and $
+			\lim_{\varrho_x\to-\infty}\int_{-\infty}^{\varrho_x}\int_{-\infty}^{\infty}\PP_\beta[c_{j}, x_1, y_0]\PP_\beta[\texttt{y}=y_1+1]\int_{-\infty}^\infty g_\beta(x_1')\PP_\beta[c_{n+i}, x_1', y_1+1]\int_{-\infty}^\infty \PP_\beta[c_{n+j}, x_2, y_1+1]dx_2 dx_1' dx_1dy_1 = 1,
+		$
+		so there exists some $\varrho_x\in\RR$ such that 
+		$\int_{-\infty}^{\varrho_x}\int_{-\infty}^{\infty}\PP_\beta[c_{j}, x_1, y_0]\PP_\beta[\texttt{y}=y_1+1]\int_{-\infty}^\infty g_\beta(x_1')\PP_\beta[c_{n+i}, x_1', y_1+1]\int_{-\infty}^\infty \PP_\beta[c_{n+j}, x_2, y_1+1]dx_2 dx_1' dx_1dy_1\leq \int_{-\infty}^{\varrho_x}\int_{-\infty}^{\infty}\PP_\beta[c_{j}, x_1, y_0]\PP_\beta[\texttt{y}=y_1+1]\int_{-\infty}^\infty g_\beta(x_1')\PP_\beta[c_{n+i}, x_1', y_1+1]\int_{-\infty}^\infty \PP_\beta[c_{n+j}, x_2, y_1+1]dx_2 dx_1' dx_1dy_1$.
+
+		Let $\varrho_x\in\RR$ be such that the above holds. 
+
+		Finally, recall that $\exists \zeta\in \RR$ such that $\forall y_0\geq \zeta$, $\frac{\PP_\alpha[c_{m+3rn+j}|\texttt{x} = x, \texttt{y} = y_0]}{\PP_\beta[c_{m+3rn+j}|\texttt{x} = x, \texttt{y} = y_0]}\geq \begin{cases}
+			e^{-\psi} & x > 0\\
+			e^{\frac{d_{m+j}\varepsilon}{4}} & x\leq 0
+		\end{cases}$ and $\PP_\alpha[\texttt{y}=y_1] = \PP_\beta[\texttt{y}=y_1+1]$.
+
+		Let \begin{align*}
+			\psi <& \frac{1}{z+3}\bigl(\frac{d_{m+j}\varepsilon}{4}\\
+			&+\ln(e^{\frac{d_{m+j}\varepsilon}{4}-(z+3)\psi})\\
+			&+\ln\left(\int_{-\infty}^{0}\int_{\varrho_x}^\infty\PP_\beta[c_{j}, x_1, y_0]\int_{-\infty}^\infty g_\beta(x_1')\PP_\beta[c_{n+i}, x_1', y_1+1]\int_{-\infty}^\infty \PP_\beta[c_{n+j}, x_2, y_1+1]dx_2 dx_1' dy_1dx_1\right)\\
+			&+\ln\left(\int_{0}^{\infty}\int_{\varrho_x}^\infty\PP_\beta[c_{j}, x_1, y_0]\int_{-\infty}^\infty g_\beta(x_1')\PP_\beta[c_{n+i}, x_1', y_1+1]\int_{-\infty}^\infty \PP_\beta[c_{n+j}, x_2, y_1+1]dx_2 dx_1' dy_1dx_1\right)\\
+			&-\ln\left(2\int_{-\infty}^{\infty}\int_{\varrho_x}^\infty\PP_\beta[c_{j}, x_1, y_0]\int_{-\infty}^\infty g_\beta(x_1')\PP_\beta[c_{n+i}, x_1', y_1+1]\int_{-\infty}^\infty \PP_\beta[c_{n+j}, x_2, y_1+1]dx_2 dx_1'dy_1 dx_1\right)\bigr)
+		\end{align*}
+
+		Note that if $\varepsilon$ is big enough, then $\psi >0$. 
+
+		Then $\forall y_0\geq \zeta$, \begin{align*}
+			&\frac{\int_{-\infty}^\infty\int_{-\infty}^{\infty}\PP_\alpha[c_{j}, x_1, y_0]\PP_\alpha[\texttt{y}=y_1]\int_{-\infty}^\infty g_\alpha(x_1')\PP_\alpha[c_{n+i}, x_1', y_1]\int_{-\infty}^\infty \PP_\alpha[c_{n+j}, x_2, y_1]dx_2 dx_1' dx_1dy_1}{\int_{-\infty}^\infty\int_{-\infty}^{\infty}\PP_\beta[c_{j}, x_1, y_0]\PP_\beta[\texttt{y}=y_1+1]\int_{-\infty}^\infty g_\beta(x_1')\PP_\beta[c_{n+i}, x_1', y_1+1]\int_{-\infty}^\infty \PP_\beta[c_{n+j}, x_2, y_1+1]dx_2 dx_1' dx_1dy_1}\\
+			\geq &\frac{\int_{\varrho_x}^\infty\int_{-\infty}^{\infty}\PP_\alpha[c_{j}, x_1, y_0]\PP_\alpha[\texttt{y}=y_1]\int_{-\infty}^\infty g_\alpha(x_1')\PP_\alpha[c_{n+i}, x_1', y_1]\int_{-\infty}^\infty \PP_\alpha[c_{n+j}, x_2, y_1]dx_2 dx_1' dx_1dy_1}
+			{2\int_{\varrho_x}^\infty\int_{-\infty}^{\infty}\PP_\beta[c_{j}, x_1, y_0]\PP_\beta[\texttt{y}=y_1+1]\int_{-\infty}^\infty g_\beta(x_1')\PP_\beta[c_{n+i}, x_1', y_1+1]\int_{-\infty}^\infty \PP_\beta[c_{n+j}, x_2, y_1+1]dx_2 dx_1' dx_1dy_1}\\
+			\geq &\frac{e^{-(z+2)\psi}\int_{\varrho_x}^\infty\int_{-\infty}^{\infty}\PP_\alpha[c_{j}, x_1, y_0]\int_{-\infty}^\infty g_\beta(x_1')\PP_\beta[c_{n+i}, x_1', y_1+1]\int_{-\infty}^\infty \PP_\beta[c_{n+j}, x_2, y_1+1]dx_2 dx_1' dx_1dy_1}
+			{2\int_{\varrho_x}^\infty\int_{-\infty}^{\infty}\PP_\beta[c_{j}, x_1, y_0]\int_{-\infty}^\infty g_\beta(x_1')\PP_\beta[c_{n+i}, x_1', y_1+1]\int_{-\infty}^\infty \PP_\beta[c_{n+j}, x_2, y_1+1]dx_2 dx_1' dx_1dy_1}\\
+			\geq &\frac{\splitfrac{e^{\frac{d_{m+j}\varepsilon}{4}}\int_{-\infty}^{0}\int_{\varrho_x}^\infty\PP_\beta[c_{j}, x_1, y_0]\int_{-\infty}^\infty g_\beta(x_1')\PP_\beta[c_{n+i}, x_1', y_1+1]\int_{-\infty}^\infty \PP_\beta[c_{n+j}, x_2, y_1+1]dx_2 dx_1' dy_1dx_1}
+			{+e^{-(z+3)\psi}\int_{0}^{\infty}\int_{\varrho_x}^\infty\PP_\beta[c_{j}, x_1, y_0]\int_{-\infty}^\infty g_\beta(x_1')\PP_\beta[c_{n+i}, x_1', y_1+1]\int_{-\infty}^\infty \PP_\beta[c_{n+j}, x_2, y_1+1]dx_2 dx_1' dy_1dx_1}}
+			{2\int_{-\infty}^{\infty}\int_{\varrho_x}^\infty\PP_\beta[c_{j}, x_1, y_0]\int_{-\infty}^\infty g_\beta(x_1')\PP_\beta[c_{n+i}, x_1', y_1+1]\int_{-\infty}^\infty \PP_\beta[c_{n+j}, x_2, y_1+1]dx_2 dx_1'dy_1 dx_1}\\
+			\geq &\frac{\splitfrac{e^{\frac{d_{m+j}\varepsilon}{4}-(z+3)\psi}\left(\int_{-\infty}^{0}\int_{\varrho_x}^\infty\PP_\beta[c_{j}, x_1, y_0]\int_{-\infty}^\infty g_\beta(x_1')\PP_\beta[c_{n+i}, x_1', y_1+1]\int_{-\infty}^\infty \PP_\beta[c_{n+j}, x_2, y_1+1]dx_2 dx_1' dy_1dx_1\right)}
+			{\left(\int_{0}^{\infty}\int_{\varrho_x}^\infty\PP_\beta[c_{j}, x_1, y_0]\int_{-\infty}^\infty g_\beta(x_1')\PP_\beta[c_{n+i}, x_1', y_1+1]\int_{-\infty}^\infty \PP_\beta[c_{n+j}, x_2, y_1+1]dx_2 dx_1' dy_1dx_1\right)}}
+			{2\int_{-\infty}^{\infty}\int_{\varrho_x}^\infty\PP_\beta[c_{j}, x_1, y_0]\int_{-\infty}^\infty g_\beta(x_1')\PP_\beta[c_{n+i}, x_1', y_1+1]\int_{-\infty}^\infty \PP_\beta[c_{n+j}, x_2, y_1+1]dx_2 dx_1'dy_1 dx_1}\\
+			>&1
+		\end{align*}
+		
+	\end{proof}
+
+	As before, it follows that $\eta_\ell$ is not differentially private by induction. 
+
+\end{proof}
+
+\subsubsection{Case 6: There are assignment(s) into $y$ in the leaking cycle and there does not exist some ``leaky transition'' that is not an assignment into $\texttt{x}$}
+
+This means that none of the assignment(s) into $y$ can have a guard that involves $x$ (otherwise we appeal to case 2b). Similarly, no assignment into $x$ can have a guard that involves $y$; otherwise WLOG we consider a leaking cycle in $y$ and apply a previous case. 
+
+Then clearly we can simply leverage the analysis of a leaking cycle from \cite{chadhaLinearTimeDecidability2021} to show that privacy is violated. 
+
+
+
+\subsection{Leaking Pairs}
+
+\subsubsection{No assignment into $y$ on the $\texttt{AG}$-path}
+
+\textbf{Assumptions:}
+\begin{itemize}
+    \item $A$ has no leaking cycles (otherwise section 1 should apply)
+    \item $C$ is a $\texttt{L}$-cycle and $C'$ is a $\texttt{G}$-cycle (reverse case is symmetric), $C$ and $C'$ are distinct (this is mostly for convenience).
+    \item All states in $A$ are input states
+    \item There does not exist an assignment into $y$ on the $\texttt{AG}-path$ between $C$ and $C'$
+\end{itemize}
+
+
+Consider the path $\eta_\ell$ where $C, C'$ are repeated $\ell$ times each:
+
+\[\eta_{\ell} = q_0\cdots q_u \cdots q_{u'} \cdots \overbrace{q_v\cdots q_{v+n_1\ell}}^{C}\underbrace{\cdots}_{\text{no assignments to }\texttt{y}} \overbrace{q_w\cdots q_{w+n_2\ell}}^{C'}\]
+
+where $q_u$ and $q_{u'}$ are states before the last assignment transitions for $x$ and $y$, respectively, before $C$ ($q_u$ is depicted as occuring before $q_{u'}$ but this is not necessary). Note that $|C| = n_1$ and $|C'| = n_2$.
+
+We will frequently abuse notation and write $\eta_\ell$ to denote $\eta_{\ell, \ell}$, where $C$ and $C'$ are traversed the same number of times. 
+
+ 
+
+\begin{defn}
+	A \textbf{potential critical transition} is a transition $t_i$ in $C$ such that $c_i(x) = \lguard[\texttt{x}]$ or a transition $t_i$ in $C'$ such that $c_i(x) = \gguard[\texttt{x}]$.
+\end{defn}
+
+
+Let $\mathcal{C} = \{\lguard[x]\land\gguard[y], \lguard[x]\lor \gguard[y], \gguard[x]\land\lguard[y], \gguard[x]\lor\lguard[y]\}$.
+
+\textbf{Case 1: there exist a pair of potential critical transitions $c_1, c_2$ in $C$ and $C'$, respectively, such that we can take $y\to\infty$ or $y\to-\infty$ blindly}
+
+The exact conditions are that either: \begin{enumerate}
+	\item Both $c_1, c_2$ are AND guards or both are OR guards and the $y$-component direction of $c_1$ is the same direction as the $y$-component direction of $c_2$.
+	\item One of $c_1, c_2$ is an AND guard and the other is an OR guard and the $y$-component direction of $c_1$ is the opposite direction as the $y$-component direction of $c_2$.
+\end{enumerate}
+
+Let $\alpha, \beta$ be defined as follows: $\alpha_{k_1} = -\frac{1}{2}$ and $\beta_{k_1} = \frac{1}{2}$; $\alpha_{k_2} = \frac{1}{2}$ and $\beta_{k_2} = -\frac{1}{2}$; and $\alpha_{u'} = \beta_{u'} =\varrho_y$. For all other $i$, $\alpha_i = \beta_i = 0$. 
+
+First, note that $\forall x, y\in \RR, \frac{\PP_\alpha[c_k|\texttt{x}=x, \texttt{y}=y]}{\PP_\beta[c_k|\texttt{x}=x, \texttt{y}=y]} = 1$ for all $k\notin \{k_1, k_2\}$.
+
+
+By assumption, we have some $\gamma\in \{-\infty, \infty\}$ such that $\forall x\in \RR, \lim_{y\to\gamma}\PP_\alpha[c_{k_1}|\texttt{x}=x, \texttt{y}=y] = \PP_\alpha[c_{k_1}(x)|\texttt{x}=x]$ and $\lim_{y\to\gamma}\PP_\alpha[c_{k_2}|\texttt{x}=x, \texttt{y}=y] = \PP_\alpha[c_{k_2}(x)|\texttt{x}=x]$.
+
+WLOG suppose $\gamma = \infty$. 
+
+Then $\exists \zeta\in \RR$ such that $\forall x\in \RR, \forall y\geq \zeta$, $\frac{\PP_\alpha[c_{k_1}|\texttt{x}=x, \texttt{y}=y]}{\PP_\beta[c_{k_1}|\texttt{x}=x, \texttt{y}=y]}\geq\begin{cases}
+	e^{-\psi} & x\geq 0\\
+	e^{\frac{1}{2}d_{k_1}\varepsilon-\psi} & x<0
+\end{cases}$ and \\ $\frac{\PP_\alpha[c_{k_2}|\texttt{x}=x, \texttt{y}=y]}{\PP_\beta[c_{k_2}|\texttt{x}=x, \texttt{y}=y]}\geq\begin{cases}
+	e^{-\psi} & x< 0\\
+	e^{\frac{1}{2}d_{k_2}\varepsilon-\psi} & x\geq 0
+\end{cases}$.
+
+Let $d' = \min(d_{k_1}, d_{k_2})$ and take $0<\psi < \frac{1}{8}d'\varepsilon$.
+
+Additionally, note that if $\varrho_y$ is large enough, then $\int_{\zeta}^\infty \PP_\beta[\texttt{y}=y](\PP_\beta[c_{k_1}|\texttt{x}=x, \texttt{y}=y]\PP_\beta[c_{k_2}|\texttt{x}=x, \texttt{y}=y])^\ell dy > \int_{-\infty}^\zeta\PP_\beta[\texttt{y}=y](\PP_\beta[c_{k_1}|\texttt{x}=x, \texttt{y}=y]\PP_\beta[c_{k_2}|\texttt{x}=x, \texttt{y}=y])^\ell dy$; let $\varrho_y$ be such that this holds. 
+
+Then \begin{align*}
+	\frac{\PP_\alpha[\eta_\ell]}{\PP_\beta[\eta_\ell]}&\geq \frac{\int_{-\infty}^\infty\int_{-\infty}^\infty \PP_\alpha[\texttt{y}=y](\PP_\alpha[c_{k_1}|\texttt{x}=x, \texttt{y}=y]\PP_\alpha[c_{k_2}|\texttt{x}=x, \texttt{y}=y])^\ell dydx}{\int_{-\infty}^\infty\int_{-\infty}^\infty \PP_\beta[\texttt{y}=y](\PP_\beta[c_{k_1}|\texttt{x}=x, \texttt{y}=y]\PP_\beta[c_{k_2}|\texttt{x}=x, \texttt{y}=y])^\ell dydx}\\
+	&\geq \frac{\int_{-\infty}^\infty\int_{\zeta}^\infty (\PP_\alpha[c_{k_1}|\texttt{x}=x, \texttt{y}=y]\PP_\alpha[c_{k_2}|\texttt{x}=x, \texttt{y}=y])^\ell dydx}{2\int_{-\infty}^\infty\int_{\zeta}^\infty(\PP_\beta[c_{k_1}|\texttt{x}=x, \texttt{y}=y]\PP_\beta[c_{k_2}|\texttt{x}=x, \texttt{y}=y])^\ell dydx}\\
+	&\geq \frac{\int_{-\infty}^\infty\int_{\zeta}^\infty (e^{\frac{1}{2}d'\varepsilon-2\psi}\PP_\beta[c_{k_1}|\texttt{x}=x, \texttt{y}=y]\PP_\beta[c_{k_2}|\texttt{x}=x, \texttt{y}=y])^\ell dydx}{2\int_{-\infty}^\infty\int_{\zeta}^\infty(\PP_\beta[c_{k_1}|\texttt{x}=x, \texttt{y}=y]\PP_\beta[c_{k_2}|\texttt{x}=x, \texttt{y}=y])^\ell dydx}\\
+	&\geq \frac{e^{\frac{1}{4}d'\varepsilon\ell}}{2},
+\end{align*}
+which is sufficient to demonstrate a violation of privacy. 
+
+
+
+\textbf{Case 2: Case 1 doesn't hold and every non-$\texttt{true}$ transition in $C$ and $C'$ is in $\mathcal{C}$}
+
+Note that because case 1 doesn't hold, this means that we have two possible cases for critical transitions in $C$ and $C'$ (Recall that $c_{k_1}(x) = \lguard[x]$ by assumption). For all possible critical transitions $t_{k_1}$ and $C$ and $t_{k_2}$ in $C'$, 
+\begin{align*}
+	(c_{k_1}, c_{k_2})\in\{&\\
+	&(\lguard[x]\land\gguard[y], \gguard[x]\land\lguard[y])\\	
+	&(\lguard[x]\lor\gguard[y], \gguard[x]\lor\lguard[y])\\
+	\}&
+\end{align*}
+
+In this case, the automaton is private (see other document). 
+
+
+\textbf{Case 3: There exists a potential critical transition in $C$ such that the $x$ and $y$ components have the same direction AND there exists a potential critical transition in $C'$ such that the $x$ and $y$ components have the same direction.}
+
+Let $t_{k_1}, t_{k_2}$ be a pair of such critical transitions in $C$, $C'$, respectively. Note then that $c_{k_1} \in \{ \lguard[x] \lor \lguard[y], \lguard[x] \land \lguard[y] \}$ and $c_{k_2} \in \{ \gguard[x] \lor \gguard[y], \gguard[x] \land \gguard[y] \}$.
+
+In particular, because of case 1, we can assume that $c_{k_1} = \lguard[x]\lor \lguard[y]$ if and only if $c_{k_2} = \gguard[x]\lor \gguard[y]$. 
+
+Let $\alpha, \beta$ be defined as follows: $\alpha_{k_1} = -\frac{1}{2}$ and $\beta_{k_1} = \frac{1}{2}$; $\alpha_{k_2} = \frac{1}{2}$ and $\beta_{k_2} = -\frac{1}{2}$. For all other $i$, $\alpha_i = \beta_i = 0$. 
+
+From \cite{chadhaLinearTimeDecidability2021}, we have $\frac{\PP_\alpha[c_{k_1}(\texttt{x})|X = x]}{\PP_\beta[c_{k_1}(\texttt{x})|X = x]}\geq \begin{cases}
+	1 & x \geq 0\\
+	e^{\frac{1}{2}d_{k_1}\varepsilon} & x< 0
+\end{cases}$ and $\frac{\PP_\alpha[c_{k_1}(\texttt{y})|Y = y]}{\PP_\beta[c_{k_1}(\texttt{y})| Y= y]}\geq \begin{cases}
+	1 & y \geq 0\\
+	e^{\frac{1}{2}d_{k_1}\varepsilon} & y< 0
+\end{cases}$
+
+Similarly, $\frac{\PP_\alpha[c_{k_2}(\texttt{x})|X = x]}{\PP_\beta[c_{k_2}(\texttt{x})|X = x]}\geq \begin{cases}
+	1 & x < 0\\
+	e^{\frac{1}{2}d_{k_2}\varepsilon} & x\geq 0
+\end{cases}$ and $\frac{\PP_\alpha[c_{k_2}(\texttt{y})|Y = y]}{\PP_\beta[c_{k_2}(\texttt{y})| Y= y]}\geq \begin{cases}
+	1 & y < 0\\
+	e^{\frac{1}{2}d_{k_2}\varepsilon} & y\geq 0
+\end{cases}$. 
+
+Note also that for every other $t_k$, $\forall x, y\in \RR, \frac{\PP_\alpha[c_k|\texttt{x}=x, \texttt{y}=y]}{\PP_\beta[c_k|\texttt{x}=x, \texttt{y}=y]}=1$.
+
+
+Then if $c_{k_1} =\lguard[\texttt{x}]\land \lguard[\texttt{y}]$,  $\frac{\PP_\alpha[c_{k_1}|X = x, Y=y]}{\PP_\beta[c_{k_1}|X = x, Y=y]}\geq \begin{cases}
+	1 & x \geq 0\land y\geq 0\\
+	e^{\frac{1}{2}d_{k_1}\varepsilon} & (x \geq 0\land y< 0)\lor(x < 0\land y\geq 0) \\
+	e^{d_{k_1}\varepsilon} & x< 0\land y<0
+\end{cases}$. 
+
+Similarly, $\frac{\PP_\alpha[c_{k_2}|X = x, Y=y]}{\PP_\beta[c_{k_2}|X = x, Y=y]}\geq \begin{cases}
+	1 & x <0\land y<0\\
+	e^{\frac{1}{2}d_{k_1}\varepsilon} & (x < 0\land y\geq 0)\lor (x \geq 0\land y< 0) \\
+	e^{d_{k_1}\varepsilon} & x\geq  0\land y\geq 0
+\end{cases}$.
+
+Let $d' = \min(d_{k_1}, d_{k_2})$.
+
+Then clearly \begin{align*}
+	&\frac{\int_{-\infty}^\infty\int_{-\infty}^\infty(\PP_\alpha[c_{k_1}|\texttt{x}=x, \texttt{y}=y]\PP_\alpha[c_{k_2}|\texttt{x}=x, \texttt{y}=y])^\ell dydx}{\int_{-\infty}^\infty\int_{-\infty}^\infty(\PP_\beta[c_{k_1}|\texttt{x}=x, \texttt{y}=y]\PP_\beta[c_{k_2}|\texttt{x}=x, \texttt{y}=y])^\ell dydx}\\
+	\geq &\frac{\int_{-\infty}^\infty\int_{-\infty}^\infty(e^{\frac{1}{2}d'\varepsilon}\PP_\beta[c_{k_1}|\texttt{x}=x, \texttt{y}=y]\PP_\beta[c_{k_2}|\texttt{x}=x, \texttt{y}=y])^\ell dydx}{\int_{-\infty}^\infty\int_{-\infty}^\infty(\PP_\beta[c_{k_1}|\texttt{x}=x, \texttt{y}=y]\PP_\beta[c_{k_2}|\texttt{x}=x, \texttt{y}=y])^\ell dydx} \\
+	\geq & e^{\frac{1}{2}d'\varepsilon\ell},
+\end{align*}
+which is sufficient to show a violation of privacy. 
+
+Otherwise if $c_{k_1} =\lguard[\texttt{x}]\lor \lguard[\texttt{y}]$, then clearly we have that $\frac{\PP_\alpha[c_{k_1}|X = x, Y=y]}{\PP_\beta[c_{k_1}|X = x, Y=y]}>1$ if $x< 0$ or $y<0$. Similarly, $\frac{\PP_\alpha[c_{k_2}|X = x, Y=y]}{\PP_\beta[c_{k_2}|X = x, Y=y]}>1$ if $x\geq 0$ or $y\geq 0$.
+
+Further, let $\varrho_x, \varrho_y>0$ be such that \begin{align*}
+	&\int_{-\varrho_x}^{\varrho_x}\int_{-\varrho_y}^{\varrho_y}\PP_\beta[c_{k_1}|\texttt{x}=x, \texttt{y}=y]\PP_\beta[c_{k_2}|\texttt{x}=x, \texttt{y}=y] dydx \\
+	\geq& \int_{-\infty}^{-\varrho_x}\int_{-\infty}^{\infty}\PP_\beta[c_{k_1}|\texttt{x}=x, \texttt{y}=y]\PP_\beta[c_{k_2}|\texttt{x}=x, \texttt{y}=y] dydx \\
+	&+ \int_{\varrho_x}^{\infty}\int_{-\infty}^{\infty}\PP_\beta[c_{k_1}|\texttt{x}=x, \texttt{y}=y]\PP_\beta[c_{k_2}|\texttt{x}=x, \texttt{y}=y] dydx \\
+	& +\int_{-\infty}^{\infty}\int_{-\infty}^{-\varrho_y}\PP_\beta[c_{k_1}|\texttt{x}=x, \texttt{y}=y]\PP_\beta[c_{k_2}|\texttt{x}=x, \texttt{y}=y] dydx \\
+	& +\int_{-\infty}^{\infty}\int_{\varrho_y}^{\infty}\PP_\beta[c_{k_1}|\texttt{x}=x, \texttt{y}=y]\PP_\beta[c_{k_2}|\texttt{x}=x, \texttt{y}=y] dydx
+\end{align*}
+
+To see that such a $\varrho_x, \varrho_y$ must exist, note that $\forall x, y,\in \RR, \PP_\beta[c_{k_1}|\texttt{x}=x, \texttt{y}=y]\PP_\beta[c_{k_2}|\texttt{x}=x, \texttt{y}=y]\geq 0$ and as $\varrho_x, \varrho_y\to\infty$, the LHS approaches 1 while the RHS approaches 0. 
+
+Let $e^{c_1} = \inf_{(x, y)\in (-\varrho_x, 0)\times (-\varrho_y, \varrho_y)}\frac{\PP_\alpha[c_1|\texttt{x}=x, \texttt{y}=y]}{\PP_\beta[c_1|\texttt{x}=x, \texttt{y}=y]}$ and $e^{c_2} = \inf_{(x, y)\in (0, \varrho_x)\times (-\varrho_y, \varrho_y)}\frac{\PP_\alpha[c_2|\texttt{x}=x, \texttt{y}=y]}{\PP_\beta[c_2|\texttt{x}=x, \texttt{y}=y]}$.
+
+Note that $c_1, c_2 >0$ and let $c = \min(c_1, c_2)$. 
+
+Then \begin{align*}
+	&\frac{\int_{-\infty}^\infty\int_{-\infty}^\infty(\PP_\alpha[c_{k_1}|\texttt{x}=x, \texttt{y}=y]\PP_\alpha[c_{k_2}|\texttt{x}=x, \texttt{y}=y])^\ell dydx}{\int_{-\infty}^\infty\int_{-\infty}^\infty(\PP_\beta[c_{k_1}|\texttt{x}=x, \texttt{y}=y]\PP_\beta[c_{k_2}|\texttt{x}=x, \texttt{y}=y])^\ell dydx}\\
+	\geq &\frac{\int_{-\varrho_x}^{\varrho_x}\int_{-\varrho_y}^{\varrho_y}(e^c\PP_\beta[c_{k_1}|\texttt{x}=x, \texttt{y}=y]\PP_\beta[c_{k_2}|\texttt{x}=x, \texttt{y}=y])^\ell dydx}{2\int_{-\varrho_x}^{\varrho_x}\int_{-\varrho_y}^{\varrho_y}(\PP_\beta[c_{k_1}|\texttt{x}=x, \texttt{y}=y]\PP_\beta[c_{k_2}|\texttt{x}=x, \texttt{y}=y])^\ell dydx} \\
+	\geq &\frac{e^{c\ell}}{2},
+\end{align*}
+which again is sufficient to demonstrate a violation of privacy. 
+
+\textbf{Case 4: everything else}
+
+Suppose that we have two critical transitions $t_{k_1}\in C$ and $t_{k_2}\in C'$. Recall that $c_{k_1}(x) = \lguard[x]$ by assumption. 
+
+We can assume that the previous cases do not hold, so we must have that $(c_{k_1}, c_{k_2})$ are one of four pairs: \begin{align*}
+	(c_{k_1}, c_{k_2})\in\{&\\
+	&(\lguard[x]\land\lguard[y], \gguard[x]\lor\lguard[y])\\	
+	&(\lguard[x]\land\gguard[y], \gguard[x]\lor\gguard[y])\\
+	&(\lguard[x]\lor\lguard[y], \gguard[x]\land\lguard[y])\\
+	&(\lguard[x]\lor\gguard[y], \gguard[x]\land\gguard[y])\\
+	\}&
+\end{align*}
+
+In particular, note that \textit{every} transition in both $C$ and $C'$ must have the same guard as either $t_{k_1}$ or $t_{k_2}$, or otherwise one of the previous three cases would apply. 
+
+Suppose that $(t_{k_1}, t_{k_2})=(\lguard[x]\land\lguard[y], \gguard[x]\lor\lguard[y])$. The other cases are analogous.
+
+
+
+Let $T_1 = \{t_k\in C\cup C':c_k = c_{k_1}\}$ be the set of all cycle transitions in $\eta_\ell$ that have guard $\lguard[x]\land\lguard[y]$ and $T_2= \{t_k\in C\cup C':c_k = c_{k_2}\}$ be the set of all cycle transitions in $\eta_\ell$ that have guard $\gguard[x]\lor\lguard[y]$.
+
+Let $t_{u'}$ be the final assignment into $\texttt{y}$ before $C$. 
+
+Let $\alpha, \beta$ be defined as follows: $\forall k_1\in T_1$, let $\alpha_{k_1} = -\frac{1}{2}$ and $\beta_{k_1} = \frac{1}{2}$. 
+
+Additionally, $\forall k_2\in T_2$, let $\alpha_{k_2} = \frac{1}{2}$ and $\beta_{k_2} = -\frac{1}{2}$. 
+
+Finally, let $\alpha_{u'} = \varrho_y$, $\beta_{u'}=\varrho_y+1$, where $\varrho_y$ is a shift parameter to be fixed later. For all other $i$, $\alpha_i = \beta_i = 0$.
+
+Consider some transition $t_k \in T_1$. Then \begin{align*}
+	\frac{\PP_\alpha[c_k|\texttt{x}=x, \texttt{y}=y]}{\PP_\beta[c_k|\texttt{x}=x, \texttt{y}=y+1]}&=\frac{\PP_\alpha[c_k(x)|\texttt{x}=x]\PP_\alpha[c_k(y)|\texttt{y}=y]}{\PP_\beta[c_k(x)|\texttt{x}=x]\PP_\beta[c_k(y)|\texttt{y}=y+1]}\\
+	&= \frac{\PP_\alpha[c_k(x)|\texttt{x}=x]}{\PP_\beta[c_k(x)|\texttt{x}=x]}\\
+	&\geq \begin{cases}
+		e^{\frac{d_{k}\varepsilon}{2}} & x\leq 0\\
+		1 & x> 0
+	\end{cases}.
+\end{align*}
+
+Now consider some transition $t_k\in T_2$. Then $\exists y_0\in \RR$ such that $\forall y\leq y_0$, \begin{align*}
+	\frac{\PP_\alpha[c_k|\texttt{x}=x, \texttt{y}=y]}{\PP_\beta[c_k|\texttt{x}=x, \texttt{y}=y+1]}&\geq e^{-\psi}\frac{\PP_\alpha[c_k(x)|\texttt{x}=x]}{\PP_\beta[c_k(x)|\texttt{x}=x]}\\
+	&\geq \begin{cases}
+		e^{-\psi}& x\leq 0\\
+		e^{\frac{d_{k}\varepsilon}{2}-\psi} & x> 0
+	\end{cases}
+\end{align*}
+
+for some small $\psi>0$. 
+
+Further, note that $\exists c>0$ such that $\forall x, y\in \RR, \prod_{t_k\notin C\cup C'}\frac{\PP_\alpha[c_k|\texttt{x}=x, \texttt{y}=y]}{\PP_\beta[c_k|\texttt{x}=x, \texttt{y}=y+1]}\geq e^{-c}$, since there are a fixed number of other transitions in $\eta_\ell$ (i.e. not dependent on $\ell$). 
+
+Thus, if $\varrho_y$ is small enough, then it immediately follows that $\eta_\ell$ is not differentially private. 
+
+\subsubsection{There exists some $y$ assignment on the $\texttt{AG}$-path}\label{goodleakingpairs}
+
+\textbf{Assumptions:}
+\begin{itemize}
+    \item $A$ has no leaking cycles (otherwise section 1 should apply)
+    \item $C$ is a $\texttt{L}$-cycle and $C'$ is a $\texttt{G}$-cycle (reverse case is symmetric), $C$ and $C'$ are distinct.
+    \item All states in $A$ are input states
+    \item There exists a transition on the \texttt{AG}-path that assigns into $y$. 
+\end{itemize}
+
+Suppose that a GDiPA $A$ has a leaking pair $C$, $C'$.
+
+Consider the path $\eta_\ell$ where $C, C'$ are repeated $\ell$ times each:
+
+\[\eta_\ell = q_0\cdots q_u \cdots q_{u'} \cdots \overbrace{q_v\cdots q_{v+n_1\ell}}^{C}\underbrace{\cdots q_z\cdots}_{\text{no assignments to }\texttt{x}} \overbrace{q_w\cdots q_{w+n_2\ell}}^{C'}\]
+
+where $q_u$ and $q_{u'}$ are states before the last assignment transitions for $x$ and $y$, respectively, before $C$ ($q_u$ is depicted as occuring before $q_{u'}$ but this is not necessary). $q_z$ is associated with the last assignment transition into $y$ before $C'$, which exists by assumption. Note that $|C| = n_1$ and $|C'| = n_2$.
+
+For all guards $c_i$, let $c_i(x)$ represent the ``$x$-component'' of the guard, and similarly for $c_i(y)$.
+
+Let $v\leq k_1< v+n_1$ be such that $c_{k_1}(x) = \lguard[x]$. Similarly, let $w \leq k_2 < w+n_2$ be such that $c_{k_2}(x) = \gguard[x]$.
+
+
+We define two adjacent input sequences $\alpha(\ell)$ and $\beta(\ell)$ as follows:
+
+For all $0\leq j < \ell$, $\alpha(\ell)_{k_1+n_1j} = -\frac{1}{2}$ and $\beta(\ell)_{k_1+n_1j} = \frac{1}{2}$ (i.e. for every time we traverse the transition $t_{k_1}$ in $C$). Similarly, for all $0\leq j < \ell$, $\alpha(\ell)_{k_2+n_2j} = \frac{1}{2}$ and $\beta(\ell)_{k_2+n_2j} = -\frac{1}{2}$. 
+Additionally, $\alpha(\ell)_{u'} = \gamma_\alpha^1, \beta(\ell)_{u'} = \gamma_\beta^1, \alpha(\ell)_{z} = \gamma_\alpha^2,$ and $\beta(\ell)_z = \gamma_\beta^2$. For all other $i$, $\alpha(\ell)_i =\beta(\ell)_i= 0$.
+
+
+\textbf{Case 1: $c_{k_1}$ is an OR guard}
+
+Suppose that $c_{k_1}(y) = \lguard[y]$. The case for when $c_{k_1}(y) = \gguard[y]$ is symmetric.
+
+Set $\gamma_\alpha^1=\gamma_\beta^1=\gamma_1$ to be very small (i.e. $\gamma_1\to-\infty$). Note that $\PP_{\alpha, k_1}[\lguard[y]]\to 0$ and $\PP_{\beta, k_1}[\lguard[y]] \to 0$. 
+
+Then \begin{align*}
+    \frac{\PP_{\alpha, k_1}[c_{k_1}]}{\PP_{\beta, k_1}[c_{k_1}]} &= \frac{\PP_{\alpha, k_1}[\lguard[x]] + \PP_{\alpha, k_1}[\lguard[y]]- \PP_{\alpha, k_1}[\lguard[x]]\PP_{\alpha, k_1}[\lguard[y]]}{\PP_{\beta, k_1}[\lguard[x]] + \PP_{\beta, k_1}[\lguard[y]]- \PP_{\beta, k_1}[\lguard[x]]\PP_{\beta, k_1}[\lguard[y]]}\\
+	&\to  \frac{\PP_{\alpha, k_1}[\lguard[x]]}{\PP_{\beta, k_1}[\lguard[x]]}\text{ as }\gamma_1 \to -\infty\\
+	&\geq e^\varepsilon
+\end{align*}
+
+\textbf{Case 2: $c_{k_1}$ is an AND guard}
+
+Set $\gamma_\alpha^1= \gamma_\beta^1=\gamma_1$ to be very large (i.e. $\gamma_1\to\infty$). Note that then $\PP_{\alpha, k_1}[\lguard[y]]\to 1$ and $\PP_{\beta, k_1}[\lguard[y]]\to 1$.
+
+Then \begin{align*}
+    \frac{\PP_{\alpha, k_1}[c_{k_1}]}{\PP_{\beta, k_1}[c_{k_1}]} &= \frac{\PP_{\alpha, k_1}[\lguard[x]]\PP_{\alpha, k_1}[c_{k_1}(y)]}{\PP_{\beta, k_1}[\lguard[x]]\PP_{\beta, k_1}[c_{k_1}(y)]}\\
+	&\to  \frac{\PP_{\alpha, k_1}[\lguard[x]]}{\PP_{\beta, k_1}[\lguard[x]]}\\
+	&\geq e^\varepsilon
+\end{align*}
+
+The cases for $c_{k_2}$ are exactly analogous. Combined with the analysis from \cite{chadhaLinearTimeDecidability2021} and the analysis from above, this gives us a violation of privacy. 
+
+\subsection{Disclosing Cycles}
+
+\textbf{Assumptions}
+\begin{itemize}
+	\item $A$ has no leaking pairs or leaking cycles (from sections 1 + 2).
+\end{itemize}
+
+\begin{thm}
+	If a GDiPA $A$ has a disclosing cycle with regards to any variable, then it is not $d\varepsilon$-differentially private for any $d>0$. 
+\end{thm}
+
+Fix $d>0, \varepsilon>0$. 
+
+From sections 1 and 2, we can assume that $A$ has no leaking pairs or leaking cycles. 
+
+WLOG suppose that $A$ has a disclosing cycle $C$ with regards to $\texttt{x}$. 
+
+We consider the path $\eta_\ell = q_0\cdots \overbrace{q_j\cdots q_{j+\ell m}}^{C}$, where $C$ is repeated $\ell$ times. Note that $|C| = m$. 
+
+Let $t_{j+k} = q_{j+k}\to q_{j+k+1}$ be a transition in $C$ that outputs $\texttt{insample}$ or $\texttt{insample}'$.
+
+Let $t_{u}$ be the last transition before $C$ that assigns into $x$ and $t_{u'}$ be the last transition before $C$ that assigns into $y$. 
+
+\textbf{Case 1: $c_{j+k}(x) = \texttt{true}$}
+
+Fix some valid output $\sigma_\ell = \sigma_0\sigma_1\ldots\sigma_{j+\ell m-1}$ of $\eta_\ell$ such that $\sigma_{j+rm+k}\in (0, \infty)$ for all $0\leq r< \ell$. 
+
+Let $\alpha(\ell)$, $\beta(\ell)$ be such that for all $0\leq k < \ell$,$\alpha_{j+rm+k}=0$ and $ \beta_{j+rm+k} = -1$. Additionally, let $\alpha_{u'} = \beta_{u'} = \gamma$, and $\alpha_i=\beta_i=0$ for all other $i$. 
+
+Note that $\forall x\in \RR, \frac{\PP_\alpha[\sigma_{i}]}{\PP_\beta[\sigma_i]} = 1$ if $i\neq j+rm+k$ for some $r$. 
+
+Further, note that because $\sigma_{j+rm+k}^{(\alpha)}\sim \Lap(0, \frac{1}{\varepsilon})$ and $\sigma_{j+rm+k}^{(\beta)}\sim \Lap(-1, \frac{1}{\varepsilon})$, \begin{align*}
+	\frac{\PP_\alpha[\sigma_{j+rm+k}\in (0, \infty)]}{\PP_\beta[\sigma_{j+rm+k}\in (0, \infty)]}&=\frac{\frac{1}{2}}{\frac{e^{-d_{j+k}\varepsilon}}{2}}\\
+	&=e^{d_{j+k}\varepsilon}
+\end{align*}
+
+
+$\forall x\in \RR$, if $c_{j+k}(y)=\texttt{true}$ also, then \begin{align*}
+	\frac{\PP_\alpha[c_{j+rm+k}\land \sigma_{j+rm+k}=0]}{\PP_\beta[c_{j+rm+k}\land\sigma_{j+rm+k}=0]} &=\frac{\PP_\alpha[\sigma_{j+rm+k}=0]}{\PP_\beta[\sigma_{j+rm+k}=0]} \\
+	&=e^{d_{j+k}\varepsilon}
+\end{align*}
+
+Otherwise, let $\theta = \begin{cases}
+	\infty & c_{j+k}(y)=\lguard[\texttt{y}]\\
+	-\infty & c_{j+k}(y)=\gguard[\texttt{y}]
+\end{cases}$. WLOG suppose $c_{j+k}(y)=\lguard[\texttt{y}]$. Then $\forall x\in \RR$, \begin{align*}
+	\lim_{y\to\theta}\frac{\PP_\alpha[c_{j+rm+k}\land \sigma_{j+rm+k}=0]}{\PP_\beta[c_{j+rm+k}\land\sigma_{j+rm+k}=0]} &=\lim_{y\to\infty}\frac{\PP_\alpha[\lguard[\texttt{y}]\land \sigma_{j+rm+k}=0|\texttt{y}=y]}{\PP_\beta[\lguard[\texttt{y}]\land \sigma_{j+rm+k}=0|\texttt{y}=y]}\\
+	&=\frac{\PP_\alpha[\sigma_{j+rm+k}=0]}{\PP_\beta[\sigma_{j+rm+k}=0]}\\
+	&= e^{d_{j+k}\varepsilon}.
+\end{align*}
+
+Thus, $\exists M\in \RR$ such that $\forall y\geq M, \frac{\PP_\alpha[c_{j+rm+k}\land \sigma_{j+rm+k}=0]}{\PP_\beta[c_{j+rm+k}\land\sigma_{j+rm+k}=0]}\geq e^{\frac{d_{j+k}\varepsilon}{2}}$. 
+
+Then $\forall x\in \RR$, \begin{align*}
+	\frac{\PP[\eta_\ell, \sigma_\ell, \alpha]}{\PP[\eta_\ell, \sigma_\ell, \beta]}&\geq \frac{\PP[\eta_\ell[u':], \sigma_\ell[u':], \alpha[u':]]}{\PP[\eta_\ell[u':], \sigma_\ell[u':], \beta[u':]]}\\
+	&\geq \frac{\int_{-\infty}^\infty \PP_\alpha[\texttt{y}=y]\prod_{j\leq i\leq j+\ell m}\PP_\alpha[c_i|\texttt{x}=x, \texttt{y}=y]}{\int_{-\infty}^\infty \PP_\beta[\texttt{y}=y]\prod_{j\leq i\leq j+\ell m}\PP_\beta[c_i|\texttt{x}=x, \texttt{y}=y]}\\
+	&\geq \frac{\int_{-\infty}^M \PP_\alpha[\texttt{y}=y]\prod\PP_\alpha[c_i|\texttt{x}=x, \texttt{y}=y]+\int_{M}^\infty \PP_\alpha[\texttt{y}=y]\prod\PP_\alpha[c_i|\texttt{x}=x, \texttt{y}=y]}{\int_{-\infty}^M \PP_\beta[\texttt{y}=y]\prod\PP_\beta[c_i|\texttt{x}=x, \texttt{y}=y]+\int_{M}^\infty \PP_\beta[\texttt{y}=y]\prod\PP_\beta[c_i|\texttt{x}=x, \texttt{y}=y]}\\
+	&\geq \frac{e^{\ell\frac{d_{j+k}\varepsilon}{2}}\int_{M}^\infty \PP_\beta[\texttt{y}=y]\prod\PP_\beta[c_i|\texttt{x}=x, \texttt{y}=y]}{\int_{-\infty}^M \PP_\beta[\texttt{y}=y]+\int_{M}^\infty \PP_\beta[\texttt{y}=y]\prod\PP_\beta[c_i|\texttt{x}=x, \texttt{y}=y]}
+\end{align*}
+
+Further, note that as $\gamma\to \infty$, $\int_{-\infty}^M \PP_\beta[\texttt{y}=y] \to 0$; in particular, this means that $\exists N\geq M$ such that $\gamma\geq N\implies \int_{-\infty}^M \PP_\beta[\texttt{y}=y]\leq \int_{M}^\infty \PP_\beta[\texttt{y}=y]\prod\PP_\beta[c_i|\texttt{x}=x, \texttt{y}=y]$. If we take $\gamma > N$, then \begin{align*}
+	\frac{\PP[\eta_\ell, \sigma_\ell, \alpha]}{\PP[\eta_\ell, \sigma_\ell, \beta]}&\geq\frac{e^{\ell\frac{d_{j+k}\varepsilon}{2}}\int_{M}^\infty \PP_\beta[\texttt{y}=y]\prod\PP_\beta[c_i|\texttt{x}=x, \texttt{y}=y]}{\int_{-\infty}^M \PP_\beta[\texttt{y}=y]+\int_{M}^\infty \PP_\beta[\texttt{y}=y]\prod\PP_\beta[c_i|\texttt{x}=x, \texttt{y}=y]}\\
+	&\geq \frac{e^{\ell\frac{d_{j+k}\varepsilon}{2}}\int_{M}^\infty \PP_\beta[\texttt{y}=y]\prod\PP_\beta[c_i|\texttt{x}=x, \texttt{y}=y]}{2\int_{M}^\infty \PP_\beta[\texttt{y}=y]\prod\PP_\beta[c_i|\texttt{x}=x, \texttt{y}=y]}\\
+	&\geq e^{d\varepsilon}
+\end{align*}
+if $\ell\geq \frac{2\ln2+2d\varepsilon}{d_{j+k}\varepsilon}$.
+
+\textbf{Case 2: $c_{j+k}(x) =\gguard[\texttt{x}]$ ($\lguard[\texttt{x}]$ is symmetric)}
+
+Fix some valid output $\sigma_\ell = \sigma_0\sigma_1\ldots\sigma_{j+\ell m-1}$ of $\eta_\ell$ such that $\sigma_{j+rm+k}\in (0, \infty)$ for all $0\leq r< \ell$. 
+
+Let $\alpha(\ell)$, $\beta(\ell)$ be such that for all $0\leq k < \ell$,$\alpha_{j+rm+k}=0$ and $ \beta_{j+rm+k} = -1$. Additionally, let $\alpha_{u'} = \beta_{u'} = \gamma$, and $\alpha_i=\beta_i=0$ for all other $i$. 
+
+
+As before, $\forall x\in \RR, \frac{\PP_\alpha[\sigma_{i}]}{\PP_\beta[\sigma_i]} = 1$ if $i\neq j+rm+k$ for some $r$.
+
+Similarly, $\forall x\in \RR$, if $c_{j+k}(y)=\texttt{true}$, then \[
+	\frac{\PP_\alpha[c_{j+rm+k}\land \sigma_{j+rm+k}=0]}{\PP_\beta[c_{j+rm+k}\land\sigma_{j+rm+k}=0]} = e^{d_{j+k}\varepsilon},	
+\]
+
+Otherwise, $\forall x\in \RR$, \[
+	\lim_{y\to\gamma}\frac{\PP_\alpha[c_{j+rm+k}\land \sigma_{j+rm+k}=0]}{\PP_\beta[c_{j+rm+k}\land\sigma_{j+rm+k}=0]} = e^{d_{j+k}\varepsilon},	
+\]
+where $\gamma = \begin{cases}
+	\infty & c_{j+k}\in \{\gguard[\texttt{x}]\land \lguard[\texttt{y}],\lguard[\texttt{x}]\land \lguard[\texttt{y}]\}\\
+	\infty & c_{j+k}\in \{\gguard[\texttt{x}]\lor \gguard[\texttt{y}], \lguard[\texttt{x}] \lor \gguard[\texttt{y}]\}\\
+	-\infty & c_{j+k}\in \{\gguard[\texttt{x}]\land \gguard[\texttt{y}],\lguard[\texttt{x}]\land \gguard[\texttt{y}]\}\\
+	-\infty & c_{j+k}\in \{\gguard[\texttt{x}]\lor \lguard[\texttt{y}], \lguard[\texttt{x}] \lor \lguard[\texttt{y}]\}\\
+\end{cases}$
+
+Like before, this is sufficient to show a violation of privacy. 
+
+\subsection{Privacy Violating Paths}
+
+Let $\alpha, \beta$ be exactly as defined in \cite{chadhaLinearTimeDecidability2021} for the analysis of privacy violating paths except that for the final transition before the privacy violating path, let $\alpha = \beta = \varrho_y$. 
+
+We know that in every privacy violating path, there is one ``critical'' transition in the analysis; suppose that this is $t_k$. Take $\varrho_y\to\gamma$ where $\gamma\in \{-\infty, \infty\}$ such that $\forall x\in \RR, \lim_{y\to\gamma}\PP_\alpha[c_k|\texttt{x}=x, \texttt{y}=y]=\PP_\alpha[c_k(x)|\texttt{x}=x]$ and $\lim_{y\to\gamma}\PP_\beta[c_k|\texttt{x}=x, \texttt{y}=y]=\PP_\beta[c_k(x)|\texttt{x}=x]$.
+
+The violation of privacy follows immediately using an analogous analysis to before. 

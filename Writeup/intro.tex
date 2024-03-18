@@ -14,13 +14,8 @@ Approximate liftings allow for a more structured proof approach to many algorith
 
 Our contributions:
 \begin{itemize}
-    \item We develop a simple program model centred around comparing an input to a threshold value for which we show that there is a simple and, most notably, complete class of privacy proofs (``coupling proofs'') built from approximate liftings
-    \begin{itemize}
-        \item Every program in our model is a language over an alphabet of individual program transitions
-        \item We can use the structure of these programs to automatically build privacy proofs for any program using approximate liftings
-        \item Importantly, if we cannot build a privacy proof for a program, we show that it is in fact not private at all; i.e. these privacy proofs are complete
-        \item We also demonstrate methods for computing the minimal privacy cost of a coupling proof directly and in approximation
-    \end{itemize}
-    \item This program model exactly coincides with a previously developed, automaton-theoretic, model known as DiPA. 
-    \item We additionally demonstrate how this model, and along with it coupling proofs, can be extended to accomodate two threshold variables such that coupling proofs again characterize the model completely. 
+    \item We develop a simple program model centred around comparing an input to a threshold value for which we show that there is a simple and, most notably, complete class of privacy proofs (``coupling proofs'') built from approximate liftings.
+    \item We provide a linear-time algorithm for deciding whether or not a program in our model is differentially private or not, and, for programs that are differentially private, provide methods for computing the minimal privacy cost of a coupling proof both directly and in approximation. 
+    \item We show an equivalence between our program model exactly coincides with a previously developed automata-theoretic model known as DiPA \cite{chadhaLinearTimeDecidability2021} and discuss connections between the two proof approaches. 
+    \item We demonstrate how this model, and along with it coupling proofs, can be extended to multiple threshold variable programs to prove their privacy and show that, in the case of two variable programs, completely characterize their privacy. 
 \end{itemize}
