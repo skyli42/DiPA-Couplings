@@ -349,10 +349,13 @@ In a similar vein, we conjecture that it is possible to extend the definition of
 
 
 \section{Conclusion}
-We have shown how to use coupling techniques to prove privacy for a class of SVT-like programs first defined in \cite{chadhaLinearTimeDecidability2021} and discovered that couplings additionally characterize this class. We additionally showed that this can be done tractably, and that couplings can help provide lower bounds on privacy costs of these algorithms. 
+We have shown how to produce a family of coupling-based proofs to prove privacy for a well-defined class of programs built as a regular language of program transitions and shown that this family of coupling proofs completely characterizes the privacy of our program model. 
+We have additionally demonstrated that by encoding this family of coupling based proofs as a linear program, it is possible to decide if a program is private in linear time and find an upper bound on the privacy cost of any private program that we conjecture is tight. 
 
-Future work most naturally would focus on extensions of the program model. For the model, potential areas include removing the requirement for output to be deterministic of a path through the automaton, which would allow for algorithms such as Report Noisy Max to be captured by the model. Similarly, the alphabet of the automaton could be expanded to incorporate more than comparisons between two real numbers. 
-Such extensions would naturally also require extensions of the class of couplings we define here, which are limited to ``shifts''. 
+We also extended our program model to incorporate multiple threshold variables and showed that coupling proofs almost immediately generalized; for the specific case of programs with two variables, our single variable completeness result generalized as well. 
 
-Additionally, we believe that couplings should completely characterize GDiPAs as well as DiPAs; proving this requires showing that a lack of well-formedness in any single variable generates a counterexample to privacy. 
-In this vein, we would like to explore using couplings to \textit{disprove} privacy; the fact that shift couplings completely characterize DiPAs hints at the possibility of ``anti-couplings'' to generate counterexamples.
+A natural area for future work is on extensions of the program model. One particular restriction that could potentially removed from the model is output distinction; already, we have shown that it is possible to produce coupling proofs of privacy even for programs that are not output-distinct, but it is unknown if output-distinction is \textit{necessary} for completeness.
+Another, more intrinsic, restriction of the model is that transition guards are restricted to real-valued comparisons. A natural extension would thus be to allow more complicated predicates as transition guards in both the single and multivariable cases. 
+Such extensions would likely also require extensions of the class of couplings we define here, which are limited to ``shift'' couplings. 
+
+The completeness of coupling proofs for both single variable and two variable threshold programs (and possibly, as we conjecture, general multivariable threshold programs) suggests the possibility of using coupling proof techniques to \textit{directly} discover and prove the validity of privacy violating input sequence pairs.
