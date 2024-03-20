@@ -1,3 +1,27 @@
 \section{Related Work}
-The DiPA model and counterexamples to privacy are drawn from \cite{chadhaLinearTimeDecidability2021}. Approximate liftings were developed in \cite{bartheKopfOlmedo2012ProbabilisticRelationalReasoningforDifferentialPriv,BartheOlmedo2013} and applied to algorithms such as SVT in \cite{BartheEtAl2016}.
-A full exploration of approximate liftings can be found in \cite{HsuThesis2017}. \cite{AlbarghouthiHsu2018} uses couplings; and in particular the ``shift'' couplings family we use, to create a heuristiccally successful program for proving the correctness of possible differentially private algorithms. 
+
+\textbf{Deciding Differential Privacy}
+
+Due to the known undecidability result \cite{bartheDecidingDifferentialPrivacy2020}, decision procedures for checking the privacy of putatively DP algorithms must inherently limit their program model. As mentioned, previous authors have developed a program model directly equivalent to our program model \cite{chadhaLinearTimeDecidability2021}; 
+an extension to this model by the same authors introduced multiple threshold variables, but only allowed for conjunctions between variable guards and correlated input \cite{chadhaDecidingDifferentialPrivacy2023}. Interestingly, \cite{chadhaDecidingDifferentialPrivacy2023} still finds a decision procedure for privacy even with an arbitrary number of variables. 
+Similarly, \cite{bartheDecidingDifferentialPrivacy2020} develop a decision procedure for programs with finite domains and ranges under a Markov chain based program model, exploiting a decidable fragment of the first-order theory of the reals with exponentiation. 
+
+Other results have established that the problem of deciding differential privacy, even for more limited models, is in general hard. For example, \cite{chadhaDecidingDifferentialPrivacy2023} show that deciding privacy for their $k$-variable model is $PSPACE$-complete, \cite{gaboardiComplexityVerifyingLoopFree2020} find that the decision problem of privacy for loop-free programs is $coNP^{\#P}$-complete,
+and \cite{bunComplexityVerifyingBoolean2022} show that the same problem for boolean programs is $PSPACE$-complete. 
+
+There is also a long line of work oriented toward verifying DP using program logics (see, for example \cite{reedDistanceMakesTypes2010,wangCheckDPAutomatedIntegrated2020,wangProvingDifferentialPrivacy2019,zhangTestingDifferentialPrivacy2020,zhangLightDPAutomatingDifferential2017}). 
+This approach allows for privacy proofs to be generated for a larger class of programs, but at the cost of completeness; while tools like \cite{wangCheckDPAutomatedIntegrated2020} can produce counterexamples to privacy, they do not guarantee that either a proof or counterexample can be produced in all cases.
+
+\textbf{Probabilistic Couplings and Approximate Liftings}
+
+Probabilistic couplings were first developed by Wolfgang Doeblin in the 1930's and have since become widely applied in statistics and probability theory more generally; for examples of their applications, see a standard reference text like \cite{lindvallLecturesCouplingMethod2002}. 
+
+The use of probabilistic couplings has become more common in a computer science context in recent years; the specific line of work connecting approximate liftings and differential privacy begun with \cite{bartheProvingDifferentialPrivacy2016}; 
+further work since then has expanded the scope of approximate liftings \cite{bartheRelationalStarLiftings2019,hsuProbabilisticCouplingsProbabilistic2017} and used liftings as the basis for constructive proofs of privacy of programs\cite{albarghouthiSynthesizingCouplingProofs2017,albarghouthiConstraintBasedSynthesisCoupling2018}.
+
+
+\textbf{Privacy Lower Bounds}
+
+Some work has been done on automatically finding lower bounds on privacy cost through the generation of ``costly'' inputs, providing a mechanism for ``completing'' privacy proof generation techniques. 
+\cite{bichselDPFinderFindingDifferential2018,bichselDPSniperBlackBoxDiscovery2021,dingDetectingViolationsDifferential2018,niuDPOptIdentifyHigh2022} all provide methods of automatically constructing counterexample pairs of inputs that lower bound the privacy parameter of an algorithm, either through static analysis of an algorithm or black-box access to the algorithm. 
+Perhaps most notably, recent work has focused on ``auditing'' differentially-private machine learning algorithms \cite{luGeneralFrameworkAuditing2022,loknaGroupAttackAuditing2023,loknaGroupAttackAuditing2023,steinkePrivacyAuditingOne2023}; with black-box access to a machine learning model, an auditing protocol checks if the model satisfies its claimed privacy bounds by attempting to produce counterexamples that demonstrate a higher privacy lower bound than claimed. 

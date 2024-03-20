@@ -48,6 +48,8 @@ Finally, if $\sigma=\texttt{insample}'$, for all $y\in \RR$
   \PP[\texttt{insample} = x' \land c(\texttt{insample}, x)]\PP[\texttt{insample}' = y] & \tau = \texttt{true}
 \end{cases}\]
 
+Here, $\mathbb{I}[p]$ is used to denote the Iverson bracket, which evaluates to 1 if the predicate $p$ is true and 0 otherwise.
+
 Then for any initial subdistribution of states $\theta$, $\Phi_t(\theta, \texttt{in})$ can be defined by weighting the sum of all subdistributions $\PP_s$ for $s\in S$, where the weight of each $\PP_s$ is given by the probability of $s$ given by $\theta$. 
 
 More formally, for any initial output sequence $\sigma_0\in (\Gamma\cup\RR)^*$, let $S^{(\sigma_0)}$ be the set of program states $(x, \sigma)$ such that $\sigma = \sigma_0$. Then for any subdistribution of program states $\theta$, $\Phi_t(\theta, \texttt{in})$ is a subdistribution $O$ such that, for all $x'\in \RR$ and $\sigma \in \Gamma\cup\RR$,

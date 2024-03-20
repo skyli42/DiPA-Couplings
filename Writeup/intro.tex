@@ -1,21 +1,44 @@
 
 \section{Introduction}
 
-Differential privacy is a framework for privacy that gives rigorous guarantees on the amount of data leakage any one person's data can be subjected to when releasing statistical data. Since being introduced in 2006~\cite{DP2006}, differential privacy has become the gold standard for private statistical analysis. 
-Differentially private algorithms, whose efficacy are characterized by a ``privacy cost'' $\varepsilon$, primarily rely on the addition of statistical noise, ensuring that statistical results remain approximately correct while preventing any one person's information from being revealed. 
+Differential privacy (DP) is a mathematical framework for privacy that provides rigorous guarantees on the amount of data leakage that can occur when releasing statistical information about a dataset. Since its introduction in 2006~\cite{dworkCalibratingNoiseSensitivity2006a}, DP has become the gold standard for private statistical analysis. 
+Both private companies such as Google and Apple and government bodies such as the United States Census Bureau have announced their adoption of DP algorithms for their data collection and release procedures \cite{HowWeRe,PrivacyFeaturesa,LearningPrivacyScalea,abowdCensusBureauAdopts2018a}. 
 
-Differentially private algorithms are notoriously tricky to analyze for correctness; most famously, the Sparse Vector Technique (SVT) algorithm has gone through multiple iterations, some of which were later shown to completely fail at protecting privacy~\cite{10.14778/3055330.3055331}. Previous implementations of differential privacy by Apple have similarly been shown to have an increase from the claimed privacy cost by a factor of up to 16~\cite{appleleakprivacy}. 
+In brief, DP ensures that it is unlikely that an adversary can distinguish whether or not one person's data was used in a private computation. To do this, DP algorithms rely on randomization, especially through the addition of statistical noise. DP also allows for the \textit{quantification} of privacy; the amount of information revealed about any individual can be summarized in a ``privacy parameter'', usually denoted $\varepsilon$. 
 
-Thus, much work has been done on developing methods for automatic verification of differentially private algorithms, both in their overall privacy and in the specific privacy costs they claim to achieve. 
-Because even for limited programs the problem of determining if a program is differentially private is undecidable\cite{barthe.etal2020decidingdp}, previous work tends to focus on semi-decidability or further restricting program models. 
+One especially useful feature of DP is that DP algorithms \textit{compose} together, with only a linear degradation in privacy cost. In particular, this means that many DP algorithms can be constructed by composing well-known private ``primitive'' mechanisms together; these algorithms thus also lend themselves to straightforward proofs of correctness. 
 
-Recently, a line of work has emerged around \textbf{approximate liftings}~\cite{BartheEtAl2016,bartheKopfOlmedo2012ProbabilisticRelationalReasoningforDifferentialPriv,BartheOlmedo2013,HsuThesis2017}. Approximate liftings are a generalization of probabilistic couplings, themselves a well-known technique in probability theory for analyzing relationships between random variables. 
-Approximate liftings allow for a more structured proof approach to many algorithms that themselves are not conducive to a standard compositional analysis, such as SVT.\@ Because of their structure, liftings also lend themselves to automated proof construction~\cite{AlbarghouthiHsu2018}. 
+However, it can be notoriously tricky to analyze algorithms that venture outside of standard compositional techniques. For example, previous implementations of differential privacy by Apple have been criticized for actually leaking much more information than claimed (as measured by $\varepsilon$)~\cite{tangPrivacyLossApple2017,gadottiPoolInferenceAttacks2022}. 
+Famously, many different iterations of the Sparse Vector Technique (SVT) algorithm have been produced and supposedly proven correct, some of which were later shown to actually fail at protecting privacy at all~\cite{lyuUnderstandingSparseVector2016a}. 
 
-Our contributions:
+The difficulty of \textit{ensuring} that DP algorithms are truly private has led to work developing tools to formally verify that DP algorithms meet their claimed privacy bounds. However, it is known that complete verification of differentially private algorithms is undecidable, even for a relatively limited class of programs~\cite{bartheDecidingDifferentialPrivacy2020}.
+
+One approach to deciding the privacy of a program has thus been to limit the model of programs even further, such as ensuring that every program has can take input and output only from a finite domain, or limiting programs to branching on real-valued comparisons \cite{bartheDecidingDifferentialPrivacy2020,chadhaLinearTimeDecidability2021,chadhaDecidingDifferentialPrivacy2023}.
+
+An orthogonal approach has been to develop heuristic or incomplete approaches to automatically generating proofs of privacy for DP algorithms; one especially popular tool for this approach is a construct known as an 
+\textbf{approximate lifting}~\cite{bartheProvingDifferentialPrivacy2016,bartheDifferentialPrivacyComposition2013,hsuProbabilisticCouplingsProbabilistic2017,albarghouthiConstraintBasedSynthesisCoupling2018,albarghouthiSynthesizingCouplingProofs2017}. 
+Approximate liftings are a generalization of probabilistic couplings, themselves a well-known technique in probability theory for analyzing relationships between random variables.
+Approximate liftings allow for a more structured proof approach to many algorithms that themselves are not conducive to a standard compositional analysis, such as SVT.
+
+We demonstrate that approximate liftings can also be applied to the problem of deciding privacy. Specifically, we construct a limited program model inspired by algorithms like SVT that allows for comparisons between a real-valued input query and a threshold value (for example, one could ask the query ``How many towns have a population over 10,000?'').
+The program model is constructed as a regular language of program \textbf{transitions}; we demonstrate how to construct couplings for individual characters of an alphabet (program transitions), for words in the alphabet (``straight line programs''), and for full programs (regular languages) that can prove if a program is differentially private. 
+
+Our family of coupling proofs can be summarized as a system of linear constraints; solving the system immediately constructs a proof of privacy for a program. Most notably, if this system is unsolvable, or, equivalently, if no such coupling proof exists, we show that there exist no possible proofs of privacy, i.e. the program is not differentially private. Thus, coupling proofs allow us to provide a \textit{decision procedure} for the privacy of programs in our model. 
+
+In particular, the satisfiability of the linear constraint system can be decided efficiently: in linear time in the size of the program. Additionally, the structure of our linear constraint system allows for the \textit{optimization} of coupling based proofs; by solving the system, we attempt to provide tighter bounds on the privacy parameter $\varepsilon$ that a given proof shows a program satisfies. 
+We conjecture that the upper bound given by the linear system is \textit{tight}; there is no possible better bound on privacy cost. 
+
+Possibly surprisingly, we also demonstrate that a subclass of programs in our model is, in fact, exactly equivalent to a previously analyzed, automata-theoretic model known as DiPA \cite{chadhaLinearTimeDecidability2021}, which also provides a linear-time decision algorithm for privacy. 
+Although our two algorithms are seemingly disparate, we show that there are, in fact, direct relationships between the structure of the coupling constraint system and the decision algorithm of \cite{chadhaLinearTimeDecidability2021}; we argue that reframing the arguments of \cite{chadhaLinearTimeDecidability2021} through the lens of coupling based proofs provides insight and a more intuitive approach. 
+
+Further, we argue that coupling proofs are useful in part because of their generalizability; to this end, we first extend our program model to accomodate an arbitrary number of threshold variables to compare inputs to and show that the same techniques for constructing coupling proofs for single-variable programs also extend almost immediately to this expanded program model. 
+Indeed, we also show that, for two variable programs, coupling proofs \textit{remain} complete for deciding privacy. We conjecture that this result can be extended to more than two variables, demonstrating that, in all cases, coupling proofs completely characterize programs under our extended model as well. 
+
+
+In short, our contributions are:
 \begin{itemize}
     \item We develop a simple program model centred around comparing an input to a threshold value for which we show that there is a simple and, most notably, complete class of privacy proofs (``coupling proofs'') built from approximate liftings.
     \item We provide a linear-time algorithm for deciding whether or not a program in our model is differentially private or not, and, for programs that are differentially private, provide methods for computing the minimal privacy cost of a coupling proof both directly and in approximation. 
-    \item We show an equivalence between our program model exactly coincides with a previously developed automata-theoretic model known as DiPA \cite{chadhaLinearTimeDecidability2021} and discuss connections between the two proof approaches. 
+    \item We show an equivalence between our program model and the automata-theoretic model DiPA \cite{chadhaLinearTimeDecidability2021} and discuss connections between the two proof approaches. 
     \item We demonstrate how this model, and along with it coupling proofs, can be extended to multiple threshold variable programs to prove their privacy and show that, in the case of two variable programs, completely characterize their privacy. 
 \end{itemize}

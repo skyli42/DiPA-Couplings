@@ -346,16 +346,3 @@ We have shown that for an arbitrary number of variables, we can produce a set of
 We conjecture this constraint system is still in fact complete for $k>2$ variables; our proofs for counterexamples to privacy for $2$v-programs are currently specific to two variable programs, but it is possible that they can be extended through a more careful analysis. In particular, it may be possible to ``group'' pairs of single-variable guards together and analyze them as a single unit to reduce the general $k$-variable problem to a 2-variable problem. 
 
 In a similar vein, we conjecture that it is possible to extend the definition of a multi-variable transition guard to encompass \textit{any} boolean function of inputs of the form $\{\texttt{true}, \mvlguard[\texttt{x}_i], \mvgguard[\texttt{x}_i]\}$; indeed, satisfying the same system of linear constraints would still produce correct proofs of differential privacy, but it is unclear how to demonstrate completeness for guards that can be arbitrary boolean functions. 
-
-
-\section{Conclusion}
-We have shown how to produce a family of coupling-based proofs to prove privacy for a well-defined class of programs built as a regular language of program transitions and shown that this family of coupling proofs completely characterizes the privacy of our program model. 
-We have additionally demonstrated that by encoding this family of coupling based proofs as a linear program, it is possible to decide if a program is private in linear time and find an upper bound on the privacy cost of any private program that we conjecture is tight. 
-
-We also extended our program model to incorporate multiple threshold variables and showed that coupling proofs almost immediately generalized; for the specific case of programs with two variables, our single variable completeness result generalized as well. 
-
-A natural area for future work is on extensions of the program model. One particular restriction that could potentially removed from the model is output distinction; already, we have shown that it is possible to produce coupling proofs of privacy even for programs that are not output-distinct, but it is unknown if output-distinction is \textit{necessary} for completeness.
-Another, more intrinsic, restriction of the model is that transition guards are restricted to real-valued comparisons. A natural extension would thus be to allow more complicated predicates as transition guards in both the single and multivariable cases. 
-Such extensions would likely also require extensions of the class of couplings we define here, which are limited to ``shift'' couplings. 
-
-The completeness of coupling proofs for both single variable and two variable threshold programs (and possibly, as we conjecture, general multivariable threshold programs) suggests the possibility of using coupling proof techniques to \textit{directly} discover and prove the validity of privacy violating input sequence pairs.

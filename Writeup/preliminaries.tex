@@ -1,76 +1,72 @@
 
-\section{Differential Privacy}
+\section{Preliminaries}
 
-Differential privacy is a mathematically robust approach to privacy; in brief, differential privacy ensures that it is unlikely for an adversary to distinguish between whether or not one person's data was used in a private algorithm. To do this, differentially private algorithms rely on randomization, especially through the addition of statistical noise.
+\subsection{Differential Privacy}
 
-More precisely then, for any output $\sigma$ of a private algorithm $A$, the probability of obtaining $\sigma$ for a dataset with some individual Alex is close (measured by a multiplicative factor) to the probability of obtaining $\sigma$ for the same dataset with Alex removed or Alex's data changed.
+We introduce the formal definition of differential privacy and key results about DP algorithms. 
 
-We will consider \textbf{datasets} $\mathcal{X}\in X^n$ of size $n$ where $X$ is the set of all possible individual data points.
+Intuitively, for any output $\sigma$ of a private algorithm $A$, the probability of obtaining $\sigma$ for a dataset with some individual Alex should close (measured by a multiplicative factor) to the probability of obtaining $\sigma$ for a ``similar'' dataset (in particular, with Alex's data removed or changed).
+
+We consider \textbf{datasets} $\mathcal{X}\in X^n$ of size $n$ where $X$ is the set of all possible individual data points.
 
 We first define what it means for datasets to be ``similar'' to each other. 
 
 \begin{defn}
-    Two datasets $\mathcal{X}=(x_1, \ldots, x_n), \mathcal{X}'=(x'_1, \ldots, x'_n)\in X^n$ are \textbf{adjacent} (denoted by $\mathcal{X}\sim\mathcal{X}'$) if $|\{i: x_i\neq x'_i\}|\leq 1$\footnote{A common variant is to define adjacency by the removal or addition of an entry, rather than by the change of an entry}.
+    Two datasets $\mathcal{X}=(x_1, \ldots, x_n), \mathcal{X}'=(x'_1, \ldots, x'_n)\in X^n$ are \textbf{adjacent} (denoted by $\mathcal{X}\sim\mathcal{X}'$) if $|\{i: x_i\neq x'_i\}|\leq 1$\footnote{A common variant is to define adjacency by the removal or addition of an entry, rather than by the modification of an entry}.
 \end{defn}
 
-We thus formalize privacy under this framework as follows.
+This motivates the formal definition of differential privacy:
+
 \begin{defn}[Pure Differential Privacy]
     For some $\varepsilon>0$, a randomized algorithm $A$ is $\varepsilon$-differentially private if, for all pairs of adjacent datasets $X\sim X'$ and all events $E \subseteq \im(A)$, \[\PP[A(X) \in E]\leq e^\varepsilon \PP[A(X')\in E]\]
     If there exists some $\varepsilon>0$ such that $A$ is $\varepsilon$-differentially private, we call $A$ ``differentially private'' or simply ``private'' without reference to a specific $\varepsilon$.
 \end{defn}
 
-The privacy parameter $\varepsilon$ is traditionally thought of as analogous to the `privacy cost' of a program; the larger $\varepsilon$ is, the more privacy is ``lost''. In our analysis of differentially private algorithms, we thus aim to minimize the ``cost'' of an algorithm.
+The privacy parameter $\varepsilon$ is traditionally thought of as analogous to the ``privacy cost'' of a program; the larger $\varepsilon$ is, the more privacy is ``lost''. In our analysis of differentially private algorithms, we thus aim to minimize the ``cost'' of an algorithm, i.e. find a tight upper bound, if one exists, on $\varepsilon$ for an algorithm. 
 
-We call the problem of deciding whether or not an algorithm is differentially private the decision problem of privacy.
-
-We also introduce the concept of max divergence as a convenient way to ``measure'' privacy cost.
+We also introduce max divergence as a method of measuring ``true'' privacy cost. 
 
 \begin{defn}[Max Divergence]
     For any two probability distributions $P, Q$ over a shared event space $E$, the max-divergence of $P$ and $Q$ is 
     $D_{\infty}(P||Q) = \max_{e\in E}\ln\left(\frac{P(e)}{Q(e)}\right)$.
 \end{defn}
 
-It immediately follows from the definition that an algorithm $A$ is $\varepsilon$-DP if and only if for all adjacent inputs $X\sim X'$, $D_{\infty}(A(X)||A(X'))\leq \varepsilon$; thus, max-divergence is one way to represent the ``true'' or ``minimal'' privacy cost of an algorithm.
+It immediately follows from the definition that an algorithm $A$ is $\varepsilon$-DP if and only if for all adjacent inputs $X\sim X'$, $D_{\infty}(A(X)||A(X'))\leq \varepsilon$. In particular, $D_{\infty}(A(X)||A(X'))\leq \varepsilon$ represents the tightest possible upper bound on $\varepsilon$ for $A$. 
 
 An extremely useful property of differential privacy is that differentially private programs can be \textbf{sequentially composed} with a linear degradation in privacy:
 
-\begin{thm}[Standard Composition \cite{dworkrothmonograph}]
+\begin{thm}[Standard Composition \cite{dworkAlgorithmicFoundationsDifferential2014b}]
     If $A$ is $\varepsilon_1$-differentially private and, for all $\sigma$, $B(\sigma, \cdot)$ is $\varepsilon_2$-differentially private, then $B(A(X), X)$ is $\varepsilon_1+\varepsilon_2$-differentially private. 
 \end{thm}
 
-Composition therefore allows us to view privacy parameters $\varepsilon$ as a ``budget'' for privacy-leaking operations in a program. Many common differentially private algorithms are thus built out of well-known private components combined together, which also lend themselves to straightforward analyses. 
+Composition therefore allows us to view privacy parameters $\varepsilon$ as a ``budget'' for privacy-leaking operations in a program. 
 
-\subsection{Sensitivity and the Laplace Mechanism}
+\subsubsection{Sensitivity and the Laplace Mechanism}
 
-Because we are typically interested in analyzing \textit{functions} of a dataset (for example, the average age of a town), it is often useful to examine differential privacy through a similar model - instead of comparing two adjacent datasets $X\sim X'$, we compare \textbf{queries} $f(X)$ and $f(X')$. In this world, we care about the \textit{sensitivity} of functions: how much a function \textit{changes} when considering adjacent inputs. 
-Specifically, the ($\ell_1$-)sensitivity of a function $f: X\to \RR$, often denoted $\Delta f$, is defined as $\Delta f = \max_{X\sim X'}||f(X)-f(X')||_1$.
+Because we are typically interested in analyzing \textit{functions} of a dataset (for example, the \textbf{average} age of a group), it is often useful to examine differential privacy through a similar model --- instead of comparing two adjacent datasets $X\sim X'$, we compare \textbf{queries} $f(X)$ and $f(X')$. In this world, we care about the \textit{sensitivity} of functions: how much a function \textit{changes} when considering adjacent inputs. 
+The ($\ell_1$-)sensitivity of a function $f: X\to \RR$, denoted $\Delta f$, is defined as $\Delta f = \max_{X\sim X'}||f(X)-f(X')||_1$.
 
-If we know a function's sensitivity, we can easily make it differentially private through the use of the Laplace Mechanism.
-
+For any given function with a known sensitivity, we can construct a differentially private version of the function with the \textbf{Laplace Mechanism}. 
 
 Recall that the Laplace distribution $\Lap(\mu, b)$ with mean $\mu$ and spread parameter $b$ is the probability distribution with probability density function $f(x) = \frac{1}{2b}\exp(-\frac{|x-\mu|}{b})$. If $\mu =0$, we may abbreviate $\Lap(0, b)$ as $\Lap(b)$. 
 
-The Laplace Mechanism, as expected, simply adds noise sampled from the Laplace distribution to a query result. In particular, the noise is dependent on the sensitivity of the input function; as expected, the higher the sensitivity of a function is, the more noise the Laplace mechanism will add to it.   
+The Laplace Mechanism adds noise sampled from the Laplace distribution to a query result. In particular, the noise is dependent on the sensitivity of the input function; as expected, the higher the sensitivity of a function is, the more noise the Laplace mechanism will add to it.   
 
-\begin{thm}[Theorem 3.6~\cite{dworkrothmonograph}]
+\begin{thm}[Theorem 3.6~\cite{dworkAlgorithmicFoundationsDifferential2014b}]
     For a function $f$ with sensitivity $\Delta$, $A(X) = f(X) + \Lap(\frac{\Delta}{\varepsilon})$ is $\varepsilon$-differentially private. 
 \end{thm}
 
-We will eventually consider a program model where we are given a potentially infinite \textit{sequence} of real-valued query functions $q_0, q_1, \ldots$, each with sensitivity at most $\Delta$.
+\subsection{Couplings and Liftings}
 
-\section{Couplings and Liftings}
+We now introduce probabilistic couplings and approximate liftings, which are probabilistic tools that allow for the structured creation of proofs of differential privacy.
 
-In this section we introduce approximate liftings, which are probabilistic tools that allow for the structured creation of proofs of differential privacy.
-
-Approximate liftings are closely related to probabilistic couplings, which themselves are a commonly used tool in probabilistic analysis.
+Probabilistic couplings are a common tool in analyses of probabilistic processes that allow two otherwise independent processes to be correlated together and analyzed as a joint distribution; in particular, this is useful when attempting to prove properties about the \textbf{relationship} between two probabilistic processes. 
 
 \begin{defn}[Couplings]
     A coupling between two distributions $A$ and $B$ is a joint distribution $C$ such that $\pi_1(C)=A$ and $\pi_2(C)=B$, where $\pi_1(C)$ and $\pi_2(C)$ are the first and second marginals of $C$, respectively. 
 \end{defn}
 
-In particular, couplings are useful when analyzing the relationship between two probablistic processes. [past literature on couplings]
-
-A previous line of work has extended the concept of couplings to reason about privacy and private processes: \textbf{approximate liftings} \cite{BartheOlmedo2013,bartheKopfOlmedo2012ProbabilisticRelationalReasoningforDifferentialPriv,HsuThesis2017,BartheEtAl2016} allow us to apply couplings to the realm of differential privacy. 
+A previous line of work extends couplings to reason about privacy in particular. The core construct introduced is the \textbf{approximate lifting}~\cite{bartheProvingDifferentialPrivacy2016,bartheDifferentialPrivacyComposition2013,hsuProbabilisticCouplingsProbabilistic2017,albarghouthiConstraintBasedSynthesisCoupling2018,albarghouthiSynthesizingCouplingProofs2017}:
 
 \begin{defn}[$\varepsilon$-Lifting]
     Let $A_1, A_2$ be two sample spaces. We say a distribution $\mu_1$ on $A_1$ and $\mu_2$ on $A_2$ are related by the $\mathbf{\varepsilon}$\textbf{-lifting} of the relation $\Psi\subseteq A_1\times A_2$ (written $\mu_1(\Psi)^{\#\varepsilon}\mu_2$) if there exist two \textbf{witness distributions} $\mu_L, \mu_R$ on $A_1\times A_2$ such that\begin{enumerate}
@@ -82,29 +78,32 @@ A previous line of work has extended the concept of couplings to reason about pr
 
 In some sense, approximate liftings can be considered ``half-couplings'', where ``half'' (the first marginal) of $\mu_L$ is coupled with ``half'' (the second marginal) of $\mu_R$. 
 
-Because of the close relationship between couplings and approximate liftings, we will often use ``couplings'' to generically refer to both approximate liftings and couplings in the technical sense.
+As expected, there is a close connection between approximate liftings and differential privacy: the $\varepsilon$-differential privacy of an algorithm is equivalent to the distributions of the algorithm given adjacent inputs being related by the $\varepsilon$-lifting of the equality relation.
 
-As expected, there is a close connection between approximate liftings and differential privacy: an algorithm being $\varepsilon$-differentially private is equivalent to the distributions of the algorithms given adjacent inputs being related by the $\varepsilon$-lifting of the equality relation.
-
-\begin{thm}[\cite{BartheEtAl2016}]
+\begin{thm}[\cite{bartheProvingDifferentialPrivacy2016}]
     An algorithm $A(X)$ is $\varepsilon$-differentially private if and only if, for all adjacent inputs $X\sim X'$, $A(X)(=)^{\#\varepsilon}A(X')$.
 \end{thm}
 
-However, we will generally relax the lifted relation from equality to implication, which still allows us to prove that an algorithm is private:
+However, relaxing the lifted relation from equality to implication still allows us to prove that an algorithm is private; this proves useful in particular because constructing an approximate lifting of the equality relation can be highly non-trivial. 
 
-\begin{thm}[\cite{BartheEtAl2016}]\label{implicationcouplingthm}
+\begin{thm}[\cite{bartheProvingDifferentialPrivacy2016}]\label{implicationcouplingthm}
     If for all adjacent input sequences $X\sim X'$ and outputs $\sigma$ of $A$, $A(X)\{(a, b): a=\sigma\implies b=\sigma\}^{\#\varepsilon}A(X')$, then $A(X)$ is $\varepsilon-$differentially private.
 \end{thm}
 
-Almost every standard result about differential privacy can be restated in terms of couplings; for this paper, we will primarily rely on the fact that couplings can be composed and that we can couple together Laplace random variables. 
+The existence of an implication coupling of this form it itself a direct proof of privacy; our goal will be to ``automatically'' construct such proofs. 
 
-\begin{thm}[Composition of Liftings\cite{BartheEtAl2016}]\label{liftingcomposition}
+Many standard differential privacy results can be restated in terms of coupling-based proofs; we primarily leverage the facts that approximate liftings can be composed and that we can couple together Laplace random variables at the expected privacy cost. 
+
+\begin{thm}[Composition of Liftings \cite{bartheProvingDifferentialPrivacy2016}]\label{liftingcomposition}
     Let $A_1, B_2, A_2, B_2$ be distributions over $S_1, T_1, S_2, T_2$, respectively and let $R_1\subseteq S_1\times T_1$, $R_2\subseteq S_2\times T_2$ be relations. If $A_1 R_1^{\#\varepsilon_1}B_1$ is a valid lifting and we can construct $A_2R_2^{\#\varepsilon_2}B_2$ under the assumption that the predicate $A_1 R_1 B_1$ is true, then $A_2 R_2^{\#\varepsilon_1+\varepsilon_2}B_2$.
 \end{thm}
 
-\sky{Would an example here be useful?}
+Composition for liftings operates differently than in the standard analysis of differentially private composition. Each lifting should be thought of as generating a logical assertion: in particular, the assertion is that the relation being lifted holds (for example, one could assert that two distributions $A_1$ and $B_1$ are equal by constructing the lifting $A_1 (=)^{\#\varepsilon}B_1$). 
+Composition proceeds if, \textit{assuming that the first relation holds}, a second, likely more complex, lifting can be constructed. If this is true, then theorem \ref{liftingcomposition} asserts that the second lifting can be shown to hold in \textit{all} cases, simply with a additive penalty to the privacy cost (specifically, the privacy cost increases by the privacy cost of the first lifting). 
 
-\begin{prop}[Laplace Mechanism for Liftings \cite{BartheEtAl2016}]
+
+The Laplace mechanism can also be restated in terms of approximate liftings: 
+\begin{prop}[Laplace Mechanism for Liftings \cite{bartheProvingDifferentialPrivacy2016}]
     If $X_1\sim\Lap(\mu_1, \frac{1}{\varepsilon})$ and $X_2\sim\Lap(\mu_2, \frac{1}{\varepsilon})$, then $X_1(=)^{\#\varepsilon|\mu_1-\mu_2|}X_2$.
 \end{prop}
 
@@ -117,12 +116,12 @@ For illustrative purposes, we provide a lifting-based proof of privacy for a not
 
 At a high level, SVT takes in a possibly infinite stream of input queries and a threshold value and outputs whether or not the input queries are above or below the threshold.
 
-Unusually for differentially private algorithms, SVT can output a potentially unbounded number of ``below threshold'' queries before the first $c$ ``above threshold''s (or vice-versa), where $c$ is some constant set by the user; when $c=1$, SVT is also referred to as ``Above (or Below) Threshold''. Potential applications include, for example, checking that a series of inputs is within an expected range or, appropriately, privately determining which elements of a sparse vector are non-zero. 
+However, unusually for differentially private algorithms, SVT can output a potentially unbounded number of ``below threshold'' queries before the first $c$ ``above threshold''s (or vice-versa), where $c$ is some constant set by the user; when $c=1$, SVT is also referred to as ``Above (or Below) Threshold''. Potential applications include, for example, checking that a series of inputs is within an expected range or, appropriately, privately determining which elements of a sparse vector are non-zero. 
 
 Because SVT allows for a potentially unbounded number of ``below threshold'' query outputs, its analysis requires a non-standard approach; a naive composition approach that assigns a fixed cost to outputting the result of each query will immediately result in unbounded privacy cost as well. 
-Indeed, the analysis of SVT is notoriously difficult, with multiple published attempts at privacy proofs that were later shown to be incorrect\footnote{A textbook analysis of SVT, along with a discussion of bugged versions and incorrect privacy proofs, can be found at \cite{10.14778/3055330.3055331}}. 
+Indeed, the analysis of SVT is notoriously difficult, with multiple published attempts at privacy proofs that were later shown to be incorrect\footnote{A textbook analysis of SVT, along with a discussion of bugged versions and incorrect privacy proofs, can be found at \cite{lyuUnderstandingSparseVector2016a}}. 
 
-However, re-analyzing SVT using approximate liftings can be relatively simple. Our proof is derived from an informal proof of \cite{BartheEtAl2016}.
+However, re-analyzing SVT using approximate liftings can be relatively simple. Our proof is derived from an informal proof of \cite{bartheProvingDifferentialPrivacy2016}.
 
 \begin{algorithm}
     \hspace*{\algorithmicindent}\textbf{Input}: $\mathcal{X}\in X^n$, $T\in \RR$, $Q=q_1, \ldots \in {(X^n\to \RR)}^*$ with sensitivity $\Delta$, $c\in \NN$.
