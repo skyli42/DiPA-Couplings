@@ -2,8 +2,7 @@
 \subsection{A Linear-Time Algorithm for Deciding Privacy}\label{decisionSection}
 
 We also provide an efficient (i.e. linear time) algorithm for solving the decision problem of privacy.
-
-Because the privacy constraint system for a periodic program completely characterizes its privacy, our goal is to efficiently solve the system for individual periodic program.
+Because the privacy constraint system for a periodic program completely characterizes its privacy, our goal is to efficiently decide if the system is satisfiable for individual periodic programs.
 
 We begin with an algorithm for a single periodic program that encodes each constraint of the privacy constraint system in a graph which preserves some of the structure of the periodic program. 
 
@@ -22,14 +21,14 @@ We begin with an algorithm for a single periodic program that encodes each const
     \end{itemize}
 \end{defn}
 
-As suggested by the definition, the existence of an edge $(v_i, v_j)\in E$ corresponds to a constraint forcing $\gamma_i \leq \gamma_j$. Additionally, we introduce constraints that ``force'' certain shifts to be either $1$ or $-1$. 
+As suggested by the definition, the existence of an edge $(v_i, v_j)\in E$ corresponds to a constraint forcing $\gamma_i \leq \gamma_j$. Additionally, it can be shown that certain shifts are ``forced'' to be either $1$ or $-1$; leading to edges to and from $\mathbf{1}$ and $\mathbf{-1}$. 
 A path from $\mathbf{1}$ to $\mathbf{-1}$ thus implies that the constraint system must be unsatisfiable; we show that this is in fact a complete decision procedure.
 
 \begin{prop}\label{privacyConstraintGraphProp}
     A periodic program $L$ is differentially private if and only if there does not exist a path from $\bf 1$ to $\bf -1$ in the privacy constraint graph of $L$.
 \end{prop}
 
-Fortunately, we can directly combine the privacy constraint graphs for individual trajectories together to produce a privacy constraint graph for a program, which provides the linear time algorithm that we desired.
+Fortunately, we can directly combine the privacy constraint graphs for individual periodic programs together to produce a privacy constraint graph for a program, which provides the linear time algorithm that we desired.
 
 \begin{prop}\label{programPrivacyConstraintGraphPathReq}
     A program $P$ is differentially private if and only if there does not exist a path from $\bf 1$ to $\bf -1$ in the privacy constraint graph $\mathcal{P}_P$ of $P$, where $\mathcal{P}_P$ is the union of the privacy constraint graphs $\mathcal{P}_L$ of each periodic program $L\subseteq P$.
@@ -40,9 +39,9 @@ Fortunately, we can directly combine the privacy constraint graphs for individua
 \end{thm}
 
 \begin{proof}
-    Constructing the privacy constraint graph $\mathcal{P}_P$ takes linear time in the size of $P$, on which we can perform a breadth first search to check whether there is a path from $\bf 1$ to $\bf -1$. This can be done in linear time in the size of $\mathcal{P}_P$, which is linear in the size of $G$.
+    Constructing the privacy constraint graph $\mathcal{P}_P$ takes linear time in the size of $P$, on which we can perform a breadth first search to check whether there is a path from $\bf 1$ to $\bf -1$. This can be done in linear time in the size of $\mathcal{P}_P$, which itself is linear in the size of $G$.
 \end{proof}
 
-We observe that we match the runtime obtained by Chadha, Sistla, and Viswanathan~\cite{chadhaLinearTimeDecidability2021} for deciding the privacy of programs under this model. 
+We observe that we match the asymptotic runtime obtained by Chadha, Sistla, and Viswanathan~\cite{chadhaLinearTimeDecidability2021} for deciding the privacy of programs under this model. 
 
 

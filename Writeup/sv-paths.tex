@@ -7,9 +7,9 @@ We now demonstrate how to concatenate transitions and their corresponding coupli
     A straight line program (SLP) is a sequence of transitions. For an SLP $\rho = t_0\cdot t_1\cdot\ldots\cdot t_{n-1}$, if $t_0$ is of the form $t_0 = (\texttt{true}, \sigma, \texttt{true})$ for some $\sigma$, then we call $\rho$ an \textbf{initialized} SLP.
 \end{defn}
 
-We use standard properties of sequences for SLPs, such as the notion of the length of an SLP and the tail of an SLP, in the expected manner. For an SLP $\rho$, we use the notation $\rho_{i:j}$ to represent the subsequence  $t_i t_{i+1} \ldots t_{j-1}$ of $\rho$.
+We use standard properties of sequences for SLPs, such as the notion of length, in the expected manner. For an SLP $\rho$, we use the notation $\rho[i:j]$ to represent the subsequence  $t_i t_{i+1} \ldots t_{j-1}$ of $\rho$.
 
-We directly lift the concept of inputs and outputs from individual transitions to SLPs; thus, each SLP reads in a \textbf{sequence} of inputs and outputs a sequence of outputs, one for each transition in the SLP. 
+We directly lift the concept of inputs and outputs from individual transitions to SLPs; thus, each SLP reads in a \textbf{sequence} of inputs and outputs a \textbf{sequence} of outputs, one for each transition in the SLP. 
 
 \subsubsection{Straight Line Program Semantics}
 
@@ -25,7 +25,7 @@ More specifically, the semantics of an SLP $\rho = t_0t_1\cdots t_{n-1}$ are a f
 
 Like with transitions, we denote the probability that an SLP $\rho = t_0 t_1\ldots t_{n-1}$ outputs a specific value given an initial $\texttt{x}\in\RR$, input sequence $\texttt{in} \in \RR^n$, and possible measurable output sequence $o \subseteq (\Gamma\cup\RR)^n$ as $\PP[\texttt{x}, \rho, \texttt{in}, o]$. As before, $\PP[\texttt{x}, t, \texttt{in}, o]$ is the marginal of $\Phi_\rho((\texttt{x}, \lambda), \texttt{in})$ on $(\cdot, o)$.
 
-For a initialized SLP $\rho$, note that the initial value of $\texttt{x}$ is irrelevant, so we will shorthand $\PP[\texttt{x}_0, \rho, \texttt{in}, \sigma]$ to $\PP[\rho, \texttt{in}, \sigma]$.
+For a initialized SLP $\rho$, observe that the initial value of $\texttt{x}$ is irrelevant. Thus, we shorthand $\PP[\texttt{x}_0, \rho, \texttt{in}, \sigma]$ to $\PP[\rho, \texttt{in}, \sigma]$.
 
 
 \subsubsection{Privacy}
@@ -35,11 +35,10 @@ By leveraging the construction of couplings for individual transitions, we can c
 Because SLPs read in a \textit{sequence} of real-valued inputs, we need to slightly modify our definition of valid adjacent inputs.
 
 \begin{defn}[Validity for a sequence of inputs]
-    Two input sequences $\{\texttt{in}_i\brangle{1}\}_{i=1}^n\sim\{\texttt{in}_i\brangle{2}\}_{i=1}^n$ are \textbf{valid} and \textbf{adjacent} input sequences for an SLP $\rho = t_0\ldots t_{n-1}$ if, for all $1\leq i\leq n$, if $t_i$ is a private transition, then $\texttt{in}_i\brangle{1}\sim_1\texttt{in}_i\brangle{2}$ and if $t_i$ is a public transition, then $\texttt{in}_i\brangle{1}=\texttt{in}_i\brangle{2}$
+    Two input sequences $\{\texttt{in}_i\brangle{1}\}_{i=1}^n\sim\{\texttt{in}_i\brangle{2}\}_{i=1}^n$ are \textbf{valid} and \textbf{adjacent} input sequences for an SLP $\rho = t_0\ldots t_{n-1}$ if, for all $1\leq i\leq n$, if $t_i$ is a private transition, then $\texttt{in}_i\brangle{1}\sim_1\texttt{in}_i\brangle{2}$ and if $t_i$ is a public transition, then $\texttt{in}_i\brangle{1}=\texttt{in}_i\brangle{2}$.
 \end{defn}
 
-Thus, we have the following definition of privacy for initialized SLPs:
-
+We can now adapt the definition of differential privacy to SLPs:
 \begin{defn}[$d\varepsilon$-differential privacy for an SLP]
     An initialized SLP $\rho$ of length $n$ is $d\varepsilon$-differentially private for some $d>0$ if $\forall \varepsilon>0$, for all valid adjacent input sequences $\texttt{in}\brangle{1}\sim \texttt{in}\brangle{2}$ of length $n$ and all possible output sequences $\sigma$ of length $n$, $\PP[\rho, \texttt{in}\brangle{1}, \sigma]\leq e^{d\varepsilon}\PP[\rho, \texttt{in}\brangle{2}, \sigma]$.
 \end{defn}
@@ -49,21 +48,18 @@ We argue that this definition is functionally equivalent, since if we are target
 
 \subsubsection{Sequential composition of couplings}
 
-We can compose together a series of couplings associated with each transition to produce a coupling proof of privacy for an entire SLP. 
+We show that composing together a series of couplings associated with each transition produces coupling proof of privacy for an entire SLP. 
 
-If $o\brangle{1}, o\brangle{2}$ are random variables representing the output of an SLP $\rho$ given input sequences $\texttt{in}\brangle{1}$ and $\texttt{in}\brangle{2}$, respectively, 
-then if we can create the coupling $o\brangle{1}\{(a, b): a=\sigma\implies b=\sigma\}^{\#d\varepsilon}o\brangle{2}$ for some $d>0$ for all adjacent inputs $\texttt{in}\brangle{1}\sim\texttt{in}\brangle{2}$ and all possible outputs $\sigma$, we show that $\rho$ is differentially private.
+As before, we aim to construct the lifting $o\brangle{1}\{(a, b): a=\sigma\implies b=\sigma\}^{\#d\varepsilon}o\brangle{2}$ for all adjacent inputs $\texttt{in}\brangle{1}\sim\texttt{in}\brangle{2}$ and all possible outputs $\sigma$.
 
 As it turns out, directly composing together the couplings from lemma \ref{simplifiedIndTransitionCoupling} are sufficient; the constraints imposed upon shifts for a coupling for transition $t_i$ depend solely on the shift at the most recent \textbf{assignment transition} in $\rho$ (i.e. the most recent transition $t_j$ such that $\tau_j = \texttt{true}$). 
 The coupling shifts for \textit{non-assignment transitions} can thus never impact each other. 
 
-We will let $A_\rho$ be the set of \textbf{assignment transitions} in an SLP $\rho$. Additionally, for every transition $t_i$ in $\rho$, let $t_{at(i)}$ be the most recent assignment transition in $\rho$ before $t_i$; i.e., $at(i) = \max\{j<i: t_j\in A_\rho\}$. If such a $j$ does not exist, we set $at(i)=-1$. 
+We let $A_\rho$ be the set of \textbf{assignment transitions} in an SLP $\rho$. Additionally, for every transition $t_i$ in $\rho$, let $t_{at(i)}$ be the most recent assignment transition in $\rho$ before $t_i$; i.e., $at(i) = \max\{j<i: t_j\in A_\rho\}$. If such a $j$ does not exist, we set $at(i)=-1$. 
 
-In particular, note that for transition $t_i$, $\gamma_x = \gamma_{at(i)}$, where $\gamma_{-1}$ is the shift applied to the initial $\texttt{x}$-values $\texttt{x}_0\brangle{1}$ and $\texttt{x}_0\brangle{2}$ (for initialized SLPs, note that $\gamma_{-1}$ is irrelevant).
+In particular, note that for a transition $t_i$, $\gamma_x = \gamma_{at(i)}$, where $\gamma_{-1}$ is the shift applied to the initial $\texttt{x}$-values $\texttt{x}_0\brangle{1}$ and $\texttt{x}_0\brangle{2}$ (for initialized SLPs, note that $\gamma_{-1}$ is irrelevant).
 
 Thus, for an individual transition $t_i$ of $\rho$, we have a family of valid coupling strategies $C_i(\gamma_{at(i)}, \gamma_i, \gamma_i')$. 
-
-We can merge these coupling strategies together to create a proof of privacy for the entire SLP: 
 
 \begin{defn}[Coupling Strategies for Straight Line Programs]
   For a initialized SLP $\rho$ of length $n$, a \textbf{valid coupling strategy} is a tuple of two functions $\bm{\gamma}(\texttt{in}\brangle{1}, \texttt{in}\brangle{2}):\RR^n\times \RR^n\to [-1, 1]^n$ and $\bm{\gamma}'(\texttt{in}\brangle{1}, \texttt{in}\brangle{2}):\RR^n\times \RR^n\to [-1, 1]^n$ 
@@ -91,8 +87,9 @@ We can merge these coupling strategies together to create a proof of privacy for
       then we can construct an approximate lifting that proves that $\PP[\rho, \texttt{in}\brangle{1}, \sigma] \leq e^{d\varepsilon}\PP[\rho, \texttt{in}\brangle{2}, \sigma]$ for some bounded $d>0$. 
 \end{lemma}
 
+(As before, a precise statement can be found as lemma \ref{multTransitionsCouplingProof})
 
-Thus, if we have a \textbf{valid} coupling strategy $C$ for an SLP $\rho$, then immediately by lemma \ref{multTransitionsCouplingProof}, we have a proof that $\rho$ is $d\varepsilon$-differentially private for some $d>0$; we call this $d$ the \textit{cost} of the coupling strategy for $\rho$. 
+Thus, if we have a \textbf{valid} coupling strategy $C$ for an SLP $\rho$, then immediately by lemma \ref{simplifiedMultTransitionsCouplingProof}, we have a proof that $\rho$ is $d\varepsilon$-differentially private for some $d>0$; we call this $d$ the \textit{cost} of the coupling strategy for $\rho$. 
 
 \begin{defn}
     For an initialized SLP $\rho$ of length $n$, the \textbf{cost} of a coupling strategy $C_\rho=(\bm{\gamma}, \bm{\gamma}')$ is \[cost(C_\rho) = \max_{\texttt{in}\brangle{1}\sim\texttt{in}\brangle{2}}\sum_{i=0}^{n-1}(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i|)d_i+(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i'|)d_i'.\]
@@ -105,7 +102,7 @@ Thus, if we have a \textbf{valid} coupling strategy $C$ for an SLP $\rho$, then 
     If $C_\rho=(\bm{\gamma}, \bm{\gamma}')$ is a valid coupling strategy for an SLP $\rho$, then $\rho$ is $cost(C_\rho)\varepsilon$-differentially private.
 \end{cor}
 
-In particular, we observe that for any individual initialized SLP $\rho$, there always exists \textit{some} valid coupling strategy for $\rho$; so every SLP $\rho$ is always differentially private. 
+In particular, we observe that for any single initialized SLP $\rho$, there always exists \textit{some} valid coupling strategy for $\rho$; so every SLP $\rho$ is always differentially private. 
 
 Our program model fundamentally considers programs to be collections of individual SLPs; to this end, we extend the definition of privacy to sets of SLPs in the expected manner:
 

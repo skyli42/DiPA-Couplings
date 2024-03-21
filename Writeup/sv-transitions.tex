@@ -1,11 +1,11 @@
 
 \subsection{Individual Transitions}
 
-Transitions act as guarded statements whose guard is dependent on a persistent real-valued variable $\texttt{x}$ and a real-valued input to which random noise is added; we can thus formally define individual transitions as follows:
+Transitions act as guarded statements whose guard is dependent on a persistent real-valued variable $\texttt{x}$ and a real-valued input to which random noise is added. Formally, we define transitions as follows: 
 
 \begin{defn}[Transitions]\label{svTransDef}
     A transition is a tuple $t = (c, \sigma, \tau)$, where \begin{itemize}
-        \item $c\in \{\texttt{true}, \lguard[\texttt{x}], \gguard[\texttt{x}]\}$ is a \textbf{guard} for the transition. We use $c(in, x)$ to denote the boolean function corresponding to substituting $\texttt{insample} = in$ and $\texttt{x} =x $ into $c$.
+        \item $c\in \{\texttt{true}, \lguard[\texttt{x}], \gguard[\texttt{x}]\}$ is a \textbf{guard} for the transition. We use $c(in, x)$ to denote the boolean function that corresponds to substituting $\texttt{insample} = in$ and $\texttt{x} =x $ into $c$.
         \item $\sigma \in \Gamma\cup\{\texttt{insample}, \texttt{insample}'\}$ is the \textbf{output} of $t$, for some finite alphabet of symbols $\Gamma$.
         \item $\tau\in\{\texttt{true}, \texttt{false}\}$ is an \textbf{assignment control}: a boolean value indicating whether or not the stored value of $\texttt{x}$ will be updated when $t$ is taken.
     \end{itemize}
@@ -17,16 +17,13 @@ Furthermore, we introduce a special type of transition called a \textbf{public} 
 
 \subsubsection{Transition Semantics}
 
-We can think of each transition as defining an atomic program step: a transition reads a real valued input $\texttt{in}$, compares a noisy version of it (\texttt{insample}) to a threshold $\texttt{x}$, and, depending on the result of the comparison, outputs a value $\sigma$ and possibly updates the value of $\texttt{x}$.
+Each transition can be thought of as defining an atomic program step: a transition reads a real valued input $\texttt{in}$, compares a noisy version of it (\texttt{insample}) to a threshold $\texttt{x}$, and, depending on the result of the comparison, outputs a value $\sigma$ and possibly updates the value of $\texttt{x}$.
 
-The semantics of a transition are defined by a function that maps an initial program state and a real-valued input to a subsequent program state. 
+The semantics of a transition are defined by a function that maps an initial program \textbf{state} and a real-valued input to a subsequent program state. 
 
-A program state is a tuple consisting of a distribution of possible values for the program value $\texttt{x}$, and a distribution of possible values for the current output $\sigma$. 
+A program state is a tuple consisting of a distribution of possible values for the program value $\texttt{x}$, and a distribution of possible values for the current output $\sigma$; thus, $S = \RR\times (\Gamma \cup \RR)^*$ is set of all program states. 
 
-Let $S = \RR\times (\Gamma \cup \RR)^*$ be the set of all program states. 
-As expected, every possible input is simply an element of $\RR$.
-
-Then the semantics of a transition $t$ can be defined as a function $\Phi_t:dist_\downarrow(S)\times \RR \to dist_\downarrow (S)$ that maps a subdistribution of initial program states and an input to a subdistribution of subsequent program states. 
+Then we can formally define the semantics of a transition $t$ can be defined as a function $\Phi_t:dist_\downarrow(S)\times \RR \to dist_\downarrow (S)$ that maps a subdistribution\footnote{A \textbf{subdistribution} is a standard probability function except that the probability of the entire event space can be less than 1} of initial program states and an input to a subdistribution of subsequent program states. 
 
 More precisely, given $t = (c, \sigma, \tau)$ where $t$ has noise parameters $P(t) = (d_t, d_t')$, let $\texttt{insample}\sim \Lap(\texttt{in}, \frac{1}{d_t\varepsilon})$ and $\texttt{insample}'\sim \Lap(\texttt{in}, \frac{1}{d_t'\varepsilon})$ be independent Laplace random variables. 
 
@@ -66,7 +63,7 @@ Specifically, let $O = \Phi_t((\texttt{x}, \lambda), \texttt{in})$, where $\text
 
 \subsubsection{Couplings}
 
-We now construct couplings for transitions with the aim of using them as building blocks for proofs of privacy.
+We now construct approximate liftings for transitions with the aim of using them as building blocks for proofs of privacy.
 
 First, we need to adapt standard privacy definitions to our specific setting; for example, recall that $\texttt{in}$, in reality, represents a \textbf{function} of some underlying dataset. This means that `closeness' in this context is defined as follows:
 
@@ -78,7 +75,7 @@ Note that, in order to properly model public transitions (i.e. transitions whose
 
 We show that, for any transition, we can construct approximate liftings such that each transition is proven ``private''. 
 
-In particular, we construct liftings that are \textbf{parameterized} by three real values, $\gamma_x$, $\gamma_q$, and $\gamma_q'$. Specifically, we view choices of $\gamma_x, \gamma_q$, and $\gamma_q'$ as a \textbf{strategy} for proving that a transition is differentially private.
+In particular, we construct liftings that are \textbf{parameterized} by three real values, $\gamma_x$, $\gamma_q$, and $\gamma_q'$. We view choices of $\gamma_x, \gamma_q$, and $\gamma_q'$ as a \textbf{strategy} for proving that a transition is differentially private.
 
 \begin{defn}[Valid Coupling Strategies]
     A \textbf{valid coupling strategy} for a transition $t = (c, \sigma, \tau)$ is a function $C_t:\RR^2\to[-1, 1]^3$ such that for any two valid adjacent inputs $\texttt{in}\brangle{1}\sim\texttt{in}\brangle{2}$, $C_t$ maps $(\texttt{in}\brangle{1},\texttt{in}\brangle{2})$ to a tuple $(\gamma_x, \gamma_t, \gamma_t')$ such that, for any valid adjacent pair of inputs, the constraints \[
@@ -87,7 +84,7 @@ In particular, we construct liftings that are \textbf{parameterized} by three re
           \gamma_t\geq\gamma_x & c = \gguard[\texttt{x}]\\
           \gamma_t=0 & \sigma = \texttt{insample}\\
           \gamma_t'=0 & \sigma = \texttt{insample}'
-        \end{cases},
+        \end{cases}
       \]
       are all satisfied. 
 \end{defn}
@@ -95,16 +92,15 @@ In particular, we construct liftings that are \textbf{parameterized} by three re
 For any \textbf{valid} coupling strategy, we can bound the difference of any transition outputting a specific value for any two valid adjacent inputs. 
 
 To construct approximate liftings of a transition $t = (c, \sigma, \tau)$, we will analyze the behaviour of two different \textbf{runs} of $t$, one with input $\texttt{in}\brangle{1}$ and one with input $\texttt{in}\brangle{2}$. 
+We differentiate between the values of variables in the first and second run by using angle brackets $\brangle{k}$, so, for example, we will take $X\brangle{1}$ to be the value of $\texttt{x}$ at location $q$ in the run of $t$ with input $\texttt{in}\brangle{1}$ and $X\brangle{2}$ to be the value of $\texttt{x}$ in the run of $t$ with input $\texttt{in}\brangle{2}$. 
 
 Our approach to couplings will be that for every Laplace-distributed variable, we will couple the value of the variable in one run with its value in the other \textbf{shifted} by some amount. 
 
-We differentiate between the values of variables in the first and second run by using angle brackets $\brangle{k}$, so, for example, we will take $X\brangle{1}$ to be the value of $\texttt{x}$ at location $q$ in the run of $t$ with input $\texttt{in}\brangle{1}$ and $X\brangle{2}$ to be the value of $\texttt{x}$ in the run of $t$ with input $\texttt{in}\brangle{2}$. 
+We thus want to create the lifting $o\brangle{1}\{(a, b): a=\sigma\implies b=\sigma\}o\brangle{2}$, where $o\brangle{1}$ and $o\brangle{2}$ are random variables representing the possible outputs of $t$ in run $\brangle{1}$ and in run $\brangle{2}$, respectively.
 
-We thus want to create the lifting $o\brangle{1}\{(a, b): a=\sigma\implies b=\sigma\}o\brangle{2}$, where $o\brangle{1}$ and $o\brangle{2}$ are random variables representing the possible outputs of $t\brangle{1}$ and $t\brangle{2}$, respectively.
+We must guarantee two things: (1) that if the first transition's guard is satisfied, then the second transition's guard is also satisfied and (2) that both runs output the same value $\sigma$ when the guard is satisfied. Note that if $c = \texttt{true}$, the first condition is trivially satisfied and when $\sigma\in \Gamma$, the second condition is trivially satisfied. 
 
-We must guarantee two things: that if the first transition's guard is satisfied, then the second transition's guard is also satisfied and that both runs output the same value $\sigma$ when the guard is satisfied. Note that if $c = \texttt{true}$, the first condition is trivially satisfied and when $\sigma\in \Gamma$, the second condition is trivially satisfied. 
-
-This gives us our major coupling lemma, which allows us to define a coupling proof for every valid coupling strategy.
+This leads to our major coupling lemma, which allows us to define a coupling proof for every valid coupling strategy.
 
 \begin{lemma}\label{simplifiedIndTransitionCoupling}
   For any transition $t$, any possible output event $\sigma$ of $t$ and any two valid adjacent inputs $\texttt{in}\brangle{1}\sim \texttt{in}\brangle{2}$, if we are given a valid coupling strategy, i.e. three real valued ``shifts'' $\gamma_x, \gamma_t, \gamma_t'\in [-1, 1]$ such that \[
@@ -122,4 +118,4 @@ A precise version of this lemma can be found in the appendix as lemma \ref{indTr
 
 Specifically, lemma \ref{indTransitionCoupling} gives us the bound $d \leq (|\mu\brangle{1}-\mu\brangle{2}+\gamma_x|)d_x+(|-\texttt{in}\brangle{1}+\texttt{in}\brangle{2}-\gamma_t|)d_t+(|-\texttt{in}\brangle{1}+\texttt{in}\brangle{2}-\gamma_t'|)d_t'$, where $\mu\brangle{1}$ and $\mu\brangle{2}$, respectively, are the means of $X\brangle{1}$ and $X\brangle{2}$.
 
-We call $d$ the \textbf{cost} $cost(C)$ of any coupling strategy $C = (\gamma_x, \gamma_t, \gamma_t')$.
+We call $d$ the \textbf{cost} of any coupling strategy $C = (\gamma_x, \gamma_t, \gamma_t')$.

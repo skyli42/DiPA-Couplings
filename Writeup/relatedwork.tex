@@ -2,8 +2,8 @@
 
 \textbf{Deciding Differential Privacy}
 
-Due to the known undecidability result \cite{bartheDecidingDifferentialPrivacy2020}, decision procedures for checking the privacy of putatively DP algorithms must inherently limit their program model. As mentioned, previous authors have developed a program model directly equivalent to our program model \cite{chadhaLinearTimeDecidability2021}; 
-an extension to this model by the same authors introduced multiple threshold variables, but only allowed for conjunctions between variable guards and correlated input \cite{chadhaDecidingDifferentialPrivacy2023}. Interestingly, \cite{chadhaDecidingDifferentialPrivacy2023} still finds a decision procedure for privacy even with an arbitrary number of variables. 
+Due to the known undecidability result of \cite{bartheDecidingDifferentialPrivacy2020}, decision procedures for checking the privacy of putatively DP algorithms must inherently limit their program model. As mentioned, previous authors have developed a program model (DiPA) directly equivalent to our program model \cite{chadhaLinearTimeDecidability2021}; 
+an extension to this model introduced multiple threshold variables, but only allowed for conjunctions between variable guards and required input variables to be correlated \cite{chadhaDecidingDifferentialPrivacy2023}. Interestingly, \cite{chadhaDecidingDifferentialPrivacy2023} still finds a decision procedure for privacy even with an arbitrary number of variables. 
 Similarly, \cite{bartheDecidingDifferentialPrivacy2020} develop a decision procedure for programs with finite domains and ranges under a Markov chain based program model, exploiting a decidable fragment of the first-order theory of the reals with exponentiation. 
 
 Other results have established that the problem of deciding differential privacy, even for more limited models, is in general hard. For example, \cite{chadhaDecidingDifferentialPrivacy2023} show that deciding privacy for their $k$-variable model is $PSPACE$-complete, \cite{gaboardiComplexityVerifyingLoopFree2020} find that the decision problem of privacy for loop-free programs is $coNP^{\#P}$-complete,
@@ -17,7 +17,7 @@ This approach allows for privacy proofs to be generated for a larger class of pr
 Probabilistic couplings were first developed by Wolfgang Doeblin in the 1930's and have since become widely applied in statistics and probability theory more generally; for examples of their applications, see a standard reference text like \cite{lindvallLecturesCouplingMethod2002}. 
 
 The use of probabilistic couplings has become more common in a computer science context in recent years; the specific line of work connecting approximate liftings and differential privacy begun with \cite{bartheProvingDifferentialPrivacy2016}; 
-further work since then has expanded the scope of approximate liftings \cite{bartheRelationalStarLiftings2019,hsuProbabilisticCouplingsProbabilistic2017} and used liftings as the basis for constructive proofs of privacy of programs\cite{albarghouthiSynthesizingCouplingProofs2017,albarghouthiConstraintBasedSynthesisCoupling2018}.
+further work since then has expanded the scope of approximate liftings \cite{bartheRelationalStarLiftings2019,hsuProbabilisticCouplingsProbabilistic2017} and used liftings as the basis for constructive proofs of privacy of programs~\cite{albarghouthiSynthesizingCouplingProofs2017,albarghouthiConstraintBasedSynthesisCoupling2018}.
 
 
 \textbf{Privacy Lower Bounds}

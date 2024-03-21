@@ -1,21 +1,22 @@
 
 \section{Multiple Threshold Variable Programs}
 
-We have shown the \textit{completeness} of coupling-based proofs of privacy for single-variable programs. However, it is also notable that coupling-based proofs allow for straightforward \textit{generalizations} to different program models that follow a similar paradigm. 
+We have shown the \textit{completeness} of coupling-based proofs of privacy for single-variable programs. It is also notable that coupling-based proofs allow for straightforward \textit{generalizations} to different program models in a similar paradigm. 
 
-In particular, we show that coupling proofs can similarly be used to prove the privacy of an extended program model that allows for an \textit{arbitrary} number of threshold variables to compare inputs to. Indeed, we can again construct a series of ``coupling strategies'' parameterized by real-valued ``shifts''; we also show that, in the special case where there are two threshold variables, the existence of finite-cost coupling strategies again completely characterizes two-variable programs.
+In particular, we show that coupling proofs can also be used to prove the privacy of an extended program model that allows for an \textit{arbitrary} number of threshold variables to compare inputs against. Indeed, we can again construct a series of ``coupling strategies'' parameterized by real-valued ``shifts'' in the style of single variable programs. 
+We also show that, in the special case where there are two threshold variables, the existence of finite-cost coupling strategies again completely characterizes two-variable programs.
 We finally conjecture that coupling proofs also characterize $k$-threshold variable programs in general. 
 
 \subsection{Multivariable Transitions}
 
-Our basic building block for programs with multiple threshold variables will be a single transition, as in the single variable case. 
+The basic building block for programs with multiple threshold variables will be a single transition, as in the single variable case. We first must define how exactly we allow $k$ different comparisons to be combined together into a single \textbf{guard}:
 
 \begin{defn}[$k$-variable guards]
     Let $\texttt{x}_1, \ldots \texttt{x}_k$ be real-valued program variables. Then a \textbf{$k$-variable guard} is a boolean statement $c = c^{(\texttt{x}_1)}\oplus_1 c^{(\texttt{x}_2)}\oplus_2\ldots\oplus_{k-1}c^{(\texttt{x}_k)}$ where for all $i$, \begin{itemize}
         \item $c^{(\texttt{x}_i)}\in \{\texttt{true}, \mvlguard[\texttt{x}_i], \mvgguard[\texttt{x}_i]\}$
         \item $\oplus_i \in \{\land, \lor\}$
     \end{itemize}
-    Without loss of generality, we will assume that if the entire guard evaluates to a tautology, then $c^{(\texttt{x}_i)}=\texttt{true}$ for all $\texttt{x}_i$. Additionally, we will assume that all boolean operations in $c$ are left-associative. 
+    Without loss of generality, we assume that if the entire guard evaluates to a tautology, then $c^{(\texttt{x}_i)}=\texttt{true}$ for all $\texttt{x}_i$. Additionally, we assume that all boolean operations in $c$ are left-associative. 
     
     
     % For example, we will disallow any guards of the form $c = \ldots \texttt{true}\lor \lguard[\texttt{x}_i]\ldots$, since the guard would simplify to $\texttt{true}$ (in which case, we suppose that for all $i$, $c^{(\texttt{x}_i)} = \texttt{true}$ and $\oplus_i = \land$). 
@@ -23,7 +24,7 @@ Our basic building block for programs with multiple threshold variables will be 
     Let $\mathcal{C}^{(k)}$ be the set of all possible guards with $k$ variables $\texttt{x}_1, \ldots \texttt{x}_k$.
 \end{defn}
 
-A multiple variable transition can thus be defined analogously single variable transitions; in particular, we will again take $\Gamma$ to be some finite alphabet of symbols that, along with real numbers, comprise the possible outputs of a transition. 
+A multiple variable transition can thus be defined analogously single variable transitions; in particular, we again take $\Gamma$ to be some finite alphabet of symbols that, along with real numbers, comprise the possible outputs of a transition. 
 
 \begin{defn}[$k$-variable transitions]
     A $k$-variable transition ($k$v-transition) is a tuple $(c, \sigma, \tau)$ where \begin{itemize}
@@ -37,31 +38,27 @@ We again associate every transition $t$ with two real-valued noise parameters $P
 
 \subsubsection{$k$-Variable Transition Semantics}
 
-The semantics of $k$-variable transitions are defined analogously to single variable transitions. Specifically, a program state is a tuple consisting of a value for every threshold variable $\texttt{x}_i$ and a distribution of possible values for the current output $\sigma$. Let $S =\RR^k\times (\Gamma\cup \RR)^*$ be the set all possible program states. As expected, every possible input is simply an element of $\RR$. 
+The semantics of $k$-variable transitions are defined analogously to single variable transitions. As in the single variable case, a program state is a tuple consisting of a value for every threshold variable $\texttt{x}_i$ and a distribution of possible values for the current output $\sigma$. Let $S =\RR^k\times (\Gamma\cup \RR)^*$ be the set all possible program states. As expected, every possible input is simply an element of $\RR$. 
 
 Then the semantics of a $k$v-transition $t$ can be defined as a function $\Phi_t: dist_\downarrow(S)\times \RR\to dist_\downarrow(S)$ that maps an subdistribution of initial program states and an input to a subdistribution of subsequent program states.
 
-We sketch how $k$-variable transition semantics are defined informally; the precise semantics, as defined by $\Phi_t$, are analogous to the single variable case.
+We sketch how $k$-variable transition semantics are defined informally; the precise semantics $\Phi_t$ are analogous to the single variable case.
 
 Given some threshold values $\texttt{x}_i\in \RR^k$, a transition $t = (c, \sigma, \tau)$, and spread parameter values $P(t) = (d, d')$, $t$ reads a real number input $\texttt{in}$ and 
 samples $k$ \textbf{independent} random variables $z^{(\texttt{x}_1)}\sim\Lap(0, \frac{1}{d\varepsilon}),\ldots, z^{(\texttt{x}_k)}\sim\Lap(0, \frac{1}{d\varepsilon})$ for comparing a noised version of the input to each threshold variable as well as one random variable $z' \sim\Lap(0, \frac{1}{d\varepsilon})$ to potentially be used for outputting a re-noised version of the input. 
-
 Using these noise variables, $t$ then assigns $k$ variables $\texttt{insample}^{(\texttt{x}_i)} = \texttt{in} + z^{(x)}$ and an additional variable $\texttt{insample}' = \texttt{in} + z'$. 
 If the guard $c$ is satisfied when comparing $\texttt{insample}^{(\texttt{x}_i)}$ to $\texttt{x}_i$ for all $i$, then the transition outputs $\sigma$ and, if $\tau\neq 0$, reassigns $\texttt{x}_{\tau} = \texttt{insample}^{(\texttt{x}_\tau)}$.
 
 We again denote the probability that a transition $t=(c, \sigma, \tau)$ outputs a specific measurable output event $o$ as $\PP[\vec{\texttt{x}}, t, \texttt{in}, o]$, where $\vec{\texttt{x}}\in \RR^k$ is a vector of initial values of all threshold values $\texttt{x}_i$, $\texttt{in}\in \RR$ is a real-valued input, and $o\subseteq \Gamma\cup\RR$is a possible measurable output event of $t$.
-
 Specifically, if $\vec{\texttt{x}}\in \RR^k$ and $o$ is a measurable output event of $t$, then $\PP[\vec{\texttt{x}}, t, \texttt{in}, o]$ is the marginal of $\Phi_t((\vec{\texttt{x}}, \lambda), \texttt{in})$ on $(\cdot, o)$.
 
 \subsection{Multivariable Couplings}
 
-In this section, we introduce two approaches for constructing couplings for $k$v-transitions; the first approach constructs single variable couplings independently or ``in parallel'' for each variable, while the second coupling approach couples different program variables together to create contradictions or tautologies. 
+We introduce two approaches for constructing couplings for $k$v-transitions; the first approach constructs single variable couplings independently or ``in parallel'' for each variable, while the second coupling approach couples different program variables together to create contradictions or tautologies. 
 
-We show that if we can create couplings for each variable of a $k$v-transition in isolation, then we can immediately create a coupling for a $k$v-transition. 
+We show that if we can create couplings for each variable of a $k$v-transition ``in isolation'', then we can immediately create a coupling for a $k$v-transition. We must first define what it means to isolate a variable in a transition: 
 
-We must first define what it means to isolate a variable in a transition: 
-
-\begin{defn}[Isolating a variable]
+\begin{defn}[$\texttt{x}-$isolated Transition]
     Let $t = (c, \sigma, \tau)$ be a $k$-variable transition. For all $i$, $t^{(\texttt{x}_i)}$ is the single variable transition $t^{(\texttt{x}_i)} = (c^{(\texttt{x}_i)}, \sigma^{(\texttt{x}_i)}, \tau^{(\texttt{x}_i)})$, where $c^{(\texttt{x}_i)}$ is the $\texttt{x}_i$-component of $c$ as defined above, $\sigma^{(\texttt{x}_i)} = \begin{cases}
         \sigma & \sigma \in \Gamma\\
         \texttt{insample} & \sigma = \texttt{insample}^{(\texttt{x}_i)}\\
@@ -73,7 +70,7 @@ We must first define what it means to isolate a variable in a transition:
     \end{cases}$, where $\bot$ is a unique ``junk'' symbol. We call $t^{(\texttt{x}_i)}$ the $\texttt{x}_i$-\textbf{isolated} version of $t$. 
 \end{defn}
 
-By lemma \ref{simplifiedIndTransitionCoupling}, we know that, given a $k$v-transition $t$, we can create couplings for each $\texttt{x}_i$-isolated version of $t$. We demonstrate that this is sufficient to create couplings for $t$ as a whole. 
+By lemma \ref{simplifiedIndTransitionCoupling}, we know that, given a $k$v-transition $t$, we can create couplings using ``shifts'' for each $\texttt{x}_i$-isolated version of $t$. We demonstrate that this is sufficient to create couplings for $t$ as a whole. 
 
 As in the single variable case, we create couplings from \textbf{coupling strategies}, i.e. a collection of shifts $C = (\gamma_{x_1}, \ldots, \gamma_{x_k}, \gamma_t^{(x_1)}, \ldots, \gamma_t^{(x_k)}, \gamma_t')$. Such a collection is valid if it satisfies the constraints below. 
 
@@ -92,7 +89,7 @@ As in the single variable case, we create couplings from \textbf{coupling strate
 To be precise, we show that $d = \sum_{i=1}^k\left(|\mu_{x_i}\brangle{1}-\mu_{x_i}\brangle{2}+\gamma_{x_i}|d_{x_i}+|\texttt{in}\brangle{1}-\texttt{in}\brangle{2}+\gamma_t^{(x_i)}|d_t\right)+|\texttt{in}\brangle{1}-\texttt{in}\brangle{2}+\gamma_t'|d_t'$;
 the \textit{cost} for a $k$v-coupling strategy $C$ is thus \[cost(C) = \sup_{\texttt{in}\brangle{1}\sim\texttt{in}\brangle{2}}\sum_{i=1}^k\left(|\mu_{x_i}\brangle{1}-\mu_{x_i}\brangle{2}+\gamma_{x_i}|d_{x_i}+|\texttt{in}\brangle{1}-\texttt{in}\brangle{2}+\gamma_t^{(x_i)}|d_t\right)+|\texttt{in}\brangle{1}-\texttt{in}\brangle{2}+\gamma_t'|d_t'\] (see lemma \ref{mvParallelCouplingsLemma} in the appendix for a full proof).
 
-This provides an extremely straightforward method of combining coupling strategies for different variables together.
+This provides a straightforward method of combining coupling strategies for different variables together.
 
 \begin{cor}
     For a $k$v-transition $t$, if, for all $1\leq i\leq k$, there exists a coupling strategy $C_i$ such that $C_i$ is a valid coupling strategy for the isolated transition $t^{(x_i)}$, then there exists a valid coupling strategy $C$ for $t$ such that $cost(C)\leq \sum_{i=1}^k cost(C_i)$.
@@ -114,15 +111,15 @@ This provides an extremely straightforward method of combining coupling strategi
     \end{alignat*}
 \end{proof}
 
-\subsubsection{Cross-Couplings}
+\subsubsection{Cross Couplings}
 
-We introduce cross-couplings, which couple together \textit{different} program variables to produce valid approximate liftings. 
+We now introduce cross couplings, which couple together \textit{different} program variables to produce valid approximate liftings. 
 
-Intuitively, cross-couplings allow us to construct liftings for certain transitions ``for free'' in a manner compatible with existing liftings, dependent on the initial threshold distributions. 
+Intuitively, cross couplings allow us to construct liftings for certain transitions ``for free'' in a manner compatible with existing liftings, dependent on the initial threshold distributions. 
 
-In particular, cross-couplings can be applied to transitions whose guards correspond to checking if an input is within either the empty set or the entire real line, which are either always true or always false. By deriving either a tautology or a contradiction, the implication statement that must hold for a valid approximate lifting is shown to be trivially satisfied. 
+In particular, cross couplings can be applied to transitions whose guards correspond to checking if an input is within either the entire real line or the empty set, which are either always true or always false. By deriving either a tautology or a contradiction, the implication statement that must hold for a valid approximate lifting is shown to be trivially satisfied. 
 
-The construction of cross-couplings for a transition is dependent both on any existing \textit{shifts} (from, for example, parallel single variable couplings) and the initial distribution of program variables --- in particular, the construction depends on the means of the initial distributions of each program variable. 
+The construction of cross couplings for a transition is dependent both on any existing \textit{shifts} (from, for example, parallel single variable couplings) and the initial distribution of program variables --- in particular, the construction depends on the means of the initial distributions of each program variable. 
 
 We say that a collection of means $\{\mu_i\brangle{1}, \mu_i\brangle{2}\}_{i=1}^k$ and shifts $\gamma_{x_1},\ldots,\gamma_{x_k}$ \textbf{allow for a cross coupling} for a transition $t$ if either of the first two conditions in the following lemma (lemma \ref{mvCrossCoupling}) are satisfied for $\mu$ and $\gamma$. 
 
@@ -141,11 +138,11 @@ We say that a collection of means $\{\mu_i\brangle{1}, \mu_i\brangle{2}\}_{i=1}^
     then we can construct an approximate lifting that proves $\PP[\vec{X}\brangle{1}, t, \texttt{in}\brangle{1}, \sigma]\leq e^{d\varepsilon}\PP[\vec{X}\brangle{2}, t, \texttt{in}\brangle{2}, \sigma]$ for some $d>0$. 
 \end{lemma}
 
-Note that cross-couplings require every single component of the initial variable distribution to have the same spread parameter.
+Note that cross couplings require every single component of the initial variable distribution to have the same spread parameter.
 
 \subsection{Multivariable Straight Line Programs}
 
-By sequentially concatenating $k$v-transitions, we can again create $k$-variable straight line programs, which represent executions of a program in our program model. 
+By sequentially concatenating $k$v-transitions, we can create $k$-variable straight line programs, which again represent executions of a program in our program model. 
 
 \begin{defn}[$k$-variable straight line programs]
     A $k$-variable straight line program ($k$v-SLP) is a finite string of $k$v-transitions. Analogously to single variable SLPs, we call a $k$v-SLP $\rho = t_0t_1\ldots t_{n-1}$, \textbf{initialized} if, for all $0\leq i < k$, $t_i = (\texttt{true}, \sigma_i, i+1)$ for some $\sigma_i$.
@@ -155,17 +152,17 @@ The semantics of a $k$v-SLP are again defined by composing the semantics of each
 
 Analogously to single variable SLPs, we will use the notation $t_{at_j(i)}$ to refer to the assignment transition for variable $\texttt{x}_j$ that immediately precedes transition $t_i$ within an SLP. 
 
-As previously noted, cross-couplings require that the spread parameter of threshold variables are identical across variables; we thus say that an SLP $\rho = t_0\ldots t_{n-1}$ \textbf{allows for cross-couplings} if there exists some constant $d_{at}>0$ such that, for every assignment transition $t_i$ of $\rho$, $P(t_i) = (d_{at}, d'_i)$. 
+As previously noted, cross couplings require that the spread parameter of threshold variables are identical across variables; we thus say that an SLP $\rho = t_0\ldots t_{n-1}$ \textbf{allows for cross couplings} if there exists some constant $d_{at}>0$ such that, for every assignment transition $t_i$ of $\rho$, $P(t_i) = (d_{at}, d'_i)$. 
 
 
 Combining our ``parallel'' and ``cross'' coupling strategies allows us to create $k$v-SLP coupling strategies:
 
 \begin{defn}[$k$-variable Coupling Strategies]
     A $k$v-coupling strategy for a $k$v-SLP $\rho$ of length $n$ is a collection of shifts $\{\gamma_i^{(\texttt{x}_1)},\ldots, \gamma_i^{(\texttt{x}_k)}, \gamma_i'\}_{i=0}^{n-1}$ such that every $\{\gamma_i^{(\texttt{x}_1)},\ldots, \gamma_i^{(\texttt{x}_k)}, \gamma_i'\}_{i=0}^{n-1}$ is a function of two adjacent input sequences $\texttt{in}\brangle{1}\sim \texttt{in}\brangle{2}$ with range $[-1, 1]$. 
-    We call a coupling strategy \textbf{valid} if, for \textbf{all} input sequences $\texttt{in}\brangle{1}\sim\texttt{in}\brangle{2}$, it satisfies the constraints in lemma \ref{mvPathCouplingLemma}.
+    We call a coupling strategy \textbf{valid} if, for \textbf{all} input sequences $\texttt{in}\brangle{1}\sim\texttt{in}\brangle{2}$, it satisfies the constraints in lemma \ref{mvPathCouplingLemma} (below).
 \end{defn}
 
-As expected, if a coupling strategy satisfies certain conditions (see lemma \ref{mvPathCouplingLemma}), then we can use it to prove that an SLP is private. 
+As expected, if a coupling strategy satisfies certain conditions, then we can use it to prove that an SLP is private. 
 
 \begin{lemma}\label{mvPathCouplingLemma}
     Let $\rho = t_0\ldots t_{n-1}$ be a initialized $k$v-SLP of length $n$ where $t_i = (c_i, \sigma_i, \tau_i)$ and $P(t_i) = (d_i, d'_i)$ for all $i$. 
@@ -185,14 +182,14 @@ As expected, if a coupling strategy satisfies certain conditions (see lemma \ref
 \end{lemma}
 
 \begin{proof}
-    Follows from lemmas \ref{simplifiedMvParallelCouplingsLemma} and \ref{mvCrossCoupling} exactly as lemma \ref{multTransitionsCouplingProof} follows from lemma \ref{indTransitionCoupling}.
+    Follows from lemmas \ref{simplifiedMvParallelCouplingsLemma} and \ref{mvCrossCoupling} exactly as lemma \ref{simplifiedMultTransitionsCouplingProof} follows from lemma \ref{simplifiedIndTransitionCoupling}.
 \end{proof}
 
 We denote the cost of a coupling strategy $C=\{\gamma_i^{(\texttt{x}_1)},\ldots, \gamma_i^{(\texttt{x}_k)}, \gamma_i'\}_{i=0}^{n-1}$ for a $k$v-SLP $\rho$ as $cost(C) = \max_{\texttt{in}\brangle{1}\sim\texttt{in}\brangle{2}}\sum_{i=0}^{n-1}\left(|\texttt{in}\brangle{2}-\texttt{in}\brangle{1}-\gamma_i'|d_i'+\sum_{j=1}^k|\texttt{in}\brangle{2}-\texttt{in}\brangle{1}-\gamma_i^{(\texttt{x}_j)}|d_i\right)$.
 
 \subsection{$k$v-Programs}
 
-As in the single variable case, we model programs that can be represented by a finite control flow graph $G = (V, E)$, where $V$ is a finite set of program locations, and each edge $e\in E$ is labeled with a function $T(e)$ such that $T(e)$ is a $k$v-transition. 
+As in the single variable case, we consider a class of programs that can be modeled by a finite control flow graph $G = (V, E)$, where $V$ is a finite set of program locations, and each edge $e\in E$ is labeled with a function $T(e)$ such that $T(e)$ is a $k$v-transition. 
 
 For clarity, we call control flow graphs for $k$-variable programs $k$v-CFGs. 
 
@@ -230,9 +227,7 @@ We again associate a single coupling strategy with every $k$v-periodic program:
     Let $L$ be a $k$v-periodic program generated by the graph $G_L = (V_L, E_L)$, where $m = |E_L|$. Then a coupling strategy $C = \{\gamma_i^{(\texttt{x}_1)},\ldots, \gamma_i^{(\texttt{x}_k)}, \gamma_i'\}_{i=0}^{m-1}$ for $L$ is a function $C:E_L\times\RR \times\RR\to [-1, 1]^{k+1}$ that computes $k+1$ shifts for each transition-labeled edge in $L$ as a function of two adjacent inputs.
 \end{defn}
 
-A coupling strategy for a $k$v-periodic program $L$ induces a coupling strategy for each $k$v-SLP in $L$ in the same manner as the single variable case (see definition \ref{svInducedCouplingStrategy}). 
-
-As expected, the cost $cost(C)$ of a coupling strategy $C$ for a $k$v-periodic program $L$ is the supremum of the costs of the $k$v-SLP coupling strategies induced by $C$ over all SLPs in $L$.
+A coupling strategy for a $k$v-periodic program $L$ induces a coupling strategy for each $k$v-SLP in $L$ in the same manner as the single variable case (see definition \ref{svInducedCouplingStrategy}). As expected, the cost of a coupling strategy $C$ for a $k$v-periodic program $L$ is the supremum of the costs of the $k$v-SLP coupling strategies induced by $C$ over all SLPs in $L$.
 
 We can also directly translate the constraints for a coupling strategy to have finite cost from single variable periodic programs to define the multivariable privacy constraint system.
 
@@ -267,19 +262,17 @@ Thus, we can extend corollary \ref{svProgramPrivacyCorollary} to multiple variab
 
 \subsection{Demonstrating Violations of Privacy for 2-variable programs}
 
-We have shown that, using parallel and cross-couplings, couplings can be used to generate proofs of privacy for any $k$-variable program that satisfies the privacy constraint system. 
-
+We have shown that, using parallel and cross couplings, couplings can be used to generate proofs of privacy for any $k$-variable program that satisfies the privacy constraint system. 
 Unlike the single variable case, we do not show that the privacy constraint system is complete for an arbitrary number of variables. We discuss some of the difficulties in generalizing violations of privacy to $k$ variables in section \ref{generalizingToKVariables}.
 
-However, we do have completeness in the special case when we have $k=2$ variables. We show that in this case (whose variables we now label $\texttt{x}$ and $\texttt{y}$) the privacy constraint system for a 2v-program is complete for output-distinct programs. 
+However, we do show completeness in the special case with $k=2$ variables. We show that in this case (whose variables we now label $\texttt{x}$ and $\texttt{y}$) the privacy constraint system for a 2v-program is complete for output-distinct programs. 
 
 As with the single variable case, if the privacy constraint system is unsatisfiable for a program $P$ generated by $G$, we demonstrate that there must exist specific graph structures that correspond to a violation of privacy.
-
 In general, these graph structures directly correspond to the single variable case; indeed, with one exception, we can identify these structures by looking at the generating graph of a program \textit{isolated} to a single variable. 
 
 We will use $G^{(\texttt{x}_i)}$ to denote the $k$v-CFG $G = (V, E)$ where each edge label $T(e)$ is replaced by the $\texttt{x}_i$-isolation of $T(e)$. 
 
-Identifying leaking cycles, disclosing cycles, and privacy violating paths in any variable $\texttt{x}_i$ for the $\texttt{x}$-isolated graph $G$ is sufficient to produce a violation of privacy in the two variable case; we must account for a special kind of leaking pair that turns out to be provably private using cross-couplings. 
+Identifying leaking cycles, disclosing cycles, and privacy violating paths in any variable $\texttt{x}_i$ for the $\texttt{x}$-isolated graph $G$ is sufficient to produce a violation of privacy in the two variable case; we must account for a special kind of leaking pair that turns out to be provably private using cross couplings. 
 
 \begin{defn}
     Let $G = (V, E)$ be a 2v-transition labeled graph with variables $\texttt{x}$, $\texttt{y}$ and let $(C, C')$ be a leaking pair in either $G^{(\texttt{x})}$ or $G^{(\texttt{y})}$ such that there is a path from $C$ to $C'$ with no assignment transitions into the other variable. For every edge $e\in E$, let $t_e = (c_e, \sigma_e, \tau_e)$ be the 2v-transition that labels $e$. 
@@ -298,31 +291,6 @@ Incorporating this exception, we show that an unsatisfiable coupling strategy st
 \begin{lemma}\label{2vUnsatisfiableImpliesNotWellformedLemma}
     If no coupling strategy for a 2v-periodic program $L$ satisfies the privacy constraint system, then there exists a leaking cycle, non-cancelling leaking pair, disclosing cycle, or privacy violating path in either $\texttt{x}$ or $\texttt{y}$ in $L$.
 \end{lemma}
-\begin{proof}
-    Suppose that we have some maximally satisfied coupling strategy $C$ for $L$. There must be some constraint that is violated by $C$. Note that if constraint (11) is violated, then there must be a leaking cycle in $L$ since we only allow cross-couplings between assignment transitions. 
-
-    Thus, we can assume that constraint (11) is not violated. 
-
-    By lemma \ref{ProgramCounterexampleThm}, there must then be either a leaking cycle, leaking pair, disclosing cycle, or privacy violating path with respect to a single variable. 
-
-    We will show that, if there only exist leaking pairs in $L$, then at least one leaking pair must be a non-cancelling leaking pair. 
-
-    For the sake of contradiction, suppose that every leaking pair $\kappa, \kappa'$ in $L$ is a cancelling leaking pair. 
-
-    By definition, this means that for every two transitions $t_i, t_j$ in $\kappa, \kappa'$, $at_x(i) = at_x(j)$ and $at_y(i) = at_y(j)$.
-
-    Without loss of generality, we will assume that every non-$\texttt{true}$ transition in $\kappa$ must either have guard $\mvlguard[\texttt{x}]\land\mvgguard[\texttt{y}]$ or $\mvlguard[\texttt{x}]\lor\mvgguard[\texttt{y}]$. Thus, every non-$\texttt{true}$ transition in $\kappa'$ must either have guard $\mvgguard[\texttt{x}]\land\mvlguard[\texttt{y}]$ or $\mvgguard[\texttt{x}]\lor\mvlguard[\texttt{y}]$, respectively. 
-
-    Let $t_i$ be an arbitrary non-$\texttt{true}$ transition in $\kappa$ and $t_j$ be an arbitrary non-$\texttt{true}$ transition in $\kappa'$.
-
-    Consider the case where $c_i = \mvlguard[\texttt{x}]\land\mvgguard[\texttt{y}]$ and $c_j = \mvgguard[\texttt{x}]\land\mvlguard[\texttt{y}]$; the other case is symmetric.
-
-    Observe that at least one of $\texttt{in}_{at_x(i)}\brangle{1}\leq \texttt{in}_{at_y(i)}\brangle{1}$ or $\texttt{in}_{at_y(i)}\brangle{1}\geq \texttt{in}_{at_y(i)}\brangle{1}$ must be true. Suppose that $\texttt{in}_{at_x(i)}\brangle{1}\leq \texttt{in}_{at_y(i)}\brangle{1}$. The case where $\texttt{in}_{at_y(i)}\brangle{1}\geq \texttt{in}_{at_y(i)}\brangle{1}$ is symmetric. 
-
-    Then we can set $\gamma_{at_x(i)} = -1$, $\gamma_{at_y(i)}=1$, and $\gamma_{(at_x(i), at_y(i))} =  -\max(0, \texttt{in}_{at_x(i)}\brangle{1}+ \gamma_{at_x(i)}^{(x)}-\texttt{in}_{at_y(i)}\brangle{1}-\gamma_{at_y(i)}^{(y)})$. 
-    
-    Because there do not exist disclosing cycles, leaking cycles, or privacy violating paths in either variable, this cannot violate any further constraints. Thus, $C$ is not maximal, which is our contradiction, so $L$ must contain either a leaking cycle, disclosing cycle, privacy violating path, or non-cancelling leaking pair in at least one variable.
-\end{proof}
 
 Finally, through a careful analysis, we extend the single variable DiPA counterexample results to two variables to show that the presence of these bad graph structures in a generating graph $G$ for a program $P$ implies that $P$ is not differentially private. 
 
@@ -343,6 +311,6 @@ We conclude that the privacy constraint system completely characterizes privacy 
 
 We have shown that for an arbitrary number of variables, we can produce a set of candidate coupling proofs that can potentially prove that a $k$v-program is private. As in the single variable case, these coupling proofs can be characterized by a system of linear constraints; if the system is satisfiable for a $k$v-program, then the program is differentially private. Additionally, we showed that the constraint system is complete for 2 variable programs specifically. 
 
-We conjecture this constraint system is still in fact complete for $k>2$ variables; our proofs for counterexamples to privacy for $2$v-programs are currently specific to two variable programs, but it is possible that they can be extended through a more careful analysis. In particular, it may be possible to ``group'' pairs of single-variable guards together and analyze them as a single unit to reduce the general $k$-variable problem to a 2-variable problem. 
+We conjecture this constraint system is still in fact complete for $k>2$ variables; our proofs for counterexamples to privacy for $2$v-programs are extremely technical and specific to two variable programs, but it is possible that they can be extended through a more careful analysis. In particular, it may be possible to ``group'' pairs of single-variable guards together and analyze them as a single unit to reduce the general $k$-variable problem to a 2-variable problem. 
 
 In a similar vein, we conjecture that it is possible to extend the definition of a multi-variable transition guard to encompass \textit{any} boolean function of inputs of the form $\{\texttt{true}, \mvlguard[\texttt{x}_i], \mvgguard[\texttt{x}_i]\}$; indeed, satisfying the same system of linear constraints would still produce correct proofs of differential privacy, but it is unclear how to demonstrate completeness for guards that can be arbitrary boolean functions. 

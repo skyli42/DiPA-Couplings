@@ -3,11 +3,11 @@
 
 \subsection{Differential Privacy}
 
-We introduce the formal definition of differential privacy and key results about DP algorithms. 
+We begin by introduce the formal definition of differential privacy and key results about DP algorithms. 
 
 Intuitively, for any output $\sigma$ of a private algorithm $A$, the probability of obtaining $\sigma$ for a dataset with some individual Alex should close (measured by a multiplicative factor) to the probability of obtaining $\sigma$ for a ``similar'' dataset (in particular, with Alex's data removed or changed).
 
-We consider \textbf{datasets} $\mathcal{X}\in X^n$ of size $n$ where $X$ is the set of all possible individual data points.
+In general, we work with \textbf{datasets} $\mathcal{X}\in X^n$ of size $n$ where $X$ is the set of all possible individual data points.
 
 We first define what it means for datasets to be ``similar'' to each other. 
 
@@ -76,21 +76,21 @@ A previous line of work extends couplings to reason about privacy in particular.
     \end{enumerate}
 \end{defn}
 
-In some sense, approximate liftings can be considered ``half-couplings'', where ``half'' (the first marginal) of $\mu_L$ is coupled with ``half'' (the second marginal) of $\mu_R$. 
+In some sense, approximate liftings can be considered ``half-couplings'', where ``half'' (the first marginal) of $\mu_L$ is coupled with ``half'' (the second marginal) of $\mu_R$. Approximate liftings also incur a ``privacy cost'' $\varepsilon$. 
 
-As expected, there is a close connection between approximate liftings and differential privacy: the $\varepsilon$-differential privacy of an algorithm is equivalent to the distributions of the algorithm given adjacent inputs being related by the $\varepsilon$-lifting of the equality relation.
+As expected, there is a close connection between approximate liftings and differential privacy:
 
 \begin{thm}[\cite{bartheProvingDifferentialPrivacy2016}]
     An algorithm $A(X)$ is $\varepsilon$-differentially private if and only if, for all adjacent inputs $X\sim X'$, $A(X)(=)^{\#\varepsilon}A(X')$.
 \end{thm}
 
-However, relaxing the lifted relation from equality to implication still allows us to prove that an algorithm is private; this proves useful in particular because constructing an approximate lifting of the equality relation can be highly non-trivial. 
+However, relaxing the lifted relation from equality to implication still allows us to prove that an algorithm is private; this proves useful in particular because constructing an approximate lifting of the equality relation can be intractable in practice. 
 
 \begin{thm}[\cite{bartheProvingDifferentialPrivacy2016}]\label{implicationcouplingthm}
     If for all adjacent input sequences $X\sim X'$ and outputs $\sigma$ of $A$, $A(X)\{(a, b): a=\sigma\implies b=\sigma\}^{\#\varepsilon}A(X')$, then $A(X)$ is $\varepsilon-$differentially private.
 \end{thm}
 
-The existence of an implication coupling of this form it itself a direct proof of privacy; our goal will be to ``automatically'' construct such proofs. 
+The existence of an implication coupling of this form is itself a direct proof of privacy---our goal will be to ``automatically'' construct such proofs. 
 
 Many standard differential privacy results can be restated in terms of coupling-based proofs; we primarily leverage the facts that approximate liftings can be composed and that we can couple together Laplace random variables at the expected privacy cost. 
 
@@ -99,7 +99,7 @@ Many standard differential privacy results can be restated in terms of coupling-
 \end{thm}
 
 Composition for liftings operates differently than in the standard analysis of differentially private composition. Each lifting should be thought of as generating a logical assertion: in particular, the assertion is that the relation being lifted holds (for example, one could assert that two distributions $A_1$ and $B_1$ are equal by constructing the lifting $A_1 (=)^{\#\varepsilon}B_1$). 
-Composition proceeds if, \textit{assuming that the first relation holds}, a second, likely more complex, lifting can be constructed. If this is true, then theorem \ref{liftingcomposition} asserts that the second lifting can be shown to hold in \textit{all} cases, simply with a additive penalty to the privacy cost (specifically, the privacy cost increases by the privacy cost of the first lifting). 
+Composition proceeds if, \textit{assuming that the first relation holds}, a second, likely more complex, lifting can be constructed. If this is true, then theorem \ref{liftingcomposition} asserts that the second lifting can be shown to hold \textit{unconditionally}, simply with a additive penalty to the privacy cost (specifically, the privacy cost increases by the privacy cost of the first lifting). 
 
 
 The Laplace mechanism can also be restated in terms of approximate liftings: 
@@ -112,16 +112,16 @@ Theorems \ref{implicationcouplingthm} and \ref{liftingcomposition} suggest the f
 
 \subsection{Proving SVT with couplings}
 
-For illustrative purposes, we provide a lifting-based proof of privacy for a notoriously tricky algorithm, the Sparse Vector Technique (SVT), which is particularly notable for requiring an analysis that goes beyond standard composition.
+For illustrative purposes, we provide a lifting-based proof of privacy for a notoriously tricky algorithm, the Sparse Vector Technique (SVT), which is particularly for requiring an analysis that goes beyond standard composition. 
+At a high level, SVT takes in a possibly infinite stream of input queries and a threshold value and outputs whether or not the input queries are above or below the threshold; see algorithm 1 for a full definition. 
 
-At a high level, SVT takes in a possibly infinite stream of input queries and a threshold value and outputs whether or not the input queries are above or below the threshold.
+However, unusually for differentially private algorithms, SVT can output a potentially unbounded number of ``below threshold'' queries before the first $c$ ``above threshold''s (or vice-versa), where $c$ is some constant set by the user; when $c=1$, SVT is also referred to as ``Above (or Below) Threshold''.
+ Potential applications include, for example, checking that a series of inputs is within an expected range or, as the name suggests, privately determining which elements of a sparse vector are non-zero. 
 
-However, unusually for differentially private algorithms, SVT can output a potentially unbounded number of ``below threshold'' queries before the first $c$ ``above threshold''s (or vice-versa), where $c$ is some constant set by the user; when $c=1$, SVT is also referred to as ``Above (or Below) Threshold''. Potential applications include, for example, checking that a series of inputs is within an expected range or, appropriately, privately determining which elements of a sparse vector are non-zero. 
-
-Because SVT allows for a potentially unbounded number of ``below threshold'' query outputs, its analysis requires a non-standard approach; a naive composition approach that assigns a fixed cost to outputting the result of each query will immediately result in unbounded privacy cost as well. 
+Because SVT allows for a potentially unbounded number of ``below threshold'' query outputs, its analysis requires a non-standard approach; a naive composition approach that assigns a fixed cost to outputting the result of each query will immediately result in unbounded overall privacy cost. 
 Indeed, the analysis of SVT is notoriously difficult, with multiple published attempts at privacy proofs that were later shown to be incorrect\footnote{A textbook analysis of SVT, along with a discussion of bugged versions and incorrect privacy proofs, can be found at \cite{lyuUnderstandingSparseVector2016a}}. 
 
-However, re-analyzing SVT using approximate liftings can be relatively simple. Our proof is derived from an informal proof of \cite{bartheProvingDifferentialPrivacy2016}.
+However, re-analyzing SVT using approximate liftings is relatively simple.
 
 \begin{algorithm}
     \hspace*{\algorithmicindent}\textbf{Input}: $\mathcal{X}\in X^n$, $T\in \RR$, $Q=q_1, \ldots \in {(X^n\to \RR)}^*$ with sensitivity $\Delta$, $c\in \NN$.
@@ -149,7 +149,7 @@ However, re-analyzing SVT using approximate liftings can be relatively simple. O
     Sparse Vector Technique is $\varepsilon$-differentially private. 
 \end{thm}
 
-\begin{proof}
+\begin{proof}[Proof (adapted from an informal proof of \cite{bartheProvingDifferentialPrivacy2016})]
     Consider two runs of SVT with adjacent inputs $\mathcal{X}\sim\mathcal{X}'$, respectively. We are aiming to show that $SVT(\mathcal{X}, T, Q, c)\{(a, b): a=\sigma \implies b=\sigma\}^{\#\varepsilon}SVT(\mathcal{X}', T, Q, c)$ is a valid lifting. 
 
     Fix some output $\sigma \in \{\bot, \top\}^n$. Let $A = \{i:\sigma_i = \top\}$ be the indices of queries that are measured to be above the threshold. Note that $|A| = c$. 

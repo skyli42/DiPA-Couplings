@@ -1,9 +1,8 @@
 
 Beyond solving the decision problem of privacy, we can also optimize the specific privacy cost obtained by a coupling proof of privacy for a program. 
+In general, there is no way to reuse couplings for shared transitions between different SLPs if we are trying to find an optimal coupling strategy. In other words, one cannot choose a single coupling strategy for an arbitrary set of SLPs; we must choose a new coupling strategy for each SLP.
 
-In general, there is no way to reuse couplings for shared transitions on different SLPs if we are trying to find an optimal coupling strategy. In other words, one cannot choose a single coupling strategy for an arbitrary set of SLPs; we must choose a new coupling strategy for each SLP.
-
-For example, even if two SLPs share a prefix, we cannot necessarily ``reuse'' the shifts from an optimal (with regards to cost) coupling strategy for the prefix in the context of the first SLP in the context of an optimal coupling strategy for the second SLP. 
+For example, even if two SLPs share a prefix, we cannot necessarily ``reuse'' the shifts from an optimal coupling strategy for the prefix in the context of the first SLP in the context of an optimal coupling strategy for the second SLP. 
 
 \begin{prop}\label{noSharingStrategiesProp}
   There exist SLPs $\rho'=\pi\cdot \pi$, $\rho^*=\pi\cdot\pi^*$ that share a prefix SLP $\pi$ such that for all optimal coupling strategies $C'$ for $\rho'$ and $C^*$ for $\rho^*$, $C'$ and $C^*$ differ on the shift assigned to some transition in $\pi$. 
@@ -17,23 +16,24 @@ In particular, we show that the penalty to choosing only a single coupling strat
   For all $n\in \NN$, there exist sets of SLPs $B_n$ such that the cost of a coupling strategy that uses the same set of shifts for all shared transitions between SLPs in $B_n$ has cost that is a quadratic factor larger than the cost of an optimal coupling strategy. 
 \end{prop}
 
-Fortunately, while we cannot analyze \textit{arbitrary} sets of SLPs with the same coupling strategy, we can still analyze an entire \textit{periodic program} with a single coupling strategy.
+Again, we provide a specific counterexample as proposition \ref{quadraticPenaltyProp} in the appendix. 
 
+Fortunately, while we cannot analyze \textit{arbitrary} sets of SLPs with the same coupling strategy, we can still analyze an entire \textit{periodic program} with a single coupling strategy.
 We show that it is in fact optimal to only consider a single coupling strategy for an entire periodic program; not only is finding individual coupling strategies for every single SLP in a periodic program intractable, but it also does not lead to a better overall privacy cost. 
 
 \begin{prop}\label{ClassCouplingStrategiesAreEnoughProp}
-    If there exists a valid coupling strategy $C_\rho$ with cost $cost(C_\rho)$ for every SLP $\rho$ of periodic program $L$ and $\sup_{\rho\in L}cost(C_\rho)< \infty$, then there exists a valid class coupling strategy $C'$ for $L$ such that $cost(C') \leq \sup_{\rho\in L}cost(C_\rho)$. 
+    If, for every SLP $\rho$ of a periodic program $L$, there exists a valid coupling strategy $C_\rho$ such that $\sup_{\rho\in L}cost(C_\rho)< \infty$, then there exists a valid shared coupling strategy $C_L$ for $L$ such that $cost(C_L) \leq \sup_{\rho\in L}cost(C_\rho)$. 
 \end{prop}
 
-Thus, as with the decision problem, we optimize the cost of each periodic program of a program independently.
+As with the decision problem, we optimize the cost of periodic programs independently.
 
-We first define a linear program that computes the optimal cost of any coupling strategy for a periodic program. 
+The privacy constraint system directly defines a linear program that computes the optimal cost of any coupling strategy for a periodic program. 
 
 \begin{prop}
     \label{prop:compute_opt_cost}
     Let $L$ be a periodic program containing $n$ distinct transitions $t_i = (c_i, \sigma_i, \tau_i)$ such that each $t_i$ has spread parameters $P(t_i) = (d_i, d'_i)$. The cost $opt(L)$ of the optimal coupling strategy for $L$ can be computed by solving the following optimization problem: 
     \begin{align*}
-        opt(L) = \max_{\texttt{in}\brangle{2}-\texttt{in}\brangle{1} \in [-1, 1]^n} &\min_{\gamma, \gamma' \in [-1, 1]^n} \sum_{i = 1}^n \left(|\texttt{in}_i\brangle{2}-\texttt{in}_i\brangle{1} - \gamma_i| d_i + |\texttt{in}_i\brangle{2}-\texttt{in}_i\brangle{1} - \gamma_i'|d_i' \right)\\ 
+        opt(L) = \max_{\texttt{in}\brangle{1}\sim\texttt{in}\brangle{2}} &\min_{\gamma, \gamma' \in [-1, 1]^n} \sum_{i = 1}^n \left(|\texttt{in}_i\brangle{2}-\texttt{in}_i\brangle{1} - \gamma_i| d_i + |\texttt{in}_i\brangle{2}-\texttt{in}_i\brangle{1} - \gamma_i'|d_i' \right)\\ 
             \text{subject to }
             &\ \gamma_{at(i)} \leq \gamma_i \text{ if } c_i = \gguard, \\
             &\ \gamma_{at(i)} \geq \gamma_i \text{ if } c_i = \lguard, \\
@@ -44,9 +44,7 @@ We first define a linear program that computes the optimal cost of any coupling 
     If a periodic program $L$ is not differentially private, a solution to this optimization problem does not exist, and we write $opt(L) = \infty$.
 \end{prop}
 
-Observe that the inner problem is convex, and so the outer problem is that of convex maximization. 
-
-It is unclear whether or not a polynomial time algorithm for solving this optimization problem exists; instead, we consider an approximation of the problem for trajectories that are known to be private. 
+Observe that the inner problem is convex, and so the outer problem is that of convex maximization. However, it is unclear whether or not a polynomial time algorithm for solving this optimization problem exists; instead, we consider an approximation of the problem for periodic programs that are known to be private. 
 
 \begin{defn}[Approximate Privacy Cost]
     Let $L$ be a differentially private periodic program generated by $G$ containing $n$ distinct transitions $t_i = (c_i, \sigma_i, \tau_i)$ such that each $t_i$ has spread parameters $P(t_i) = (d_i, d'_i)$.
@@ -61,7 +59,7 @@ It is unclear whether or not a polynomial time algorithm for solving this optimi
             &\ \gamma_i = -1 \text{ if } t_i \text{ is in a cycle and } c_i = \gguard
     \end{align*}
 \end{defn}
-Observe that this is the cost of a coupling strategy $(\gamma, \gamma')$ such that $\gamma$ and $\gamma'$ do not depend on $\texttt{in}\brangle{1}$ or $\texttt{in}\brangle{2}$ for non-cyclic transitions. 
+The approximations made simplify the system from a nested optimization problem by assuming the worst case where $|\texttt{in}\brangle{1} - \texttt{in}\brangle{2}| = 1$; additionally, for \textit{non-cyclic} transitions, the approximate system assumes that $\gamma$ and $\gamma'$ do not depend on $\texttt{in}\brangle{1}$ or $\texttt{in}\brangle{2}$. 
 
 Importantly, we show that the approximate LP is solvable in polynomial time through an application of the ellipsoid method.
 
@@ -90,7 +88,7 @@ Further, we obtain an approximation factor bounded by a term linear in the numbe
 We remark that our decision algorithm for privacy (section \ref{decisionSection}) is a simplified encoding of approximate privacy constraints into a privacy constraint graph; we also note that it is possible, if less intuitive, to directly reduce the approximate privacy constraints to an instance of 2SAT. 
 
 \azadeh{check with sasho about this part}
-We conjecture that the optimal coupling cost, as represented by the linear program from \ref{prop:compute_opt_cost}, exactly matches the ``true'' privacy cost of a program, as represented by the max-divergence between the distributions of a program's outputs on adjacent input sequences. In this case, coupling proofs would provide an exact bound on the privacy cost of any program that can be represented by our model. 
+We conjecture that the optimal coupling cost, as represented by the linear program from proposition \ref{prop:compute_opt_cost}, exactly matches the ``true'' privacy cost of a program, as represented by the max-divergence between the distributions of a program's outputs on adjacent input sequences. In this case, coupling proofs would provide an exact bound on the privacy cost of any program that can be represented by our model. 
 
 \begin{conj}
     For a periodic program $L$, the optimal coupling cost $opt(L)$ of $L$ matches the ``true'' privacy cost, i.e.:

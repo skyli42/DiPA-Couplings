@@ -977,10 +977,36 @@ We copy the definitions of leaking cycles, leaking pairs, disclosing cycles, and
     $d = |\mu_i\brangle{1}-\mu_i\brangle{2}+\gamma_{x_i}|d_x\varepsilon + |\texttt{in}\brangle{1}-\texttt{in}\brangle{2}+\gamma_t^{(x_i)}|d_t\varepsilon+|\texttt{in}\brangle{1}-\texttt{in}\brangle{2}+\gamma_t'|d_t'\varepsilon$, i.e. for no ``additional'' cost.     
     
     \textbf{Case 2: } For all $i\neq j$, construct the lifting $z_i\brangle{2}(=)^{\#0}z_j\brangle{2}$, which is equivalent to the lifting $\texttt{insample}^{(x_i)}\brangle{2}(=)^{\#}\texttt{insample}^{(x_j)}\brangle{2}$. In particular, this guarantees that all $\texttt{insample}^{(x_i)}\brangle{2}$ are equal to each other. 
-    Additionally, for all $i\neq j$, construct the lifting $\zeta_i\brangle{2}(=)^{\#0}\zeta_j\brangle{2}$, which is equivalent to the lifting $X_i\brangle{2} - X_j\brangle{2} (=)^{\#0}\mu_i\brangle{2}-\mu_j\brangle{2}$.
+    Additionally, for all $i\neq j$, construct the lifting $\zeta_i\brangle{2}(=)^{\#0}\zeta_j\brangle{2}$, which is equivalent to the lifting $X_i\brangle{2} - X_j\brangle{2} (=)^{\#0}\mu_i\brangle{2}-\mu_j\brangle{2}$.z
 
     As before, if case two is satisfied, then these liftings suffice to show that the proposition  ``$c$ is satisfied in run $\brangle{2}$'' must always be true; thus, the implication ``$c$ is satisfied in run $\brangle{1}\implies c$ is satisfied in run $\brangle{2}$'' must also always be true, and so $\PP[\vec{X}\brangle{1}, t, \texttt{in}\brangle{1}, \sigma]\leq e^{d\varepsilon}\PP[\vec{X}\brangle{2}, t, \texttt{in}\brangle{2}, \sigma]$ for 
     $d = |\mu_i\brangle{1}-\mu_i\brangle{2}+\gamma_{x_i}|d_x\varepsilon + |\texttt{in}\brangle{1}-\texttt{in}\brangle{2}+\gamma_t^{(x_i)}|d_t\varepsilon+|\texttt{in}\brangle{1}-\texttt{in}\brangle{2}+\gamma_t'|d_t'\varepsilon$.
 
+\end{proof}
+
+
+\begin{proof}[Proof of \ref{2vUnsatisfiableImpliesNotWellformedLemma}]
+    Suppose that we have some maximally satisfied coupling strategy $C$ for $L$. There must be some constraint that is violated by $C$.
+
+    By lemma \ref{ProgramCounterexampleThm}, there must be either a leaking cycle, leaking pair, disclosing cycle, or privacy violating path with respect to a single variable. 
+
+    We show that, if there only exist leaking pairs in $L$, then at least one leaking pair must be a non-cancelling leaking pair. In every other case, there exists a problematic graph structure and the proof is complete. 
+
+    For the sake of contradiction, suppose that every leaking pair $\kappa, \kappa'$ in $L$ is a cancelling leaking pair. By definition, this means that for every two transitions $t_i, t_j$ in $\kappa, \kappa'$, $at_x(i) = at_x(j)$ and $at_y(i) = at_y(j)$. 
+
+    Without loss of generality, we will assume that every non-$\texttt{true}$ transition in $\kappa$ must either have guard $\mvlguard[\texttt{x}]\land\mvgguard[\texttt{y}]$ or $\mvlguard[\texttt{x}]\lor\mvgguard[\texttt{y}]$. Thus, every non-$\texttt{true}$ transition in $\kappa'$ must either have guard $\mvgguard[\texttt{x}]\land\mvlguard[\texttt{y}]$ or $\mvgguard[\texttt{x}]\lor\mvlguard[\texttt{y}]$, respectively. 
+
+    Let $t_i$ be an arbitrary non-$\texttt{true}$ transition in $\kappa$ and $t_j$ be an arbitrary non-$\texttt{true}$ transition in $\kappa'$.
+
+    Consider the case where $c_i = \mvlguard[\texttt{x}]\land\mvgguard[\texttt{y}]$ and $c_j = \mvgguard[\texttt{x}]\land\mvlguard[\texttt{y}]$; the other case is symmetric.
+
+    Observe that at least one of $\texttt{in}_{at_x(i)}\brangle{1}\leq \texttt{in}_{at_y(i)}\brangle{1}$ or $\texttt{in}_{at_y(i)}\brangle{1}\geq \texttt{in}_{at_y(i)}\brangle{1}$ must be true.
+    
+    Suppose that $\texttt{in}_{at_x(i)}\brangle{1}\leq \texttt{in}_{at_y(i)}\brangle{1}$. The case where $\texttt{in}_{at_y(i)}\brangle{1}\geq \texttt{in}_{at_y(i)}\brangle{1}$ is symmetric. 
+    Then we can set $\gamma_{at_x(i)}^{(x)} = -1$ and $\gamma_{at_y(i)}^{(y)}=1$; since $\texttt{in}_{at_x(i)}\brangle{1}\leq \texttt{in}_{at_y(i)}\brangle{1}$, $c_i\brangle{1}$ is a contradiction, fulfilling condition (1) of lemma \ref{mvCrossCoupling}. 
+
+    Further, we can assign $\gamma_j^{(x)} = \gamma_j^{(y)}=\texttt{in}\brangle{2}-\texttt{in}\brangle{1}$ freely; thus, we have shown that, with regards to leaking pairs, no constraints of the privacy constraint system can be violated.    
+    
+    In particular, because there do not exist disclosing cycles, leaking cycles, or privacy violating paths in either variable, this cannot violate any further constraints. Thus, $C$ is not maximal, which is our contradiction, so $L$ must contain either a leaking cycle, disclosing cycle, privacy violating path, or non-cancelling leaking pair in at least one variable.
 \end{proof}
 
