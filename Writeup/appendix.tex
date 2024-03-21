@@ -4,6 +4,9 @@
 
 \subsection{Couplings for Transitions and Straight Line Programs}
 
+In this section, we provide more precise versions of the major coupling lemmas in sections \ref{svTransitionsSec} and \ref{svSLPSection} as well as full proofs. 
+
+
 \begin{lemma}[Detailed version of lemma \ref{simplifiedIndTransitionCoupling}]\label{indTransitionCoupling}
     Let $X\brangle{1}\sim \Lap(\mu\brangle{1}, \frac{1}{d_x\varepsilon}), X\brangle{2}\sim\Lap(\mu\brangle{2}, \frac{1}{d_x\varepsilon})$ be random variables representing possible initial values of $\texttt{x}$ and let $t = (c, \sigma, \tau)$ be a transition from some valid transition alphabet $\Sigma_T$.
     Let $P(t) = (d_t, d_t')$.
@@ -112,9 +115,74 @@ we have shown that the lifting $o\brangle{1}\{(a, b): a=\sigma\implies b=\sigma\
     which gives us an overall coupling cost of $d = \sum_{i=0}^{n-1}(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i|)d_i+(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i'|)d_i'$.
 \end{proof}
 
-\subsection{DiPA and Programs}
 
-We copy the definitions of leaking cycles, leaking pairs, disclosing cycles, and privacy violating paths from \cite{chadhaLinearTimeDecidability2021} for clarity. 
+
+
+\subsection{Programs and DiPA}
+
+This section provides full proofs and precise statements of lemmas for sections \ref{svProgramsSection} and \ref{svDiPASection}.
+
+
+\begin{proof}[\proofname~of lemma \ref{finiteCostConstraintLemma}]
+
+    ($\impliedby$)
+
+    Let $T$ be the set of transitions $t_i$ in $L$ such that $t_i$ is \textbf{not} found under a star in $R_L$. 
+
+    Fix a initialized SLP $\rho\in L$ and let $C_\rho$ be the coupling strategy for $\rho$ induced by $C$. 
+
+    Let $D_\rho$ be the set of transitions $t_i\in \rho$ such that $t_i$ is under a star in $R_L$, i.e., $t_i\notin T$.  
+
+    If the given constraint holds, then we know that $\max_{\texttt{in}\brangle{1}\sim\texttt{in}\brangle{2}}\sum_{i: t_i\in D_\rho}(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i|)d_i+(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i'|)d_i' = 0$
+
+    So \begin{align*}
+        cost(C_\rho) = \max_{\texttt{in}\brangle{1}\sim\texttt{in}\brangle{2}}&\sum_{i: t_i\in D_\rho}(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i|)d_i+(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i'|)d_i'\\
+        &+\sum_{i: t_i\notin D_\rho}(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i|)d_i+(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i'|)d_i'\\
+        = \max_{\texttt{in}\brangle{1}\sim\texttt{in}\brangle{2}}&\sum_{i: t_i\in T}(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i|)d_i+(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i'|)d_i'\\
+        \leq \sum_{i:t_i\in T}(2d_i& + 2d_i')\\
+        \leq |T|\max_{i:t_i\in T}&(2d_i + 2d_i')
+    \end{align*}
+
+    Thus, $cost(C)\leq |T|\max_{i:t_i\in T}(2d_i + 2d_i') <\infty$.
+
+    ($\implies$)
+
+    Let $t_i$ be a transition in $L$ under a star in $R_L$ such that $\gamma_i\neq -\texttt{in}\brangle{1}_i+\texttt{in}\brangle{2}_i$ or $\gamma_i'\neq  -\texttt{in}\brangle{1}_i+\texttt{in}\brangle{2}_i$.     Thus, $\exists \texttt{in}\brangle{1}\sim \texttt{in}\brangle{2}$ such that $(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i|)d_i+(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i'|)d_i'>0$.
+    Fix such a $\texttt{in}\brangle{1}\sim \texttt{in}\brangle{2}$. 
+
+    Then there exists some initialized SLP $\rho$ in $L$ of the form $a(bt_ic)^*d$ for some $a, b, c, d\in \Sigma_T^*$.
+    
+    Let $\rho_k=a(bt_ic)^kd$ be the corresponding initialized SLP in $L$ with $(bt_ic)$ iterated $k$ times. This is equivalent to iterating the cycle containing $t_i$ $k$ times. Then for all $k\in \NN$, \begin{align*}
+        cost(\rho_k) \geq k((|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i|)d_i+(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i'|)d_i'),
+    \end{align*}
+    so for all $M\in \RR$, $\exists \rho_k$ such that $cost(\rho_k) > M$.
+\end{proof}
+
+
+
+
+\begin{proof}[Proof of prop \ref{syntacticEquivalenceProp}]
+    Let $G_P = (V, E)$ be a proper control flow graph that generates an output distinct program $P$. By definition, there exists some unique starting location $\ell_{init} \in V$.
+
+    Then let $A_P = (V, \RR, C, \Gamma, \ell_{init}, X, P_A, \delta)$ where
+    \begin{itemize}
+        \item $\Sigma, C, X$ are as in the definition of a DiPA
+        \item $P_A, \delta$ are (partial) functions defined below.
+    \end{itemize}
+    
+    For all states $\ell\in V$, let $T_\ell$ be the set of transitions that label edges leaving $\ell$. Because of the shared noise condition, $\forall t, t'\in T_{\ell}, P(t) = P(t')$. Let $P(t) = (d_\ell, d_\ell')$ for some $t\in T_\ell$. Then $P_A(\ell) = (0, d_\ell, 0, d_{\ell}')$.
+
+    For all $e = (\ell, \ell')\in E$, let $T(e) = (c, \sigma, \tau)$. We define $\delta(\ell, c) = (\ell', \sigma, \tau)$.
+
+    Observe that because $G_P$ is proper, $\delta$ is a valid transition function for $A_P$. 
+
+    Now let $A = (Q, \Sigma, C, \Gamma, q_{init}, X, P, \delta)$ be a DiPA and let $G_A = (V, E)$ be the underlying graph of $A$; observe that $q_{init}\in V$ is a unique initial state for $G_A$. Additionally, for all $e = (q, q')\in E$, let $\delta(q, c) = (q', \sigma, \tau)$. Then $T(e) = (c, \sigma, \tau)$ is the transition labeling $e$. 
+
+    Because $\delta$ is a valid partial transition function, $G_A$ must be a proper control flow graph that generates an output distinct program. 
+\end{proof}
+
+
+We copy the definitions of leaking cycles, leaking pairs, disclosing cycles, and privacy violating paths from \cite{chadhaLinearTimeDecidability2021} for convenience.
 
 \begin{defn}[Leaking Cycles~\cite{chadhaLinearTimeDecidability2021}]
     A path $\rho = q_0\to\ldots \to q_n$ in a DiPA $A$ is a leaking path if there exist indices $i, j$ where $0\leq i < j < n$ such that the $i$'th transition $q_i\to q_{i+1}$ in $\rho$ is an assignment transition and the guard of the transition $q_j \to q_{j+1}$ is not $\texttt{true}$. If $\rho$ is also a cycle, then we call it a leaking cycle.
@@ -147,6 +215,7 @@ We copy the definitions of leaking cycles, leaking pairs, disclosing cycles, and
     \end{itemize}
 \end{defn}
 
+This allows us to prove lemma \ref{unsatisfiableImpliesNotWellformedLemma}.
 
 \begin{lemma}\label{unsatisfiableImpliesNotWellformedLemma}
     If a periodic program $L$ generated by $G_L$ satisfies output distinction and there does not exist a coupling strategy $C$ that satisfies the privacy constraint system for $L$, then $G_L$ must contain either a leaking cycle, a leaking pair, a disclosing cycle, or a privacy violating path. 
@@ -429,7 +498,12 @@ We copy the definitions of leaking cycles, leaking pairs, disclosing cycles, and
 \end{proof}
 
 
-\subsection{Minimizing Coupling Cost}
+\subsection{Minimizing Coupling Cost and a Decision Algorithm for Privacy}
+
+This section provides full proofs and precise statements of claims made in sections \ref{svDecisionAlgSection} and \ref{svOptimizationSection}.
+
+Note that the technical results of section \ref{svDecisionAlgSection} flow from the approximation algorithm of section \ref{svOptimizationSection}; thus, we order this section such that claims made in \ref{svOptimizationSection} appear first. 
+
 
 \begin{prop}\label{costDependspathProp}
     There exist SLPs $\rho'=\pi\cdot \pi$, $\rho^*=\pi\cdot\pi^*$ that share a prefix SLP $\pi$ such that for all optimal coupling strategies $C'$ for $\rho'$ and $C^*$ for $\rho^*$, $C'$ and $C^*$ differ on the shift assigned to some transition in $\pi$. 
@@ -570,57 +644,20 @@ We copy the definitions of leaking cycles, leaking pairs, disclosing cycles, and
 \end{proof}
 
 
+% \begin{lemma}\label{cycleGammaConstraints}
+%     If a coupling strategy $C=(\mathbf{\gamma}, \mathbf{\gamma}')$ for a periodic program $L$ is valid and has finite cost, then the following must hold for all $i$:
+%     \begin{enumerate}
+%         \item If $t_i$ is in a cycle and $c_i = \lguard[\texttt{x}]$, then $\gamma_i = -\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}$ and $\gamma_{at(i)} = 1$.
+%         \item If $t_i$ is in a cycle and $c_i = \gguard[\texttt{x}]$, then $\gamma_i = -\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}$ and $\gamma_{at(i)} = -1$.
+%     \end{enumerate}
+% \end{lemma}
+% \begin{proof}
+%     We will show (1). (2) follows symmetrically.
 
-\begin{proof}[\proofname~of lemma \ref{finiteCostConstraintLemma}]
-
-    ($\impliedby$)
-
-    Let $T$ be the set of transitions $t_i$ in $L$ such that $t_i$ is \textbf{not} found under a star in $R_L$. 
-
-    Fix a initialized SLP $\rho\in L$ and let $C_\rho$ be the coupling strategy for $\rho$ induced by $C$. 
-
-    Let $D_\rho$ be the set of transitions $t_i\in \rho$ such that $t_i$ is under a star in $R_L$, i.e., $t_i\notin T$.  
-
-    If the given constraint holds, then we know that $\max_{\texttt{in}\brangle{1}\sim\texttt{in}\brangle{2}}\sum_{i: t_i\in D_\rho}(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i|)d_i+(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i'|)d_i' = 0$
-
-    So \begin{align*}
-        cost(C_\rho) = \max_{\texttt{in}\brangle{1}\sim\texttt{in}\brangle{2}}&\sum_{i: t_i\in D_\rho}(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i|)d_i+(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i'|)d_i'\\
-        &+\sum_{i: t_i\notin D_\rho}(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i|)d_i+(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i'|)d_i'\\
-        = \max_{\texttt{in}\brangle{1}\sim\texttt{in}\brangle{2}}&\sum_{i: t_i\in T}(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i|)d_i+(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i'|)d_i'\\
-        \leq \sum_{i:t_i\in T}(2d_i& + 2d_i')\\
-        \leq |T|\max_{i:t_i\in T}&(2d_i + 2d_i')
-    \end{align*}
-
-    Thus, $cost(C)\leq |T|\max_{i:t_i\in T}(2d_i + 2d_i') <\infty$.
-
-    ($\implies$)
-
-    Let $t_i$ be a transition in $L$ under a star in $R_L$ such that $\gamma_i\neq -\texttt{in}\brangle{1}_i+\texttt{in}\brangle{2}_i$ or $\gamma_i'\neq  -\texttt{in}\brangle{1}_i+\texttt{in}\brangle{2}_i$.     Thus, $\exists \texttt{in}\brangle{1}\sim \texttt{in}\brangle{2}$ such that $(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i|)d_i+(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i'|)d_i'>0$.
-    Fix such a $\texttt{in}\brangle{1}\sim \texttt{in}\brangle{2}$. 
-
-    Then there exists some initialized SLP $\rho$ in $L$ of the form $a(bt_ic)^*d$ for some $a, b, c, d\in \Sigma_T^*$.
+%     Consider some $t_i$ in a cycle where $c_i = \lguard[\texttt{x}]$. Because $C$ is has finite cost, we know from lemma \ref{finiteCostConstraintLemma} that $\gamma_i = -\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}$ for all  $\texttt{in}_i\brangle{1}\sim\texttt{in}_i\brangle{2}$. In particular, when $-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}=1$, then $\gamma_i=1$. 
     
-    Let $\rho_k=a(bt_ic)^kd$ be the corresponding initialized SLP in $L$ with $(bt_ic)$ iterated $k$ times. This is equivalent to iterating the cycle containing $t_i$ $k$ times. Then for all $k\in \NN$, \begin{align*}
-        cost(\rho_k) \geq k((|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i|)d_i+(|-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}-\gamma_i'|)d_i'),
-    \end{align*}
-    so for all $M\in \RR$, $\exists \rho_k$ such that $cost(\rho_k) > M$.
-\end{proof}
-
-
-\begin{lemma}\label{cycleGammaConstraints}
-    If a coupling strategy $C=(\mathbf{\gamma}, \mathbf{\gamma}')$ for a periodic program $L$ is valid and has finite cost, then the following must hold for all $i$:
-    \begin{enumerate}
-        \item If $t_i$ is in a cycle and $c_i = \lguard[\texttt{x}]$, then $\gamma_i = -\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}$ and $\gamma_{at(i)} = 1$.
-        \item If $t_i$ is in a cycle and $c_i = \gguard[\texttt{x}]$, then $\gamma_i = -\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}$ and $\gamma_{at(i)} = -1$.
-    \end{enumerate}
-\end{lemma}
-\begin{proof}
-    We will show (1). (2) follows symmetrically.
-
-    Consider some $t_i$ in a cycle where $c_i = \lguard[\texttt{x}]$. Because $C$ is has finite cost, we know from lemma \ref{finiteCostConstraintLemma} that $\gamma_i = -\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}$ for all  $\texttt{in}_i\brangle{1}\sim\texttt{in}_i\brangle{2}$. In particular, when $-\texttt{in}_i\brangle{1}+\texttt{in}_i\brangle{2}=1$, then $\gamma_i=1$. 
-    
-    Further, because $\gamma_{at(i)}$ must be greater than $\gamma_i$ for all $\texttt{in}_i\brangle{1}\sim\texttt{in}_i\brangle{2}$ for $C$ to be valid, we must have that $\gamma_{at(i)}=1$.
-\end{proof}
+%     Further, because $\gamma_{at(i)}$ must be greater than $\gamma_i$ for all $\texttt{in}_i\brangle{1}\sim\texttt{in}_i\brangle{2}$ for $C$ to be valid, we must have that $\gamma_{at(i)}=1$.
+% \end{proof}
 
 \begin{lemma}\label{integersAreEnoughForATLemma}
     If a valid finite cost coupling strategy $C = (\gamma, \gamma')$ exists for a periodic program $L_\rho$, then there exists a valid finite cost coupling strategy $C^*= (\gamma^*, \gamma^{*\prime})$ such that for all $i\in AT(L_\rho)$, $\gamma_i^*\in \{-1, 0, 1\}$. 
@@ -644,35 +681,6 @@ We copy the definitions of leaking cycles, leaking pairs, disclosing cycles, and
     By Proposition \ref{prop:approx_exists}, we see that there is a valid coupling strategy $C^* = (\gamma^*, \gamma^{*\prime})$ for $\gamma^*_i = \gamma_i \in \{-1, 0, 1\}$ for all $i \in AT(L_\rho)$.
 \end{proof}
 
-
-
-
-\begin{proof}[Proof of prop \ref{syntacticEquivalenceProp}]
-    Let $G_P = (V, E)$ be a proper control flow graph that generates an output distinct program $P$. By definition, there exists some unique starting location $\ell_{init} \in V$.
-
-    Then let $A_P = (V, \RR, C, \Gamma, \ell_{init}, X, P_A, \delta)$ where
-    \begin{itemize}
-        \item $\Sigma, C, X$ are as in the definition of a DiPA
-        \item $P_A, \delta$ are (partial) functions defined below.
-    \end{itemize}
-    
-    For all states $\ell\in V$, let $T_\ell$ be the set of transitions that label edges leaving $\ell$. Because of the shared noise condition, $\forall t, t'\in T_{\ell}, P(t) = P(t')$. Let $P(t) = (d_\ell, d_\ell')$ for some $t\in T_\ell$. Then $P_A(\ell) = (0, d_\ell, 0, d_{\ell}')$.
-
-    For all $e = (\ell, \ell')\in E$, let $T(e) = (c, \sigma, \tau)$. We define $\delta(\ell, c) = (\ell', \sigma, \tau)$.
-
-    Observe that because $G_P$ is proper, $\delta$ is a valid transition function for $A_P$. 
-
-    Now let $A = (Q, \Sigma, C, \Gamma, q_{init}, X, P, \delta)$ be a DiPA and let $G_A = (V, E)$ be the underlying graph of $A$; observe that $q_{init}\in V$ is a unique initial state for $G_A$. Additionally, for all $e = (q, q')\in E$, let $\delta(q, c) = (q', \sigma, \tau)$. Then $T(e) = (c, \sigma, \tau)$ is the transition labeling $e$. 
-
-    Because $\delta$ is a valid partial transition function, $G_A$ must be a proper control flow graph that generates an output distinct program. 
-\end{proof}
-
-
-
-
-\begin{prop}[Proposition \ref{ClassCouplingStrategiesAreEnoughProp}]
-    If there exists a valid coupling strategy $C_\rho$ with cost $cost(C_\rho)$ for every SLP $\rho$ of periodic program $L$ and $\sup_{\rho\in L}cost(C_\rho)< \infty$, then there exists a valid class coupling strategy $C'$ for $L$ such that $cost(C') \leq \sup_{\rho\in L}cost(C_\rho)$. 
-\end{prop}
 
 \begin{proof}[Proof of proposition \ref{ClassCouplingStrategiesAreEnoughProp}]
 
@@ -734,7 +742,7 @@ We copy the definitions of leaking cycles, leaking pairs, disclosing cycles, and
 \end{proof}
 
 
-\begin{proof}[Proof of \ref{prop:compute_opt_cost}]
+\begin{proof}[Proof of proposition \ref{prop:compute_opt_cost}]
     Assume that $L$ is differentially private. Then there exists a valid coupling strategy for $L$ with finite cost, showing that the constraints above are feasible, and a finite solution to the optimization problem exists.  
 
     We will specify a valid coupling strategy $C^* = (\gamma^*, {\gamma'}^*)$ for $L$ with the cost stated above, and then show it is optimal. Define $\Gamma: [-1, 1]^n \to [-1, 1]^n \times [-1, 1]^n$ as follows, where $\Gamma(\Delta)$ is a pair $(\gamma, \gamma')$: 
@@ -815,7 +823,7 @@ We copy the definitions of leaking cycles, leaking pairs, disclosing cycles, and
     \end{itemize}
 \end{proof}
 
-\begin{proof}[Proof of \ref{approximateSolutionPolyTimeProp}]
+\begin{proof}[Proof of proposition \ref{approximateSolutionPolyTimeProp}]
     To compute the solution to the minimization problem, we can set up the following linear program: 
     \begin{align*}
         \min_{\gamma, A_i \in [-1, 1]^n} &\sum_{i = 1}^n \left(1 + A_i \right) d_i \\ 
@@ -831,7 +839,7 @@ We copy the definitions of leaking cycles, leaking pairs, disclosing cycles, and
 \end{proof}
 
 
-\begin{proof}[Proof of \ref{prop:approx_opt_are_close}]
+\begin{proof}[Proof of proposition \ref{prop:approx_opt_are_close}]
     We have $opt(L) \leq approx(L)$ by Proposition \ref{prop:compute_opt_cost}. Let $I$ be the set of transitions in $L$ that do $\textit{not}$ appear in a cycle. Then we have
     \begin{align*}
         opt(L) &= \max_{\Delta \in [-1, 1]^n} \min_{\gamma, \gamma' \in [-1, 1]^n} \sum_{i = 1}^n \left(|\Delta_i - \gamma_i| d_i + |\Delta_i - \gamma_i'|d_i' \right)\\
@@ -845,6 +853,7 @@ We copy the definitions of leaking cycles, leaking pairs, disclosing cycles, and
     showing the second inequality.
 \end{proof}
 
+These results allows us to prove the technical results relating to the privacy constraint graph and a linear time algorithm for privacy (section \ref{svDecisionAlgSection}).
 
 \begin{proof}[Proof of prop \ref{privacyConstraintGraphProp}]
     $(\implies)$ Let $L$ be differentially private. Then $approx(L) < \infty$, and so there exists $\gamma \in [-1, 1]^n$ such that the approximate privacy constraints are satisfied by $\gamma$. Aiming for a contradiction, assume that there exists a path ${\bf 1} \to v_{i_1} \to \dots \to v_{i_k} \to {\bf -1}$ in the privacy constraint graph of $L$. This corresponds to the sequence of privacy constraint inequalities
@@ -869,7 +878,7 @@ We copy the definitions of leaking cycles, leaking pairs, disclosing cycles, and
     Thus, the approximate privacy constraints are satisfied by $\gamma$, which means that $approx(L) < \infty$ and $L$ is differentially private.
 \end{proof}
 
-\textbf{The following claims help prove prop \ref{programPrivacyConstraintGraphPathReq} and theorem \ref{LinearTimeDecidingPrograms}}
+The following claim helps to prove proposition \ref{programPrivacyConstraintGraphPathReq}.
 
 \begin{prop}
     \label{prop:paths_in_privacy_graph}
@@ -919,16 +928,13 @@ We copy the definitions of leaking cycles, leaking pairs, disclosing cycles, and
     This completes the proof. 
 \end{proof}
 
-
-\begin{cor}
-    The path $v_{i_0} \to \dots \to v_{i_k}$ is in $G_P$ if and only if there is a periodic program $L$ in $P$ such that $v_{i_0} \to \dots \to v_{i_k}$ is a path in $G_L$.
-\end{cor}
-
 \begin{proof}[Proof of \ref{programPrivacyConstraintGraphPathReq}]
     There is a path from $\bf 1$ to $\bf -1$ in the privacy constraint graph of $P$ if and only if there is a path from $\bf 1$ to $\bf -1$ in the privacy constraint graph of some periodic program $L$ in $P$ by Proposition \ref{prop:paths_in_privacy_graph}. This is true if and only if there exists some $L$ which is not differentially private, which is true if and only if $P$ is not differentially private.
 \end{proof}
 
 \section{Multivariable Programs}
+
+This section contains full statements of coupling lemmas found in section \ref{mvSection}, as well as any omitted proofs (the proof of lemma \ref{mvNotwellformedImpliesNotPrivate} is deferred to appendix C for space). 
 
 
 \begin{lemma}[Precise Version of lemma \ref{simplifiedMvParallelCouplingsLemma}]\label{mvParallelCouplingsLemma}
@@ -955,7 +961,6 @@ We copy the definitions of leaking cycles, leaking pairs, disclosing cycles, and
 
     Finally, as before, if $\sigma \in \{\texttt{insample}^{(x_1)}\ldots \texttt{insample}^{(x_k)},\texttt{insample}'\}$, then for all $\sigma$, $o\brangle{1}=\sigma \implies o\brangle{2} = \sigma$. Further, note that we only need to couple $\texttt{insample}'\brangle{1}$ and $\texttt{insample}'\brangle{2}$ once for all variables. By simply adding up the costs from lemma \ref{indTransitionCoupling}, we complete the proof.
 \end{proof}
-
 
 \begin{proof}[Proof of lemma \ref{mvCrossCoupling}]
     Let $P(t) = (d_t, d_t')$. For convenience, we rewrite, for all $i$, $X_i = \mu_i + \zeta_i$, where $\zeta_i\sim \Lap(0, \frac{1}{d_x\varepsilon})$. For all $i$, we also write $\texttt{insample}^{(x_i)} = \texttt{in} + z_i$, where $z \sim \Lap(0, \frac{1}{d_t\varepsilon})$ and $\texttt{insample}' = \texttt{in} + z'$, where $z' \sim \Lap(0, \frac{1}{d_t'\varepsilon})$.
