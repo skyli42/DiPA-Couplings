@@ -4,7 +4,7 @@
 
 \subsection{Couplings for Transitions and Straight Line Programs}
 
-In this section, we provide more precise versions of the major coupling lemmas in sections \ref{svTransitionsSec} and \ref{svSLPSection} as well as full proofs. 
+This section contains more precise versions of the major coupling lemmas in sections \ref{svTransitionsSec} and \ref{svSLPSection} as well as any omitted proofs. 
 
 
 \begin{lemma}[Detailed version of lemma \ref{simplifiedIndTransitionCoupling}]\label{indTransitionCoupling}
@@ -120,7 +120,7 @@ we have shown that the lifting $o\brangle{1}\{(a, b): a=\sigma\implies b=\sigma\
 
 \subsection{Programs and DiPA}
 
-This section provides full proofs and precise statements of lemmas for sections \ref{svProgramsSection} and \ref{svDiPASection}.
+This section contains any omitted proofs and precise statements of claims in sections \ref{svProgramsSection} and \ref{svDiPASection}.
 
 
 \begin{proof}[\proofname~of lemma \ref{finiteCostConstraintLemma}]
@@ -500,7 +500,7 @@ This allows us to prove lemma \ref{unsatisfiableImpliesNotWellformedLemma}.
 
 \subsection{Minimizing Coupling Cost and a Decision Algorithm for Privacy}
 
-This section provides full proofs and precise statements of claims made in sections \ref{svDecisionAlgSection} and \ref{svOptimizationSection}.
+This section provides omitted proofs and precise statements of claims made in sections \ref{svDecisionAlgSection} and \ref{svOptimizationSection}.
 
 Note that the technical results of section \ref{svDecisionAlgSection} flow from the approximation algorithm of section \ref{svOptimizationSection}; thus, we order this section such that claims made in \ref{svOptimizationSection} appear first. 
 
@@ -844,11 +844,11 @@ Note that the technical results of section \ref{svDecisionAlgSection} flow from 
     \begin{align*}
         opt(L) &= \max_{\Delta \in [-1, 1]^n} \min_{\gamma, \gamma' \in [-1, 1]^n} \sum_{i = 1}^n \left(|\Delta_i - \gamma_i| d_i + |\Delta_i - \gamma_i'|d_i' \right)\\
         &= \max_{\Delta \in [-1, 1]^n} \min_{\gamma, \gamma' \in [-1, 1]^n} \sum_{i \in I} \left(|\Delta_i - \gamma_i| d_i + |\Delta_i - \gamma_i'|d_i' \right)\\
-        &= \max_{\Delta \in [-1, 1]^n} \min_{\gamma, \gamma' \in [-1, 1]^n} \left(\sum_{i \in I} \left(|\Delta_i - \gamma_i| d_i \right) + \sum_{t_i \text{outputs \texttt{insample}}} |\Delta_i| d_i' \right)\\
-        &\geq \max_{\Delta \in [-1, 1]^n} \min_{\gamma, \gamma' \in [-1, 1]^n} \left(\sum_{i \in I} \left(|\gamma_i| - |\Delta_i| \right) d_i  + \sum_{t_i \text{outputs \texttt{insample}}} |\Delta_i| d_i' \right)\\
-        &= \max_{\Delta \in [-1, 1]^n} \left(- \sum_{i \in I} |\Delta_i| d_i + \sum_{t_i \text{outputs \texttt{insample}}} |\Delta_i| d_i' + \min_{\gamma, \gamma' \in [-1, 1]^n} \sum_{i \in I}|\gamma_i| d_i \right)\\
+        &= \max_{\Delta \in [-1, 1]^n} \min_{\gamma, \gamma' \in [-1, 1]^n} \left(\sum_{i \in I} \left(|\Delta_i - \gamma_i| d_i \right) + \sum_{\sigma_i=\texttt{insample}'} |\Delta_i| d_i' \right)\\
+        &\geq \max_{\Delta \in [-1, 1]^n} \min_{\gamma, \gamma' \in [-1, 1]^n} \left(\sum_{i \in I} \left(|\gamma_i| - |\Delta_i| \right) d_i  + \sum_{\sigma_i=\texttt{insample}'} |\Delta'_i| d_i' \right)\\
+        &= \max_{\Delta \in [-1, 1]^n} \left(- \sum_{i \in I} |\Delta_i| d_i + \sum_{\sigma_i=\texttt{insample}'} |\Delta_i| d_i' + \min_{\gamma, \gamma' \in [-1, 1]^n} \sum_{i \in I}|\gamma_i| d_i \right)\\
         &\geq \min_{\gamma, \gamma' \in [-1, 1]^n} \sum_{i \in I}|\gamma_i| d_i \\
-        &= approx(L) - \sum_{t_i \text{outputs \texttt{insample}}} d_i' - \sum_{i \in I} d_i'
+        &= approx(L) - \sum_{t_i \text{outputs }\texttt{insample}'} d_i' - \sum_{i \in I} d_i'
     \end{align*}
     showing the second inequality.
 \end{proof}
@@ -934,7 +934,7 @@ The following claim helps to prove proposition \ref{programPrivacyConstraintGrap
 
 \section{Multivariable Programs}
 
-This section contains full statements of coupling lemmas found in section \ref{mvSection}, as well as any omitted proofs (the proof of lemma \ref{mvNotwellformedImpliesNotPrivate} is deferred to appendix C for space). 
+This section contains full statements of coupling lemmas found in section \ref{mvSection}, as well as any omitted proofs in section \ref{mvSection} (the proof of lemma \ref{mvNotwellformedImpliesNotPrivate} specifically is deferred to appendix C for space). 
 
 
 \begin{lemma}[Precise Version of lemma \ref{simplifiedMvParallelCouplingsLemma}]\label{mvParallelCouplingsLemma}

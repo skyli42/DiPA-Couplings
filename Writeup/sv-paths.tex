@@ -43,8 +43,8 @@ We can now adapt the definition of differential privacy to SLPs:
     An initialized SLP $\rho$ of length $n$ is $d\varepsilon$-differentially private for some $d>0$ if $\forall \varepsilon>0$, for all valid adjacent input sequences $\texttt{in}\brangle{1}\sim \texttt{in}\brangle{2}$ of length $n$ and all possible output sequences $\sigma$ of length $n$, $\PP[\rho, \texttt{in}\brangle{1}, \sigma]\leq e^{d\varepsilon}\PP[\rho, \texttt{in}\brangle{2}, \sigma]$.
 \end{defn}
 
-Note that, following \cite{chadhaLinearTimeDecidability2021}, we slightly redefine $\varepsilon$-differential privacy as $d\varepsilon$-differential privacy, treating $\varepsilon$ as a universal scaling parameter that can be fine-tuned by users for their own purposes. 
-We argue that this definition is functionally equivalent, since if we are targeting $\varepsilon^*$-differential privacy overall, we can always take $\varepsilon = \frac{\varepsilon^*}{d}$.
+Note that, following \cite{chadhaLinearTimeDecidability2021}, we slightly redefine $\varepsilon$-differential privacy as $d\varepsilon$-differential privacy, treating $\varepsilon$ as a free scaling parameter that can be fine-tuned by users for their own purposes. 
+We argue that this definition is functionally equivalent to the standard definition, since if we are targeting $\varepsilon^*$-differential privacy overall, we can always take $\varepsilon = \frac{\varepsilon^*}{d}$.
 
 \subsubsection{Sequential composition of couplings}
 
@@ -87,7 +87,7 @@ Thus, for an individual transition $t_i$ of $\rho$, we have a family of valid co
       then we can construct an approximate lifting that proves that $\PP[\rho, \texttt{in}\brangle{1}, \sigma] \leq e^{d\varepsilon}\PP[\rho, \texttt{in}\brangle{2}, \sigma]$ for some bounded $d>0$. 
 \end{lemma}
 
-(As before, a precise statement can be found as lemma \ref{multTransitionsCouplingProof})
+As before, a precise statement can be found as lemma \ref{multTransitionsCouplingProof}.
 
 Thus, if we have a \textbf{valid} coupling strategy $C$ for an SLP $\rho$, then immediately by lemma \ref{simplifiedMultTransitionsCouplingProof}, we have a proof that $\rho$ is $d\varepsilon$-differentially private for some $d>0$; we call this $d$ the \textit{cost} of the coupling strategy for $\rho$. 
 

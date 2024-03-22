@@ -81,19 +81,20 @@ Further, we obtain an approximation factor bounded by a term linear in the numbe
 \begin{prop}
     \label{prop:approx_opt_are_close}
     For a periodic program $L$ with $n$ distinct transitions, we have 
-    \[opt(L) \leq approx(L) \leq opt(L) + \sum_{i \in I }^n d_i + \sum_{t_i \text{outputs \texttt{insample}}} d_i'\]
+    \[opt(L) \leq approx(L) \leq opt(L) + \sum_{i \in I }^n d_i + \sum_{\sigma_i =\texttt{insample}'} d_i'\]
     where $I$ is the set of transitions in $L$ that do $\textit{not}$ appear in a cycle.
 \end{prop}
 
 We remark that our decision algorithm for privacy (section \ref{svDecisionAlgSection}) is a simplified encoding of approximate privacy constraints into a privacy constraint graph; we also note that it is possible, if less intuitive, to directly reduce the approximate privacy constraints to an instance of 2SAT. 
 
-\azadeh{check with sasho about this part}
 We conjecture that the optimal coupling cost, as represented by the linear program from proposition \ref{prop:compute_opt_cost}, exactly matches the ``true'' privacy cost of a program, as represented by the max-divergence between the distributions of a program's outputs on adjacent input sequences. In this case, coupling proofs would provide an exact bound on the privacy cost of any program that can be represented by our model. 
 
 \begin{conj}
-    For a periodic program $L$, the optimal coupling cost $opt(L)$ of $L$ matches the ``true'' privacy cost, i.e.:
+    For a periodic program $L$, the optimal coupling cost $opt(L)$ of $L$ matches the ``true'' privacy cost, i.e., for all $\varepsilon>0$:
     \begin{align*}
-        opt(L) = \sup_{\rho \in L} \sup_{\texttt{in}\brangle{1} \sim \texttt{in}\brangle{2}} D_\infty(\PP[\rho, \texttt{in}\brangle{1}, \cdot]\; ||\; \PP[\rho, \texttt{in}\brangle{2}, \cdot])
+        opt(L) = \frac{1}{\varepsilon}\left(\sup_{\rho \in L} \sup_{\texttt{in}\brangle{1} \sim \texttt{in}\brangle{2}} D_\infty(\PP[\rho, \texttt{in}\brangle{1}, \cdot]\; ||\; \PP[\rho, \texttt{in}\brangle{2}, \cdot])\right)
     \end{align*}
     representing the worst-case privacy loss over all SLPs in $L$, all valid adjacent inputs, and all measurable output events.
 \end{conj}
+
+Recall that, since $\varepsilon$ acts as a free parameter of programs in our model, $opt(L)$ provides a bound on a constant $d>0$ such that $L$ is $d\varepsilon$-differentially private for all $\varepsilon$; thus, we must divide out a factor of $\varepsilon$ to properly compare $opt(L)$ and the ``true'' cost. 

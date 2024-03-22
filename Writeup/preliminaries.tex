@@ -11,7 +11,7 @@ In general, we work with \textbf{datasets} $\mathcal{X}\in X^n$ of size $n$ wher
 
 We first define what it means for datasets to be ``similar'' to each other. 
 
-\begin{defn}
+\begin{defn}(Adjacent Datasets)
     Two datasets $\mathcal{X}=(x_1, \ldots, x_n), \mathcal{X}'=(x'_1, \ldots, x'_n)\in X^n$ are \textbf{adjacent} (denoted by $\mathcal{X}\sim\mathcal{X}'$) if $|\{i: x_i\neq x'_i\}|\leq 1$\footnote{A common variant is to define adjacency by the removal or addition of an entry, rather than by the modification of an entry}.
 \end{defn}
 
@@ -44,7 +44,7 @@ Composition therefore allows us to view privacy parameters $\varepsilon$ as a ``
 \subsubsection{Sensitivity and the Laplace Mechanism}
 
 Because we are typically interested in analyzing \textit{functions} of a dataset (for example, the \textbf{average} age of a group), it is often useful to examine differential privacy through a similar model --- instead of comparing two adjacent datasets $X\sim X'$, we compare \textbf{queries} $f(X)$ and $f(X')$. In this world, we care about the \textit{sensitivity} of functions: how much a function \textit{changes} when considering adjacent inputs. 
-The ($\ell_1$-)sensitivity of a function $f: X\to \RR$, denoted $\Delta f$, is defined as $\Delta f = \max_{X\sim X'}||f(X)-f(X')||_1$.
+The ($\ell_1$-)\textbf{sensitivity} of a function $f: X\to \RR$, denoted $\Delta f$, is defined as $\Delta f = \max_{X\sim X'}||f(X)-f(X')||_1$.
 
 For any given function with a known sensitivity, we can construct a differentially private version of the function with the \textbf{Laplace Mechanism}. 
 
@@ -149,7 +149,7 @@ However, re-analyzing SVT using approximate liftings is relatively simple.
     Sparse Vector Technique is $\varepsilon$-differentially private. 
 \end{thm}
 
-\begin{proof}[Proof (adapted from an informal proof of \cite{bartheProvingDifferentialPrivacy2016})]
+\begin{proof}[Proof (adapted from a sketch of \cite{bartheProvingDifferentialPrivacy2016})]
     Consider two runs of SVT with adjacent inputs $\mathcal{X}\sim\mathcal{X}'$, respectively. We are aiming to show that $SVT(\mathcal{X}, T, Q, c)\{(a, b): a=\sigma \implies b=\sigma\}^{\#\varepsilon}SVT(\mathcal{X}', T, Q, c)$ is a valid lifting. 
 
     Fix some output $\sigma \in \{\bot, \top\}^n$. Let $A = \{i:\sigma_i = \top\}$ be the indices of queries that are measured to be above the threshold. Note that $|A| = c$. 
